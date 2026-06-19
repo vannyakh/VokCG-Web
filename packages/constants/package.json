@@ -1,0 +1,25 @@
+{
+  "name": "@vokcg/constants",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@vokcg/types": "workspace:*",
+    "lucide-react": "^1.17.0"
+  },
+  "devDependencies": {
+    "@vokcg/eslint-config": "workspace:*",
+    "@vokcg/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.2.2",
+    "eslint": "^9.39.1",
+    "typescript": "5.9.2"
+  }
+}

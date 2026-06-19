@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--bg-canvas);
+  --color-foreground: var(--text-primary);
+  --color-primary: var(--color-primary);
+  --color-muted: var(--text-muted);
+  --color-border: var(--border-default);
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --color-primary: #3b82f6;
+  --bg-canvas: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-sidebar: #f1f5f9;
+  --bg-subtle: #f8fafc;
+  --bg-active: #eff6ff;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #94a3b8;
+  --border-default: #e2e8f0;
+}
+
+.dark {
+  --bg-canvas: #0f1117;
+  --bg-surface: #161b27;
+  --bg-sidebar: #12161f;
+  --bg-subtle: #1e2433;
+  --bg-active: rgba(59, 130, 246, 0.12);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-default: rgba(255, 255, 255, 0.08);
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.border-divider { border-color: var(--border-divider, var(--border-default)); }
+.bg-divider { background-color: var(--border-divider, var(--border-default)); }
+
+.text-accent { color: var(--color-primary); }
+.bg-accent { background-color: var(--color-primary); }
+.border-accent { border-color: var(--border-accent, color-mix(in srgb, var(--color-primary) 45%, transparent)); }
+.bg-accent-muted { background: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+
+.bg-canvas { background-color: var(--bg-canvas); }
+.bg-surface { background-color: var(--bg-surface); }
+.bg-sidebar { background-color: var(--bg-sidebar); }
+.bg-subtle { background-color: var(--bg-subtle); }
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+
+.border-default { border-color: var(--border-default); }
+.border-divider { border-color: var(--border-divider, var(--border-default)); }
+

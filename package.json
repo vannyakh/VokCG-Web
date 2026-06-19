@@ -1,5 +1,5 @@
 {
-  "name": "VokCG-Web",
+  "name": "@vokcg/web",
   "private": true,
   "scripts": {
     "build": "turbo run build",

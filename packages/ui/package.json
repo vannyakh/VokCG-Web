@@ -1,26 +1,60 @@
 {
-  "name": "@repo/ui",
+  "name": "@vokcg/ui",
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./*": "./src/*.tsx"
+    ".": "./src/index.ts",
+    "./globals.css": "./src/styles/globals.css",
+    "./postcss.config": "./postcss.config.mjs",
+    "./admin": "./src/components/admin/index.ts",
+    "./table": "./src/components/table/index.ts",
+    "./charts/echart": "./src/components/charts/echart.tsx",
+    "./hooks/use-app-message": "./src/hooks/use-app-message.ts",
+    "./lib/admin-dashboard-charts": "./src/lib/admin-dashboard-charts.ts",
+    "./lib/admin-format": "./src/lib/admin-format.ts",
+    "./*": "./src/*"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit"
   },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "@vokcg/api": "workspace:*",
+    "@vokcg/config": "workspace:*",
+    "@vokcg/constants": "workspace:*",
+    "@vokcg/i18n": "workspace:*",
+    "@vokcg/store": "workspace:*",
+    "@vokcg/types": "workspace:*",
+    "antd": "^6.4.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "echarts": "^6.1.0",
+    "framer-motion": "^12.40.0",
+    "lucide-react": "^1.17.0",
+    "next-themes": "^0.4.6",
+    "tailwind-merge": "^3.3.1"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "@tanstack/react-table": "^8.0.0",
+    "next": ">=15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@vokcg/eslint-config": "workspace:*",
+    "@vokcg/typescript-config": "workspace:*",
+    "@tanstack/react-query": "^5.101.0",
+    "@tanstack/react-table": "^8.21.3",
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "eslint": "^9.39.1",
-    "typescript": "5.9.2"
-  },
-  "dependencies": {
+    "next": "16.2.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "5.9.2"
   }
 }
