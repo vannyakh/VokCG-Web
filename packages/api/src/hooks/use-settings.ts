@@ -19,7 +19,7 @@ export function useAuthSessions(enabled = true) {
     enabled: enabled && Boolean(accessToken),
     queryFn: () =>
       getApi<ApiResponse<AuthSession[]>>('/api/v1/auth/me/sessions', undefined, {
-        ...(refreshToken ? { 'X-Refresh-Token': refreshToken } : {}),
+        headers: refreshToken ? { 'X-Refresh-Token': refreshToken } : undefined,
       }),
     select: (res) => res.data,
   })

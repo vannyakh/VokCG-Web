@@ -6,11 +6,9 @@
     ".": "./src/index.ts",
     "./globals.css": "./src/styles/globals.css",
     "./postcss.config": "./postcss.config.mjs",
-    "./admin": "./src/components/admin/index.ts",
     "./table": "./src/components/table/index.ts",
     "./charts/echart": "./src/components/charts/echart.tsx",
     "./hooks/use-app-message": "./src/hooks/use-app-message.ts",
-    "./lib/admin-dashboard-charts": "./src/lib/admin-dashboard-charts.ts",
     "./lib/admin-format": "./src/lib/admin-format.ts",
     "./*": "./src/*"
   },

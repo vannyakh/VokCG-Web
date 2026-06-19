@@ -1,7 +1,7 @@
 'use client'
 
 import { AuthGuard } from '../../components/auth-guard'
-import { StudioShell } from '@vokcg/ui'
+import { StudioShell } from '../../components/layout'
 
 export default function StudioLayout({ children }: { children: React.ReactNode }) {
   return (

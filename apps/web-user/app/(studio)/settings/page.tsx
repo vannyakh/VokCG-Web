@@ -1,11 +1,7 @@
-function StubPage({ title }: { title: string }) {
-  return (
-    <div className="flex h-full items-center justify-center p-8">
-      <h2 className="text-xl font-bold text-primary">{title}</h2>
-    </div>
-  )
-}
+'use client'
 
-export default function SettingsPage() {
-  return <StubPage title="Settings" />
+import { SettingsPage } from '@/features/settings'
+
+export default function Page() {
+  return <SettingsPage />
 }

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@vokcg/config": "workspace:*",
+    "@vokcg/constants": "workspace:*",
     "@vokcg/types": "workspace:*",
     "zustand": "^5.0.14"
   },

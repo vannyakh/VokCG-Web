@@ -11,6 +11,7 @@ export const STORAGE_KEYS = {
   createDraft: 'mpt-create-draft',
   tasksViewMode: 'mpt-tasks-view',
   locale: 'mpt-ui-locale',
+  videoStore: 'mpt-video-store',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]

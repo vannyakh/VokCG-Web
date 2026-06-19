@@ -53,12 +53,18 @@ importers:
       echarts:
         specifier: ^6.1.0
         version: 6.1.0
+      framer-motion:
+        specifier: ^12.40.0
+        version: 12.40.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       lucide-react:
         specifier: ^1.17.0
         version: 1.21.0(react@19.2.0)
       next:
         specifier: 16.2.0
         version: 16.2.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -126,6 +132,9 @@ importers:
       antd:
         specifier: ^6.4.4
         version: 6.4.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      framer-motion:
+        specifier: ^12.0.0
+        version: 12.40.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       lucide-react:
         specifier: ^1.17.0
         version: 1.21.0(react@19.2.0)
@@ -338,6 +347,9 @@ importers:
       '@vokcg/config':
         specifier: workspace:*
         version: link:../config
+      '@vokcg/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@vokcg/types':
         specifier: workspace:*
         version: link:../types
