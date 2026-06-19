@@ -4,7 +4,7 @@ import { Button, Modal, Upload } from 'antd'
 import { Upload as UploadIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useLocale } from '@vokcg/i18n'
-import { useUpdateAvatar } from '@vokcg/api'
+import { useUpdateAvatar } from '@/api'
 import { useAppMessage } from '@vokcg/ui'
 import { UserAvatar } from '@vokcg/ui'
 

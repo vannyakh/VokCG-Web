@@ -10,10 +10,11 @@ import {
   Search, Sparkles, X, Zap, Clapperboard,
 } from 'lucide-react'
 import { useLocale } from '@vokcg/i18n'
-import { postApi } from '@vokcg/api'
+import { postApi } from '@/api'
 import { SCRIPT_LANGUAGES } from '@vokcg/constants'
 import { USER_ROUTES } from '@vokcg/constants'
-import type { ScriptResponse, TermsResponse, CreateStudioConfig } from '@vokcg/types'
+import type { CreateStudioConfig } from '@/types/create-config'
+import type { ScriptResponse, TermsResponse } from '@/types/content'
 import { useAppMessage } from '@vokcg/ui'
 import { configToScriptPayload, configToTermsPayload, CREATE_CONFIG_DEFAULTS } from '../../create/lib/create-config'
 import {

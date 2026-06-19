@@ -5,7 +5,7 @@ import { Button, Skeleton, Tag } from 'antd'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FileText, Film, Hash, X } from 'lucide-react'
 import { useLocale } from '@vokcg/i18n'
-import { useTask } from '@vokcg/api'
+import type { Task } from '@vokcg/types'
 import { fadeUpItem, panelSlide, staggerContainer } from '../lib/motion'
 import { getRenderStatus, getTaskStateMeta, isTaskActive, isTaskDone, isTaskFailed } from '../lib/task-status'
 import { formatTaskId, getTaskContentSummary, getTaskFinalVideo, getTaskTerms, getTaskVideos } from '../lib/task-utils'
@@ -61,25 +61,25 @@ function SourceSection({ icon: Icon, title, copyText, copyLabel, copiedLabel, ch
 }
 
 type TaskPreviewPanelProps = {
-  taskId: string
+  task: Task | null | undefined
+  isLoading: boolean
   onClose: () => void
   onDelete: (id: string) => void
 }
 
-export function TaskPreviewPanel({ taskId, onClose, onDelete }: TaskPreviewPanelProps) {
+export function TaskPreviewPanel({ task, isLoading, onClose, onDelete }: TaskPreviewPanelProps) {
   const { t } = useLocale()
-  const { data: task, isLoading } = useTask(taskId)
 
   const videos = task ? getTaskVideos(task) : []
   const done = task ? isTaskDone(task.state) : false
   const summary = task ? getTaskContentSummary(task) : null
 
   const derivedIndex = task && isTaskDone(task.state) ? videos.length - 1 : 0
-  const [trackedTaskId, setTrackedTaskId] = useState(taskId)
+  const [trackedTaskId, setTrackedTaskId] = useState(task?.id ?? '')
   const [activeVideoIndex, setActiveVideoIndex] = useState(derivedIndex)
 
-  if (trackedTaskId !== taskId) {
-    setTrackedTaskId(taskId)
+  if (task && trackedTaskId !== task.id) {
+    setTrackedTaskId(task.id)
     setActiveVideoIndex(derivedIndex)
   }
 
@@ -90,7 +90,7 @@ export function TaskPreviewPanel({ taskId, onClose, onDelete }: TaskPreviewPanel
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={taskId}
+        key={task?.id ?? 'loading'}
         variants={panelSlide}
         initial="initial"
         animate="animate"

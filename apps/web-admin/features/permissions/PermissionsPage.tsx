@@ -4,8 +4,8 @@ import { Button, Tag } from 'antd'
 import { createColumnHelper } from '@tanstack/react-table'
 import { Page } from '@vokcg/ui'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminPermissions } from '@vokcg/api'
-import type { Permission } from '@vokcg/types'
+import { useAdminPermissions } from '@/api'
+import type { Permission } from '@/types/auth'
 
 type PermissionFilters = {
   code?: string

@@ -1,7 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { useCreateStudioStore } from '@vokcg/store'
+import { useCreateStudioStore } from '@/store'
 import { AudioStep } from './audio-step'
 import { ContentStep } from './content-step'
 import { ReviewStep } from './review-step'

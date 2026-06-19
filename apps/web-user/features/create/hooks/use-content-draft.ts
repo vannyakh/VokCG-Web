@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useVideoStore } from '@vokcg/store'
+import { useVideoStore } from '@/store'
 import { USER_ROUTES } from '@vokcg/constants'
 import {
   clearContentDraft,

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { useRegister } from '@vokcg/api'
+import { useRegister } from '@/api'
 import { USER_ROUTES } from '@vokcg/constants'
 import {
   AuthField,

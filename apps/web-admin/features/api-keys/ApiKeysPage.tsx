@@ -7,9 +7,9 @@ import { useState } from 'react'
 
 import { Page } from '@vokcg/ui'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminApiKeys, useCreateApiKey, useDeleteApiKey } from '@vokcg/api/hooks/use-admin-platform'
+import { useAdminApiKeys, useCreateApiKey, useDeleteApiKey } from '@/api'
 import { useAppMessage } from '@vokcg/ui'
-import type { ApiKey } from '@vokcg/types'
+import type { ApiKey } from '@/types/platform'
 
 type ApiKeyFilters = {
   name?: string

@@ -3,7 +3,7 @@
 import { createColumnHelper } from '@tanstack/react-table'
 import { Page } from '@vokcg/ui'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminServices } from '@vokcg/api'
+import { useAdminServices } from '@/api'
 
 type Service = {
   id: string

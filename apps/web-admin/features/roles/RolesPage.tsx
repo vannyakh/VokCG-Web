@@ -4,7 +4,7 @@ import { Tag } from 'antd'
 import { createColumnHelper } from '@tanstack/react-table'
 import { Page } from '@vokcg/ui'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminRoles } from '@vokcg/api'
+import { useAdminRoles } from '@/api'
 
 type Permission = { id: string; code: string }
 type Role = {

@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useLocale } from '@vokcg/i18n'
-import { useCreateStudioStore } from '@vokcg/store'
+import { useCreateStudioStore } from '@/store'
 import { CREATE_FLOW_STEPS, createFlowStepIndex, type CreateFlowStepId } from '@vokcg/constants'
 import { CreateFormCenter } from './create-form-center'
 

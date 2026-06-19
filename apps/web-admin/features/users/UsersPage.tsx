@@ -13,9 +13,9 @@ import {
   useUpdateAdminUser,
   type AdminUserCreateInput,
   type AdminUserUpdateInput,
-} from '@vokcg/api'
+} from '@/api'
 import { formatAdminDate } from '@vokcg/ui'
-import type { User } from '@vokcg/types'
+import type { User } from '@/types/auth'
 
 type UserFilters = {
   query?: string

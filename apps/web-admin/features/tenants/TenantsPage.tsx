@@ -12,10 +12,10 @@ import {
   useCreateTenant,
   useDeleteTenant,
   useUpdateTenant,
-} from '@vokcg/api/hooks/use-admin-saas'
+} from '@/api'
 import { useAppMessage } from '@vokcg/ui'
 import { formatAdminDate, formatCurrency } from '@vokcg/ui'
-import type { Tenant, TenantCreateInput, TenantStatus } from '@vokcg/types'
+import type { Tenant, TenantCreateInput, TenantStatus } from '@/types/saas'
 
 type TenantFilters = {
   name?: string

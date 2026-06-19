@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Loader2, Lock, Smartphone, X } from 'lucide-react'
 import { useMemo } from 'react'
-import type { WorkspacePlan } from '@vokcg/types'
+import type { WorkspacePlan } from '@/types/workspace'
 import { BillingModalShell } from './billing-modal-shell'
 
 type Props = {

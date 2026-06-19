@@ -2,10 +2,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { postApi, TASKS_KEY } from '@vokcg/api'
-import { getCreateStudioConfig, useCreateStudioStore, usePreviewOutputStore, useVideoStore } from '@vokcg/store'
+import { postApi, TASKS_KEY } from '@/api'
+import { getCreateStudioConfig, useCreateStudioStore, usePreviewOutputStore, useVideoStore } from '@/store'
 import { USER_ROUTES } from '@vokcg/constants'
-import type { ScriptResponse, TaskCreateResponse, TermsResponse } from '@vokcg/types'
+import type { ScriptResponse, TaskCreateResponse, TermsResponse } from '@/types/content'
 import { useLocale } from '@vokcg/i18n'
 import { useAppMessage } from '@vokcg/ui'
 import { configToScriptPayload, configToTermsPayload, configToVideoPayload } from '../lib/create-config'

@@ -6,8 +6,8 @@ import { Page } from '@vokcg/ui'
 import { StatGrid } from '@/components/admin'
 import { EChart } from '@vokcg/ui/charts/echart'
 import { useColorMode } from '@vokcg/ui'
-import { useAdminOverview } from '@vokcg/api'
-import { useAdminSubscriptions, useAdminTenants } from '@vokcg/api/hooks/use-admin-saas'
+import { useAdminOverview } from '@/api'
+import { useAdminSubscriptions, useAdminTenants } from '@/api'
 import { buildMrrTrendOption } from '@/lib/admin-dashboard-charts'
 
 export function ReportsPage() {

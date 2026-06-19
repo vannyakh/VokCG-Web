@@ -1,6 +1,6 @@
 import type { EChartsCoreOption } from 'echarts/core'
-import type { AdminOverview } from '@vokcg/types'
-import type { AuditLog } from '@vokcg/types'
+import type { AdminOverview } from '@/types/auth'
+import type { AuditLog } from '@/types/auth'
 
 const CHART_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#f43f5e', '#06b6d4']
 

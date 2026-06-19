@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLocale } from '@vokcg/i18n'
-import { useWorkspace, useChangeWorkspacePlan, useWorkspaceCheckout, useWorkspacePlans } from '@vokcg/api'
+import { useWorkspace, useChangeWorkspacePlan, useWorkspaceCheckout, useWorkspacePlans } from '@/api'
 import { USER_ROUTES } from '@vokcg/constants'
 import { useAppMessage } from '@vokcg/ui'
 import { pickUpgradePlan } from './lib/workspace-billing-utils'
@@ -12,7 +12,7 @@ import { BillingCheckoutModal, type BillingPaymentMethod } from './components/bi
 import { BillingList } from './components/billing-list'
 import { BillingPlanCard } from './components/billing-plan-card'
 import { BillingShell } from './components/billing-shell'
-import type { WorkspacePlan } from '@vokcg/types'
+import type { WorkspacePlan } from '@/types/workspace'
 
 export function BillingPlansPage() {
   const { t } = useLocale()

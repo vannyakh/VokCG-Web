@@ -13,7 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ADMIN_AFFIX_TABS, ADMIN_TAB_META } from '@vokcg/constants'
 import type { AdminTab } from '@vokcg/constants'
 import { useTabsDrag } from './use-tabs-drag'
-import { useAdminUiStore } from '@vokcg/store'
+import { useAdminUiStore } from '@/store'
 
 type AdminTabbarProps = {
   tabs: AdminTab[]

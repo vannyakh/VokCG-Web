@@ -22,11 +22,27 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-import type { AdminTab } from '@vokcg/types'
 import type { NavItem } from './nav'
 import { ADMIN_ROUTES } from './routes'
 
-export type { AdminTab }
+export type AdminTab =
+  | 'overview'
+  | 'users'
+  | 'roles'
+  | 'permissions'
+  | 'tenants'
+  | 'plans'
+  | 'subscriptions'
+  | 'billing'
+  | 'logs'
+  | 'services'
+  | 'backups'
+  | 'jobs'
+  | 'reports'
+  | 'notifications'
+  | 'webhooks'
+  | 'api-keys'
+  | 'feature-flags'
 
 export type AdminTabMeta = {
   label: string

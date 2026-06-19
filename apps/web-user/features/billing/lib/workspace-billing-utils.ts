@@ -1,4 +1,4 @@
-import type { WorkspacePlan } from '@vokcg/types'
+import type { WorkspacePlan } from '@/types/workspace'
 
 export type WorkspaceUsageLimits = {
   videos: number | null

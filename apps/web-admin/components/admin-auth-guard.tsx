@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
 
 import { ADMIN_ROUTES } from '@vokcg/constants'
-import { useAdminAuthStore } from '@vokcg/store'
+import { useAdminAuthStore } from '@/store'
 
 import { LoadingScreen } from '@vokcg/ui'
 

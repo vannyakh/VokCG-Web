@@ -6,10 +6,10 @@ import { CheckCircle, Layers, Users, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { EntityCell, FormTablePage } from '@/components/admin'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminPlans, useCreatePlan, useDeletePlan, useUpdatePlan } from '@vokcg/api/hooks/use-admin-saas'
+import { useAdminPlans, useCreatePlan, useDeletePlan, useUpdatePlan } from '@/api'
 import { useAppMessage } from '@vokcg/ui'
 import { formatCurrency } from '@vokcg/ui'
-import type { Plan, PlanCreateInput } from '@vokcg/types'
+import type { Plan, PlanCreateInput } from '@/types/saas'
 
 type PlanFormValues = PlanCreateInput
 

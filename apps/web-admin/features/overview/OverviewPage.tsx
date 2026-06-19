@@ -14,7 +14,7 @@ import { Page } from '@vokcg/ui'
 import { StatGrid } from '@/components/admin'
 import { EChart } from '@vokcg/ui/charts/echart'
 import { useColorMode } from '@vokcg/ui'
-import { useAdminLogs, useAdminOverview } from '@vokcg/api'
+import { useAdminLogs, useAdminOverview } from '@/api'
 import {
   buildAuditActionOption,
   buildAuditTimelineOption,
@@ -22,7 +22,7 @@ import {
   buildEntitiesBarOption,
   buildHealthGaugeOption,
 } from '@/lib/admin-dashboard-charts'
-import type { AuditLog } from '@vokcg/types'
+import type { AuditLog } from '@/types/auth'
 
 function ChartCard({
   title,

@@ -10,9 +10,9 @@ import {
   useCreateNotification,
   useDeleteNotification,
   useUpdateNotification,
-} from '@vokcg/api/hooks/use-admin-platform'
+} from '@/api'
 import { useAppMessage } from '@vokcg/ui'
-import type { NotificationChannel, NotificationTemplate } from '@vokcg/types'
+import type { NotificationChannel, NotificationTemplate } from '@/types/platform'
 
 const CHANNEL_COLOR: Record<NotificationChannel, string> = {
   email: 'blue',

@@ -2,19 +2,23 @@
 
 import { App, ConfigProvider } from 'antd'
 import enUS from 'antd/locale/en_US'
+import { DEFAULT_PRIMARY_COLOR } from '@vokcg/config'
 import { useTheme } from 'next-themes'
 import { useMemo, type ReactNode } from 'react'
-import { useAdminUiStore } from '@vokcg/store'
 
 import { useAppTheme } from '../hooks/use-app-theme'
 import { buildAntdTheme } from '../theme/antd-theme'
 
-export function AntdProvider({ children }: { children: ReactNode }) {
-  useAppTheme()
+type AntdProviderProps = {
+  children: ReactNode
+  primaryColor?: string
+}
+
+export function AntdProvider({ children, primaryColor = DEFAULT_PRIMARY_COLOR }: AntdProviderProps) {
+  useAppTheme(primaryColor)
 
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
-  const primaryColor = useAdminUiStore((s) => s.primaryColor)
 
   const antdTheme = useMemo(
     () => buildAntdTheme(isDark, primaryColor),

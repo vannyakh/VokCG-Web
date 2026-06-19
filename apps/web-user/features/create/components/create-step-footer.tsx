@@ -3,7 +3,7 @@
 import { Button } from 'antd'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLocale } from '@vokcg/i18n'
-import { useCreateStudioStore } from '@vokcg/store'
+import { useCreateStudioStore } from '@/store'
 import { CREATE_FLOW_STEPS, createFlowStepIndex } from '@vokcg/constants'
 import { validateCreateFlowStep } from '../lib/create-config'
 import { useCreateConfig } from '../hooks/use-create-config'

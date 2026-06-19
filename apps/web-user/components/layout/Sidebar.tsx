@@ -5,12 +5,12 @@ import { ChevronsLeft, PinOff } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useRef, useState } from 'react'
 
-import { useWorkspace } from '@vokcg/api'
+import { useWorkspace } from '@/api'
 import { STUDIO_SIDEBAR } from '@vokcg/config'
-import { studioNavSections, USER_ROUTES } from '@vokcg/constants'
-import type { NavItem, NavSection } from '@vokcg/constants'
+import { studioNavItems } from '@vokcg/constants'
+import type { NavItem } from '@vokcg/constants'
 import { useLocale } from '@vokcg/i18n'
-import { useSidebarStore } from '@vokcg/store'
+import { useSidebarStore } from '@/store'
 import {
   mobileDrawerSpring,
   NavMenu,
@@ -23,40 +23,13 @@ import {
 import { SidebarWorkspaceCard } from './SidebarWorkspaceCard'
 
 const MINI_W = STUDIO_SIDEBAR.miniWidth
-const NAV_ITEM_HEIGHT = 42
+const NAV_ITEM_HEIGHT = 40
 
 type SidebarProps = {
   activePath: string
   isMobile?: boolean
   mobileOpen?: boolean
   onMobileClose?: () => void
-}
-
-function sectionToNavItems(
-  section: NavSection,
-  t: (key: string) => string,
-  workspace?: { plan?: { name: string } | null } | undefined,
-): NavItem[] {
-  return section.items.map((item) => {
-    let badge: string | undefined = item.badge
-    if (item.comingSoon) {
-      badge = t('nav.badge.soon')
-    } else if (
-      section.id === 'billing' &&
-      item.to === USER_ROUTES.billing &&
-      workspace?.plan
-    ) {
-      badge = workspace.plan.name
-    }
-    return {
-      id: item.to,
-      label: t(item.labelKey),
-      icon: item.icon,
-      path: item.comingSoon ? undefined : item.to,
-      badge,
-      comingSoon: item.comingSoon,
-    }
-  })
 }
 
 function SidebarBrand({ expanded }: { expanded: boolean }) {
@@ -87,7 +60,7 @@ export function Sidebar({
   const navRef = useRef<HTMLElement>(null)
 
   const { t } = useLocale()
-  const navSections = studioNavSections(false)
+  const navItems: NavItem[] = studioNavItems(false, workspace, t)
   const isCollapsed = !isMobile && (sidebarMiniMode || collapsed)
   const expanded = isMobile || !isCollapsed
   const shellWidth = hidden ? 0 : isCollapsed ? MINI_W : sidebarWidth
@@ -139,39 +112,15 @@ export function Sidebar({
           onScroll={onNavScroll}
           className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-2"
         >
-          {navSections.map((section, idx) => {
-            const items = sectionToNavItems(section, t, workspace)
-            const showLabel = expanded && !section.single
-
-            return (
-              <div key={section.id}>
-                {idx > 0 && (
-                  <div
-                    className={[
-                      'h-px bg-divider/50',
-                      expanded ? 'mx-4 my-2' : 'mx-3 my-2.5',
-                    ].join(' ')}
-                  />
-                )}
-
-                {showLabel && (
-                  <p className="mb-0.5 px-5 pt-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted/50 select-none">
-                    {t(section.sectionKey)}
-                  </p>
-                )}
-
-                <NavMenu
-                  items={items}
-                  activePath={activePath}
-                  collapse={!expanded}
-                  accordion={false}
-                  rounded
-                  itemHeight={NAV_ITEM_HEIGHT}
-                  onSelect={handleSelect}
-                />
-              </div>
-            )
-          })}
+          <NavMenu
+            items={navItems}
+            activePath={activePath}
+            collapse={!expanded}
+            accordion
+            rounded
+            itemHeight={NAV_ITEM_HEIGHT}
+            onSelect={handleSelect}
+          />
         </nav>
 
         <div

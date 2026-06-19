@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ChevronRight, CreditCard } from 'lucide-react'
 
 import { USER_ROUTES } from '@vokcg/constants'
-import type { Workspace } from '@vokcg/types'
+import type { Workspace } from '@/types/workspace'
 
 const STATUS_DOT: Record<Workspace['status'], string> = {
   active: 'bg-emerald-500',

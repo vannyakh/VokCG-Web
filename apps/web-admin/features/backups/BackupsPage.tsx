@@ -5,9 +5,9 @@ import type { MenuProps } from 'antd'
 import { createColumnHelper } from '@tanstack/react-table'
 import { Page } from '@vokcg/ui'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminBackups, useDeleteBackup, useRunBackup } from '@vokcg/api/hooks/use-admin-platform'
+import { useAdminBackups, useDeleteBackup, useRunBackup } from '@/api'
 import { useAppMessage } from '@vokcg/ui'
-import type { Backup, BackupStatus, BackupType } from '@vokcg/types'
+import type { Backup, BackupStatus, BackupType } from '@/types/platform'
 
 type BackupFilters = {
   type?: BackupType

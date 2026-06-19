@@ -7,7 +7,7 @@ import { Download, LayoutGrid, List, ListVideo, RefreshCw, Search, Trash2 } from
 import Link from 'next/link'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocale } from '@vokcg/i18n'
-import { useTasks, useDeleteTask } from '@vokcg/api'
+import { useTasks, useDeleteTask, useTask } from '@/api'
 import { STORAGE_KEYS } from '@vokcg/config'
 import { USER_ROUTES } from '@vokcg/constants'
 import {
@@ -269,6 +269,7 @@ export function TasksPage() {
 
   const { data, isLoading, isFetching, refetch } = useTasks(fetchPage, fetchPageSize)
   const deleteMutation = useDeleteTask()
+  const { data: selectedTask, isLoading: isSelectedTaskLoading } = useTask(selectedTaskId ?? '')
   const totalPages = data ? Math.ceil(data.total / (filtersActive ? fetchPageSize : pageSize)) : 1
   const hasServerTasks = (data?.tasks.length ?? 0) > 0
 
@@ -460,7 +461,12 @@ export function TasksPage() {
           <AnimatePresence>
             {selectedTaskId && isXlUp && (
               <motion.div key="preview-panel" className="tasks-preview-panel hidden shrink-0 xl:block" variants={panelSlide} initial="initial" animate="animate" exit="exit">
-                <TaskPreviewPanel taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} onDelete={handleDelete} />
+                <TaskPreviewPanel
+                  task={selectedTask}
+                  isLoading={isSelectedTaskLoading}
+                  onClose={() => setSelectedTaskId(null)}
+                  onDelete={handleDelete}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -476,7 +482,12 @@ export function TasksPage() {
         className="bg-canvas"
       >
         {selectedTaskId && (
-          <TaskPreviewPanel taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} onDelete={handleDelete} />
+          <TaskPreviewPanel
+            task={selectedTask}
+            isLoading={isSelectedTaskLoading}
+            onClose={() => setSelectedTaskId(null)}
+            onDelete={handleDelete}
+          />
         )}
       </Drawer>
     </>

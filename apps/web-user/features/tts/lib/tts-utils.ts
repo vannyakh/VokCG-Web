@@ -1,4 +1,4 @@
-import type { TtsVoice } from '@vokcg/types'
+import type { TtsVoice } from '@/types/tts'
 import { loadContentDraft, storeContentDraft } from '../../script/lib/content-draft'
 
 export type VoiceAvatarTone = 'purple' | 'green' | 'teal' | 'coral' | 'blue'

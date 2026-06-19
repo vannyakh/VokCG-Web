@@ -2,7 +2,7 @@
 
 import { Alert, Button, Card, Form, Input, Skeleton, Tag } from 'antd'
 import { Page } from '@vokcg/ui'
-import { useStripeSettings, useUpdateStripeSettings } from '@vokcg/api/hooks/use-admin-platform'
+import { useStripeSettings, useUpdateStripeSettings } from '@/api'
 import { useAppMessage } from '@vokcg/ui'
 
 export function BillingPage() {

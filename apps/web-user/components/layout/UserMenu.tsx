@@ -1,17 +1,190 @@
 'use client'
 
 import { Dropdown } from 'antd'
-import { ChevronDown, LogOut, Settings } from 'lucide-react'
+import { LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { useLogout } from '@vokcg/api'
+import { useLogout } from '@/api'
 import { USER_ROUTES } from '@vokcg/constants'
 import { useLocale } from '@vokcg/i18n'
-import { useAuthStore } from '@vokcg/store'
+import { useAuthStore } from '@/store'
 import { UserAvatar } from '@vokcg/ui'
 
+/* ── Action row ─────────────────────────────────────────────────────────── */
+type ActionRowProps = {
+  icon: React.ReactNode
+  label: string
+  sublabel?: string
+  onClick?: () => void
+  href?: string
+  disabled?: boolean
+  variant?: 'default' | 'danger'
+}
+
+function ActionRow({ icon, label, sublabel, onClick, href, disabled, variant = 'default' }: ActionRowProps) {
+  const isDanger = variant === 'danger'
+
+  const inner = (
+    <span className="flex items-center gap-3">
+      <span
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors"
+        style={{
+          background: isDanger
+            ? 'rgba(239,68,68,0.08)'
+            : 'color-mix(in srgb, var(--text-muted) 8%, transparent)',
+          color: isDanger ? '#ef4444' : 'var(--text-secondary)',
+        }}
+      >
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span
+          className="block text-[13.5px] font-medium leading-snug"
+          style={{ color: isDanger ? '#ef4444' : 'var(--text-primary)' }}
+        >
+          {label}
+        </span>
+        {sublabel && (
+          <span className="block text-[11.5px]" style={{ color: 'var(--text-muted)' }}>
+            {sublabel}
+          </span>
+        )}
+      </span>
+    </span>
+  )
+
+  const baseStyle: React.CSSProperties = {
+    display: 'block',
+    width: '100%',
+    padding: '7px 10px',
+    borderRadius: 12,
+    background: 'transparent',
+    border: 'none',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.5 : 1,
+    textAlign: 'left',
+    transition: 'background 150ms',
+  }
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        style={baseStyle}
+        className={isDanger ? 'hover:bg-red-500/8' : 'hover:bg-active/60'}
+      >
+        {inner}
+      </Link>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={baseStyle}
+      className={isDanger ? 'hover:bg-red-500/8' : 'hover:bg-active/60'}
+    >
+      {inner}
+    </button>
+  )
+}
+
+/* ── Panel ──────────────────────────────────────────────────────────────── */
+type UserMenuPanelProps = {
+  username: string
+  email: string
+  avatarUrl?: string | null
+  settingsLabel: string
+  logoutLabel: string
+  logoutPending: boolean
+  onClose: () => void
+  onLogout: () => void
+}
+
+function UserMenuPanel({
+  username,
+  email,
+  avatarUrl,
+  settingsLabel,
+  logoutLabel,
+  logoutPending,
+  onClose,
+  onLogout,
+}: UserMenuPanelProps) {
+  return (
+    <div
+      style={{
+        width: 288,
+        borderRadius: 20,
+        overflow: 'hidden',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-default)',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.12)',
+      }}
+    >
+      {/* Profile header */}
+      <div
+        style={{
+          padding: '20px 20px 16px',
+          background: 'linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 8%, transparent) 0%, transparent 60%)',
+          borderBottom: '1px solid var(--border-default)',
+        }}
+      >
+        <div className="flex items-center gap-4">
+          <UserAvatar username={username} avatarUrl={avatarUrl} size="lg" />
+          <div className="min-w-0 flex-1">
+            <p
+              className="truncate text-[15px] font-bold leading-tight"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              {username}
+            </p>
+            <p
+              className="mt-0.5 truncate text-[12px]"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              {email}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{ padding: '8px 8px 10px' }}>
+        <ActionRow
+          href={USER_ROUTES.settings}
+          onClick={onClose}
+          icon={<Settings size={16} strokeWidth={1.9} />}
+          label={settingsLabel}
+          sublabel="Preferences & account"
+        />
+
+        <div
+          style={{
+            height: 1,
+            background: 'var(--border-default)',
+            margin: '6px 2px',
+          }}
+        />
+
+        <ActionRow
+          onClick={onLogout}
+          disabled={logoutPending}
+          variant="danger"
+          icon={<LogOut size={16} strokeWidth={1.9} />}
+          label={logoutLabel}
+        />
+      </div>
+    </div>
+  )
+}
+
+/* ── Trigger ────────────────────────────────────────────────────────────── */
 export function UserMenu() {
   const { t } = useLocale()
   const user = useAuthStore((s) => s.user)
@@ -21,6 +194,13 @@ export function UserMenu() {
 
   if (!user) return null
 
+  const handleLogout = () => {
+    setOpen(false)
+    logout.mutate(undefined, {
+      onSettled: () => router.push(USER_ROUTES.login),
+    })
+  }
+
   return (
     <Dropdown
       trigger={['click']}
@@ -29,69 +209,34 @@ export function UserMenu() {
       onOpenChange={setOpen}
       arrow={false}
       popupRender={() => (
-        <div className="w-[280px] overflow-hidden rounded-2xl border border-divider bg-surface shadow-xl shadow-black/10">
-          <div className="flex items-center gap-3 border-b border-divider bg-subtle/40 px-4 py-3.5">
-            <UserAvatar
-              username={user.username}
-              avatarUrl={user.avatar_url}
-              size="lg"
-              className="ring-2 ring-divider"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[15px] font-bold text-primary">{user.username}</p>
-              <p className="mt-0.5 truncate text-[13px] text-muted">{user.email}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-0.5 p-2">
-            <Link
-              href={USER_ROUTES.settings}
-              onClick={() => setOpen(false)}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14px] font-medium text-secondary transition-colors hover:bg-subtle hover:text-primary"
-            >
-              <Settings size={15} strokeWidth={2} className="shrink-0" />
-              {t('nav.settings')}
-            </Link>
-            <div className="my-1 h-px bg-divider/70" />
-            <button
-              type="button"
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14px] font-medium text-red-500 transition-colors hover:bg-red-500/8 hover:text-red-600 dark:hover:text-red-400"
-              onClick={() => {
-                setOpen(false)
-                logout.mutate(undefined, {
-                  onSettled: () => router.push(USER_ROUTES.login),
-                })
-              }}
-            >
-              <LogOut size={15} strokeWidth={2} className="shrink-0" />
-              {t('header.logout')}
-            </button>
-          </div>
-        </div>
+        <UserMenuPanel
+          username={user.username}
+          email={user.email}
+          avatarUrl={user.avatar_url}
+          settingsLabel={t('nav.settings')}
+          logoutLabel={t('header.logout')}
+          logoutPending={logout.isPending}
+          onClose={() => setOpen(false)}
+          onLogout={handleLogout}
+        />
       )}
     >
       <button
         type="button"
         aria-expanded={open}
-        className={[
-          'flex max-w-[200px] items-center gap-2 rounded-xl border py-1.5 pl-1.5 pr-2.5 transition-colors sm:max-w-none sm:pr-3',
-          open
-            ? 'border-accent/30 bg-accent/8'
-            : 'border-divider bg-subtle/50 hover:border-divider hover:bg-subtle',
-        ].join(' ')}
+        aria-haspopup="menu"
+        className="flex items-center gap-2 rounded-xl px-1.5 py-1 transition-colors hover:bg-active/60"
+        style={{
+          outline: open
+            ? '2px solid color-mix(in srgb, var(--color-primary) 30%, transparent)'
+            : 'none',
+          outlineOffset: 1,
+        }}
       >
         <UserAvatar username={user.username} avatarUrl={user.avatar_url} size="sm" />
-        <span className="hidden truncate text-[13px] font-semibold text-primary md:inline">
+        <span className="hidden truncate text-[13px] font-medium md:block" style={{ color: 'var(--text-primary)' }}>
           {user.username}
         </span>
-        <ChevronDown
-          size={14}
-          className={[
-            'hidden shrink-0 text-muted transition-transform md:block',
-            open ? 'rotate-180' : '',
-          ].join(' ')}
-          aria-hidden
-        />
       </button>
     </Dropdown>
   )

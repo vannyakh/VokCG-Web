@@ -5,9 +5,9 @@ import { createColumnHelper } from '@tanstack/react-table'
 import { useState } from 'react'
 import { Page } from '@vokcg/ui'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminJobs, useCreateJob, useDeleteJob, useUpdateJob } from '@vokcg/api/hooks/use-admin-platform'
+import { useAdminJobs, useCreateJob, useDeleteJob, useUpdateJob } from '@/api'
 import { useAppMessage } from '@vokcg/ui'
-import type { JobStatus, ScheduledJob } from '@vokcg/types'
+import type { JobStatus, ScheduledJob } from '@/types/platform'
 
 type JobFilters = {
   name?: string

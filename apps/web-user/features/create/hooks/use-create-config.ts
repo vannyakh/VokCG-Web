@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { useVideoStore } from '@vokcg/store'
-import type { ContentGenerationAction, CreateConfigSection, CreateStudioConfig } from '@vokcg/types'
+import { useVideoStore } from '@/store'
+import type { ContentGenerationAction, CreateConfigSection, CreateStudioConfig } from '@/types/create-config'
 import { canRunContentGeneration, CONTENT_GENERATION_DEPS } from '../lib/create-config'
 
 export type CreateContentGeneration = {

@@ -15,15 +15,15 @@ import {
   Volume2,
 } from 'lucide-react'
 import { useLocale } from '@vokcg/i18n'
-import { useTtsServers, useTtsVoices, useVoicePreview } from '@vokcg/api'
-import { useVideoStore } from '@vokcg/store'
+import { useTtsServers, useTtsVoices, useVoicePreview } from '@/api'
+import { useVideoStore } from '@/store'
 import { USER_ROUTES } from '@vokcg/constants'
 import {
   isMimoTtsServer,
   isTtsServerAvailable,
   NO_VOICE_ID,
   TTS_SERVERS_FALLBACK,
-} from '@vokcg/types'
+} from '@/types/tts'
 import { useAppMessage } from '@vokcg/ui'
 import { TtsExportPanel } from './tts-export-panel'
 import { TtsPreviewCard } from './tts-preview-card'

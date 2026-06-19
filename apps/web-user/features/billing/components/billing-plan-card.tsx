@@ -1,7 +1,7 @@
 'use client'
 
 import { Check, Loader2 } from 'lucide-react'
-import type { WorkspacePlan } from '@vokcg/types'
+import type { WorkspacePlan } from '@/types/workspace'
 import { formatCurrency } from '@vokcg/ui'
 
 type Props = {

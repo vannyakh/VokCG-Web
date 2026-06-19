@@ -8,7 +8,7 @@ import type { AdminTab } from '@vokcg/constants'
 import { NavMenu } from '@vokcg/ui'
 import type { NavItem } from '@vokcg/ui'
 import { ADMIN_SIDEBAR } from '@vokcg/config'
-import { useAdminUiStore } from '@vokcg/store'
+import { useAdminUiStore } from '@/store'
 import { Tooltip } from '@vokcg/ui'
 
 const MINI_W = ADMIN_SIDEBAR.miniWidth

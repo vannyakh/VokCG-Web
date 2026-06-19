@@ -8,8 +8,8 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { ADMIN_TAB_META, tabFromPath } from '@vokcg/constants'
 import type { AdminTab } from '@vokcg/constants'
-import { useAdminMe } from '@vokcg/api'
-import { selectOpenTabs, useAdminUiStore } from '@vokcg/store'
+import { useAdminMe } from '@/api'
+import { selectOpenTabs, useAdminUiStore } from '@/store'
 
 import { PageTransitionProgress } from './PageTransitionProgress'
 import { adminPageVariants } from '@vokcg/ui'

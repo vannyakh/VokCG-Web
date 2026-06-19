@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
 import { LevelProvider, MenuContextProvider } from './menu-context'
 import { NavMenuItem } from './nav-item'
 import { NavSubMenu } from './nav-sub-menu'
@@ -14,12 +14,15 @@ export function NavMenu({
   collapse,
   accordion = true,
   rounded  = true,
-  itemHeight = 38,
+  itemHeight = 40,
   onSelect,
 }: Props) {
-  const [openedMenus, setOpenedMenus] = useState<Set<string>>(new Set())
+  const uid = useId()
+  const menuId = uid.replace(/:/g, '_')
 
-  // Mirrors Vben openMenu — in accordion mode keep only one branch open
+  const [openedMenus, setOpenedMenus] = useState<Set<string>>(new Set())
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+
   const openMenu = useCallback(
     (id: string, parentIds: string[]) => {
       setOpenedMenus((prev) => {
@@ -31,7 +34,6 @@ export function NavMenu({
     [accordion],
   )
 
-  // Mirrors Vben closeMenu
   const closeMenu = useCallback((id: string) => {
     setOpenedMenus((prev) => {
       const next = new Set(prev)
@@ -41,12 +43,15 @@ export function NavMenu({
   }, [])
 
   const ctx: MenuContext = {
+    menuId,
     activePath,
     collapse,
     accordion,
     rounded,
     itemHeight,
     onSelect,
+    hoveredId,
+    setHoveredId,
     openedMenus,
     openMenu,
     closeMenu,
@@ -55,7 +60,7 @@ export function NavMenu({
   return (
     <MenuContextProvider value={ctx}>
       <LevelProvider value={0}>
-        <div className={collapse ? 'flex flex-col gap-1' : 'flex flex-col gap-0.5'}>
+        <div className={collapse ? 'flex flex-col gap-0.5' : 'flex flex-col gap-0.5 px-1'}>
           {items.map((item) =>
             item.children?.length
               ? <NavSubMenu key={item.id} item={item} />

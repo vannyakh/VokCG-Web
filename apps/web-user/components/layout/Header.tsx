@@ -13,7 +13,7 @@ import type { LucideIcon } from 'lucide-react'
 
 import { STUDIO_NAV_SECTIONS, studioPageMeta } from '@vokcg/constants'
 import { useLocale } from '@vokcg/i18n'
-import { useSidebarStore } from '@vokcg/store'
+import { useSidebarStore } from '@/store'
 import { Tooltip, useColorMode } from '@vokcg/ui'
 
 import { UserMenu } from './UserMenu'
@@ -41,25 +41,17 @@ function HeaderIconBtn({
   onClick,
   tooltip,
   children,
-  active,
 }: {
   onClick: () => void
   tooltip: string
   children: React.ReactNode
-  active?: boolean
 }) {
   return (
     <Tooltip content={tooltip}>
       <button
         type="button"
         onClick={onClick}
-        aria-pressed={active}
-        className={[
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors',
-          active
-            ? 'border-accent/30 bg-accent/10 text-accent'
-            : 'border-divider bg-subtle/50 text-secondary hover:border-divider hover:bg-subtle hover:text-primary',
-        ].join(' ')}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-subtle/70 hover:text-primary"
       >
         {children}
       </button>
@@ -80,7 +72,7 @@ export function Header({
   const PageIcon = getPageIcon(pathname)
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-divider bg-surface px-3 sm:gap-3 sm:px-4 md:px-5">
+    <header className="flex h-14 shrink-0 items-center gap-2 bg-surface px-3 sm:gap-3 sm:px-4 md:px-5">
       <HeaderIconBtn
         tooltip={
           isMobile
@@ -91,7 +83,6 @@ export function Header({
               ? t('create.showSidebar')
               : t('create.hideSidebar')
         }
-        active={isMobile ? mobileNavOpen : !hidden}
         onClick={isMobile ? (onMenuClick ?? (() => {})) : toggleHidden}
       >
         {isMobile ? (
@@ -102,8 +93,6 @@ export function Header({
           <PanelLeftClose size={17} />
         )}
       </HeaderIconBtn>
-
-      <div className="hidden h-5 w-px shrink-0 bg-divider sm:block" aria-hidden />
 
       <nav
         aria-label="Breadcrumb"
@@ -136,7 +125,6 @@ export function Header({
           {colorMode === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </HeaderIconBtn>
 
-        <div className="hidden h-5 w-px shrink-0 bg-divider sm:block" aria-hidden />
         <UserMenu />
       </div>
     </header>

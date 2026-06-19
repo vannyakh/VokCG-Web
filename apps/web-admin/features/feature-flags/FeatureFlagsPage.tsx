@@ -4,9 +4,9 @@ import { Button, Progress, Switch, Tag } from 'antd'
 import { createColumnHelper } from '@tanstack/react-table'
 import { Page } from '@vokcg/ui'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminFeatureFlags, useUpdateFeatureFlag } from '@vokcg/api/hooks/use-admin-platform'
+import { useAdminFeatureFlags, useUpdateFeatureFlag } from '@/api'
 import { useAppMessage } from '@vokcg/ui'
-import type { FeatureFlag } from '@vokcg/types'
+import type { FeatureFlag } from '@/types/platform'
 
 type FeatureFlagFilters = {
   key?: string

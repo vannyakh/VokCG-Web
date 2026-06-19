@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { Check, ChevronRight, CreditCard, Loader2, Lock, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import type { WorkspacePlan } from '@vokcg/types'
+import type { WorkspacePlan } from '@/types/workspace'
 import { modalOptionItem, modalOptionStagger } from '@vokcg/ui'
 import { BillingModalShell } from './billing-modal-shell'
 

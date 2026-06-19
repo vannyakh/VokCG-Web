@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState, type ReactNode } from 'react'
 
 import { USER_ROUTES } from '@vokcg/constants'
-import { useAuthStore } from '@vokcg/store'
+import { useAuthStore } from '@/store'
 
 import { LoadingScreen } from '@vokcg/ui'
 

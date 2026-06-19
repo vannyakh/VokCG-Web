@@ -4,9 +4,9 @@ import { App, Input } from 'antd'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 
-import { useAdminLogin } from '@vokcg/api'
+import { useAdminLogin } from '@/api'
 import { ADMIN_ROUTES } from '@vokcg/constants'
-import { useAdminAuthStore } from '@vokcg/store'
+import { useAdminAuthStore } from '@/store'
 import {
   AuthAlert,
   AuthField,

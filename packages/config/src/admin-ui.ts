@@ -1,4 +1,4 @@
-import type { AdminTab } from '@vokcg/types'
+import type { AdminTab } from '@vokcg/constants'
 import { DEFAULT_PRIMARY_COLOR } from './theme'
 
 /** Accent color swatches for the preferences drawer */

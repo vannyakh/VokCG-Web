@@ -15,7 +15,7 @@ import {
   type AdminPreferenceTabId,
 } from '@vokcg/config'
 import { ThemePreview } from './ThemePreview'
-import { useAdminUiStore } from '@vokcg/store'
+import { useAdminUiStore } from '@/store'
 
 type Props = { open: boolean; onClose: () => void }
 

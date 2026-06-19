@@ -4,7 +4,7 @@ import { Tag } from 'antd'
 import { createColumnHelper } from '@tanstack/react-table'
 import { Page } from '@vokcg/ui'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminLogs } from '@vokcg/api'
+import { useAdminLogs } from '@/api'
 
 type Log = {
   id: string

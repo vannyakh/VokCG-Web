@@ -4,28 +4,14 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
-function useFlyoutHover(openDelay = 100, closeDelay = 140) {
+function useFlyoutHover(openDelay = 80, closeDelay = 120) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [open, setOpen] = useState(false)
 
-  const clear = () => {
-    if (timer.current) clearTimeout(timer.current)
-  }
-
-  const enter = () => {
-    clear()
-    timer.current = setTimeout(() => setOpen(true), openDelay)
-  }
-
-  const leave = () => {
-    clear()
-    timer.current = setTimeout(() => setOpen(false), closeDelay)
-  }
-
-  const pin = () => {
-    clear()
-    setOpen(true)
-  }
+  const clear = () => { if (timer.current) clearTimeout(timer.current) }
+  const enter = () => { clear(); timer.current = setTimeout(() => setOpen(true), openDelay) }
+  const leave = () => { clear(); timer.current = setTimeout(() => setOpen(false), closeDelay) }
+  const pin   = () => { clear(); setOpen(true) }
 
   return { open, enter, leave, pin }
 }
@@ -43,17 +29,15 @@ export function CollapsedNavFlyout({ trigger, children, align = 'center' }: Coll
 
   useLayoutEffect(() => {
     if (!open) return
-
     const update = () => {
       const el = triggerRef.current
       if (!el) return
       const rect = el.getBoundingClientRect()
       setCoords({
-        left: rect.right,
+        left: rect.right + 6,
         top: align === 'start' ? rect.top : rect.top + rect.height / 2,
       })
     }
-
     update()
     window.addEventListener('scroll', update, true)
     window.addEventListener('resize', update)
@@ -70,40 +54,27 @@ export function CollapsedNavFlyout({ trigger, children, align = 'center' }: Coll
             {open && (
               <motion.div
                 key="collapsed-nav-flyout"
-                className="fixed z-[200] pl-2"
+                className="fixed z-[200]"
                 style={{
                   left: coords.left,
                   top: coords.top,
+                  translateY: align === 'center' ? '-50%' : 0,
                 }}
-                initial={{
-                  opacity: 0,
-                  x: -6,
-                  scale: 0.97,
-                  y: align === 'center' ? '-50%' : 0,
-                }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                  scale: 1,
-                  y: align === 'center' ? '-50%' : 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  x: -4,
-                  scale: 0.98,
-                  y: align === 'center' ? '-50%' : 0,
-                }}
-                transition={{ duration: 0.12, ease: 'easeOut' }}
+                initial={{ opacity: 0, x: -8, scale: 0.96 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -4, scale: 0.98 }}
+                transition={{ duration: 0.14, ease: [0.2, 0, 0, 1] }}
                 onMouseEnter={pin}
                 onMouseLeave={leave}
               >
                 <div
-                  className={[
-                    'min-w-[168px] overflow-hidden rounded-[14px]',
-                    'border border-divider bg-surface shadow-[0_12px_40px_rgba(0,0,0,0.16)]',
-                  ].join(' ')}
+                  className="overflow-hidden rounded-2xl border border-divider bg-surface"
+                  style={{
+                    minWidth: 176,
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.16)',
+                  }}
                 >
-                  {children}
+                  <div className="p-1.5">{children}</div>
                 </div>
               </motion.div>
             )}

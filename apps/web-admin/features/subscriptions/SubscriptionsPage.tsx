@@ -6,7 +6,7 @@ import { AlertTriangle, Clock, CreditCard, DollarSign } from 'lucide-react'
 import { useState } from 'react'
 import { EntityCell, FormTablePage } from '@/components/admin'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useCreateStripeCheckout } from '@vokcg/api/hooks/use-admin-platform'
+import { useCreateStripeCheckout } from '@/api'
 import { ADMIN_ROUTES } from '@vokcg/constants'
 import { useAppMessage } from '@vokcg/ui'
 import {
@@ -16,9 +16,9 @@ import {
   useCreateSubscription,
   useDeleteSubscription,
   useUpdateSubscription,
-} from '@vokcg/api/hooks/use-admin-saas'
+} from '@/api'
 import { formatAdminDate, formatCurrency } from '@vokcg/ui'
-import type { Subscription, SubscriptionCreateInput, SubscriptionStatus } from '@vokcg/types'
+import type { Subscription, SubscriptionCreateInput, SubscriptionStatus } from '@/types/saas'
 
 type SubscriptionFilters = {
   tenant?: string

@@ -4,7 +4,7 @@ import { Button, Input, Select } from 'antd'
 import { LayoutGrid, LayoutList, Plus, Search } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useLocale } from '@vokcg/i18n'
-import { CLONE_PROVIDERS } from '@vokcg/types'
+import { CLONE_PROVIDERS } from '@/types/tts'
 import { VoiceClonePanel } from './components/voice-clone-panel'
 import { Page } from '@vokcg/ui'
 

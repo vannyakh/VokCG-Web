@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { AppProviders } from '@vokcg/ui'
+import { AdminAppProviders } from '@/components/admin-app-providers'
 import { APP_TITLE } from '@vokcg/config'
 import './globals.css'
 
@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <AppProviders>{children}</AppProviders>
+        <AdminAppProviders>{children}</AdminAppProviders>
       </body>
     </html>
   )

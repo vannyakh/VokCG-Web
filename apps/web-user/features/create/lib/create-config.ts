@@ -1,6 +1,6 @@
-import type { CreateStudioConfig, ContentGenerationAction } from '@vokcg/types'
-import { NO_VOICE_ID } from '@vokcg/types'
-import { CREATE_CONFIG_DEFAULTS } from '@vokcg/store'
+import type { CreateStudioConfig, ContentGenerationAction } from '@/types/create-config'
+import { NO_VOICE_ID } from '@/types/tts'
+import { CREATE_CONFIG_DEFAULTS } from '@/store/video-store'
 import type { CreateFlowStepId } from '@vokcg/constants'
 
 export { CREATE_CONFIG_DEFAULTS }

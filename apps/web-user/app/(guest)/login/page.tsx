@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 
-import { useLogin } from '@vokcg/api'
+import { useLogin } from '@/api'
 import { USER_ROUTES } from '@vokcg/constants'
 import {
   AuthCardHeader,

@@ -4,9 +4,9 @@ import { Button, Popconfirm, Tag } from 'antd'
 import { createColumnHelper } from '@tanstack/react-table'
 import { Page } from '@vokcg/ui'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminWebhooks, useDeleteWebhook } from '@vokcg/api/hooks/use-admin-platform'
+import { useAdminWebhooks, useDeleteWebhook } from '@/api'
 import { useAppMessage } from '@vokcg/ui'
-import type { Webhook, WebhookStatus } from '@vokcg/types'
+import type { Webhook, WebhookStatus } from '@/types/platform'
 
 type WebhookFilters = {
   status?: WebhookStatus

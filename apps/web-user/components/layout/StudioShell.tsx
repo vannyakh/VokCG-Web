@@ -4,9 +4,9 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
 
-import { useAuthMe } from '@vokcg/api'
+import { useAuthMe } from '@/api'
 import { STUDIO_PAGE } from '@vokcg/config'
-import { useSidebarStore } from '@vokcg/store'
+import { useSidebarStore } from '@/store'
 import { backdropFade, MOBILE_MEDIA_QUERY, sidebarShellSpring, useMediaQuery } from '@vokcg/ui'
 
 import { Header } from './Header'
