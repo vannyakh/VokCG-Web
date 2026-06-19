@@ -10,7 +10,7 @@ export default function GuestLayout({ children }: { children: React.ReactNode })
   return (
     <Suspense fallback={<LoadingScreen />}>
       <AdminGuestGuard>
-        <AuthLayout title="VokCG Admin">{children}</AuthLayout>
+        <AuthLayout>{children}</AuthLayout>
       </AdminGuestGuard>
     </Suspense>
   )

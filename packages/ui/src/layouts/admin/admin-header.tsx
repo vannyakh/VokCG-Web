@@ -9,8 +9,8 @@ import { ADMIN_TAB_META } from '@vokcg/constants'
 import type { AdminTab } from '@vokcg/constants'
 import { API_BASE_URL } from '@vokcg/config'
 import { ADMIN_ROUTES } from '@vokcg/constants'
-import { useLogout } from '@vokcg/api'
-import { useAuthStore } from '@vokcg/store'
+import { useAdminLogout } from '@vokcg/api'
+import { useAdminAuthStore } from '@vokcg/store'
 import { useColorMode } from '../../components/color-mode'
 import { Tooltip } from '../../components/tooltip'
 
@@ -55,8 +55,8 @@ export function AdminHeader({
 }: AdminHeaderProps) {
   const meta = ADMIN_TAB_META[activeTab]
   const { colorMode, toggleColorMode } = useColorMode()
-  const user = useAuthStore((state) => state.user)
-  const logout = useLogout()
+  const user = useAdminAuthStore((state) => state.admin)
+  const logout = useAdminLogout()
   const router = useRouter()
 
   return (

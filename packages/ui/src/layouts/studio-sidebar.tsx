@@ -10,7 +10,7 @@ import type { NavItem } from '@vokcg/constants'
 import { STUDIO_SIDEBAR } from '@vokcg/config'
 import { useWorkspace } from '@vokcg/api'
 import { useLocale } from '@vokcg/i18n'
-import { useAuthStore, useSidebarStore } from '@vokcg/store'
+import { useSidebarStore } from '@vokcg/store'
 
 import { NavMenu } from '../components/nav-menu'
 import { StudioLogo } from '../components/studio-logo'
@@ -80,7 +80,6 @@ export function StudioSidebar({
   onMobileClose,
 }: Props) {
   const router = useRouter()
-  const isAdmin = useAuthStore((s) => s.isAdmin())
   const { workspace, isDemo } = useWorkspace()
   const { collapsed, hidden, sidebarWidth, sidebarMiniMode, toggle, setSidebarWidth } =
     useSidebarStore()
@@ -89,7 +88,7 @@ export function StudioSidebar({
   const navRef = useRef<HTMLElement>(null)
 
   const { t } = useLocale()
-  const navItems = studioNavItems(isAdmin, workspace, t)
+  const navItems = studioNavItems(false, workspace, t)
   const isCollapsed = !isMobile && (sidebarMiniMode || collapsed)
   const expanded = isMobile || !isCollapsed
   const shellWidth = hidden ? 0 : isCollapsed ? MINI_W : sidebarWidth

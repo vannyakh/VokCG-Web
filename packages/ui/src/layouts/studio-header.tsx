@@ -10,7 +10,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
-  Shield,
   Sun,
   X,
 } from 'lucide-react'
@@ -18,7 +17,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { ADMIN_APP_URL, studioPageMeta, USER_ROUTES } from '@vokcg/constants'
+import { studioPageMeta, USER_ROUTES } from '@vokcg/constants'
 import { useLogout } from '@vokcg/api'
 import { useLocale } from '@vokcg/i18n'
 import { useAuthStore, useSidebarStore } from '@vokcg/store'
@@ -75,7 +74,6 @@ export function StudioHeader({
   const { hidden, toggleHidden } = useSidebarStore()
   const { colorMode, toggleColorMode } = useColorMode()
   const user = useAuthStore((s) => s.user)
-  const isAdmin = useAuthStore((s) => s.isAdmin())
   const logout = useLogout()
   const router = useRouter()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -161,16 +159,6 @@ export function StudioHeader({
                       <Settings size={16} strokeWidth={2} />
                       {t('nav.settings')}
                     </Link>
-                    {isAdmin && (
-                      <a
-                        href={`${ADMIN_APP_URL}/overview`}
-                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[15px] font-medium text-secondary"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Shield size={16} strokeWidth={2} />
-                        {t('header.adminPanel')}
-                      </a>
-                    )}
                     <div className="my-1 h-px bg-divider" />
                     <button
                       type="button"

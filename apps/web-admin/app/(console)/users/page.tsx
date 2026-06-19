@@ -1,107 +1,60 @@
 "use client"
 
-import { Button, Form, Input, Modal, Popconfirm, Select, Switch, Tag } from 'antd'
+import { Button, Form, Input, Modal, Popconfirm, Switch, Tag } from 'antd'
 import { createColumnHelper } from '@tanstack/react-table'
-import { Building2, ShieldCheck, UserCheck, UserPlus, Users } from 'lucide-react'
+import { UserCheck, UserPlus, Users } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { FormTablePage, UserCell } from '@vokcg/ui/admin'
 import { FormTableUI, useFormTable } from '@vokcg/ui/table'
 import { useAppMessage } from '@vokcg/ui/hooks/use-app-message'
 import {
-  useAdminRoles,
   useAdminUsers,
   useCreateAdminUser,
   useUpdateAdminUser,
   type AdminUserCreateInput,
   type AdminUserUpdateInput,
 } from '@vokcg/api'
-import { useAdminTenants } from '@vokcg/api/hooks/use-admin-saas'
 import { formatAdminDate } from '@vokcg/ui/lib/admin-format'
-import type { AuthUser, Role } from '@vokcg/types'
+import type { User } from '@vokcg/types'
 
 type UserFilters = {
   query?: string
-  role?: string
   is_active?: boolean
 }
 
 type UserFormValues = AdminUserCreateInput & AdminUserUpdateInput
 
-const columnHelper = createColumnHelper<AuthUser>()
-
-function RoleTags({ roles, isSuperuser }: { roles: Role[]; isSuperuser: boolean }) {
-  const visible = roles.slice(0, 2)
-  const hidden = roles.length - visible.length
-
-  if (roles.length === 0 && !isSuperuser) {
-    return <span className="text-xs text-muted">—</span>
-  }
-
-  return (
-    <div className="flex max-w-[220px] flex-wrap gap-1">
-      {visible.map((role) => (
-        <Tag key={role.id} className="m-0 border-default bg-subtle text-secondary">
-          {role.slug}
-        </Tag>
-      ))}
-      {hidden > 0 && (
-        <Tag className="m-0 border-default bg-subtle text-muted">+{hidden}</Tag>
-      )}
-      {isSuperuser && (
-        <Tag color="purple" className="m-0">
-          superuser
-        </Tag>
-      )}
-    </div>
-  )
-}
+const columnHelper = createColumnHelper<User>()
 
 export default function AdminUsersPage() {
   const message = useAppMessage()
   const { data, isLoading, refetch } = useAdminUsers()
-  const { data: rolesData } = useAdminRoles()
-  const { data: tenantsData, isLoading: tenantsLoading } = useAdminTenants()
   const createUser = useCreateAdminUser()
   const updateUser = useUpdateAdminUser()
   const [form] = Form.useForm<UserFormValues>()
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<AuthUser | null>(null)
+  const [editing, setEditing] = useState<User | null>(null)
 
   const users = useMemo(() => data?.data ?? [], [data?.data])
-  const roles = useMemo(() => rolesData?.data ?? [], [rolesData?.data])
-  const tenants = useMemo(() => tenantsData?.data ?? [], [tenantsData?.data])
-
-  const roleOptions = useMemo(
-    () => roles.map((role) => ({ value: role.slug, label: role.name })),
-    [roles],
-  )
 
   const stats = useMemo(() => {
     const activeCount = users.filter((u) => u.is_active).length
-    const superuserCount = users.filter((u) => u.is_superuser).length
-    const tenantMembers = tenants.reduce((sum, t) => sum + Number(t.users), 0)
-    return { activeCount, superuserCount, tenantMembers }
-  }, [users, tenants])
+    return { activeCount }
+  }, [users])
 
   const openCreate = useCallback(() => {
     setEditing(null)
     form.resetFields()
-    form.setFieldsValue({
-      is_active: true,
-      is_superuser: false,
-      role_slugs: ['user'],
-    })
+    form.setFieldsValue({ is_active: true })
     setOpen(true)
   }, [form])
 
   const openEdit = useCallback(
-    (user: AuthUser) => {
+    (user: User) => {
       setEditing(user)
       form.setFieldsValue({
         full_name: user.full_name ?? undefined,
         is_active: user.is_active,
-        is_superuser: user.is_superuser,
-        role_slugs: user.roles.map((role) => role.slug),
       })
       setOpen(true)
     },
@@ -109,7 +62,7 @@ export default function AdminUsersPage() {
   )
 
   const toggleActive = useCallback(
-    async (user: AuthUser) => {
+    async (user: User) => {
       try {
         await updateUser.mutateAsync({
           id: user.id,
@@ -123,24 +76,15 @@ export default function AdminUsersPage() {
     [message, updateUser],
   )
 
-  const formTable = useFormTable<AuthUser, UserFilters>({
+  const formTable = useFormTable<User, UserFilters>({
     data: users,
     getRowId: (row) => row.id,
     loading: isLoading,
     enableRowSelection: true,
-    emptyText: 'No platform users found.',
+    emptyText: 'No app users found.',
     onRefresh: () => refetch(),
     formSchema: [
       { name: 'query', label: 'Search', placeholder: 'Name, email, or username' },
-      ...(roleOptions.length
-        ? [{
-            name: 'role' as const,
-            label: 'Role',
-            type: 'select' as const,
-            placeholder: 'All roles',
-            options: roleOptions,
-          }]
-        : []),
       {
         name: 'is_active',
         label: 'Status',
@@ -158,7 +102,6 @@ export default function AdminUsersPage() {
         const haystack = [row.username, row.email, row.full_name ?? ''].join(' ').toLowerCase()
         if (!haystack.includes(q)) return false
       }
-      if (filter.role && !row.roles.some((r) => r.slug === filter.role)) return false
       if (filter.is_active !== undefined && row.is_active !== filter.is_active) return false
       return true
     },
@@ -175,13 +118,6 @@ export default function AdminUsersPage() {
             />
             <p className="mt-1 truncate pl-[46px] text-xs text-muted">{row.original.email}</p>
           </div>
-        ),
-      }),
-      columnHelper.display({
-        id: 'roles',
-        header: 'Roles',
-        cell: ({ row }) => (
-          <RoleTags roles={row.original.roles} isSuperuser={row.original.is_superuser} />
         ),
       }),
       columnHelper.accessor('is_active', {
@@ -250,8 +186,6 @@ export default function AdminUsersPage() {
           body: {
             full_name: values.full_name,
             is_active: values.is_active,
-            is_superuser: values.is_superuser,
-            role_slugs: values.role_slugs,
           },
         })
         message.success('User updated')
@@ -262,8 +196,6 @@ export default function AdminUsersPage() {
           password: values.password!,
           full_name: values.full_name,
           is_active: values.is_active,
-          is_superuser: values.is_superuser,
-          role_slugs: values.role_slugs,
         })
         message.success('User created')
       }
@@ -276,7 +208,7 @@ export default function AdminUsersPage() {
   return (
     <FormTablePage
       title="Users"
-      description="Create accounts, assign roles, and control access."
+      description="Manage app user accounts."
       extra={
         <Button type="primary" icon={<UserPlus size={14} />} onClick={openCreate}>
           Add user
@@ -290,21 +222,9 @@ export default function AdminUsersPage() {
           icon: UserCheck,
           accent: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
         },
-        {
-          label: 'Superusers',
-          value: stats.superuserCount,
-          icon: ShieldCheck,
-          accent: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
-        },
-        {
-          label: 'Tenant members',
-          value: stats.tenantMembers,
-          icon: Building2,
-          accent: 'bg-accent-muted text-accent',
-        },
       ]}
-      statsColumns={4}
-      statsLoading={isLoading || tenantsLoading}
+      statsColumns={2}
+      statsLoading={isLoading}
       statsExtra={
         selectedCount > 0 ? (
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-accent/25 bg-accent-muted/20 px-3 py-2">
@@ -371,23 +291,9 @@ export default function AdminUsersPage() {
             <Input placeholder="Jane Doe" />
           </Form.Item>
 
-          <Form.Item name="role_slugs" label="Roles">
-            <Select
-              mode="multiple"
-              allowClear
-              placeholder="Assign roles"
-              options={roleOptions}
-            />
+          <Form.Item name="is_active" label="Active" valuePropName="checked">
+            <Switch size="small" />
           </Form.Item>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Form.Item name="is_active" label="Active" valuePropName="checked">
-              <Switch size="small" />
-            </Form.Item>
-            <Form.Item name="is_superuser" label="Superuser" valuePropName="checked">
-              <Switch size="small" />
-            </Form.Item>
-          </div>
         </Form>
       </Modal>
     </FormTablePage>

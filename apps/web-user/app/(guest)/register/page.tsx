@@ -1,12 +1,21 @@
 'use client'
 
-import { App, Button, Input } from 'antd'
+import { App, Input } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { useRegister } from '@vokcg/api'
 import { USER_ROUTES } from '@vokcg/constants'
+import {
+  AuthField,
+  AuthFooterText,
+  AuthFormActions,
+  AuthFormFields,
+  AuthFormStack,
+  AuthSubmitButton,
+  authInputClassName,
+} from '@vokcg/ui'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -34,82 +43,68 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex flex-col gap-7">
-      <div className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-extrabold text-primary">Create account</h1>
-        <p className="text-sm text-muted">
-          A default avatar is generated automatically for your profile.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-primary">Email</label>
+    <AuthFormStack>
+      <AuthFormFields>
+        <AuthField label="Email" htmlFor="reg-email">
           <Input
+            id="reg-email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="you@example.com"
             size="large"
             autoFocus
-            style={{ borderRadius: '9999px' }}
+            className={authInputClassName}
           />
-        </div>
+        </AuthField>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-primary">Username</label>
+        <AuthField label="Username" htmlFor="reg-username">
           <Input
+            id="reg-username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="yourname"
             size="large"
-            style={{ borderRadius: '9999px' }}
+            className={authInputClassName}
           />
-        </div>
+        </AuthField>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-primary">
-            Full name <span className="text-xs font-normal text-muted">(optional)</span>
-          </label>
+        <AuthField label="Full name" htmlFor="reg-fullname" optional>
           <Input
+            id="reg-fullname"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Jane Doe"
             size="large"
-            style={{ borderRadius: '9999px' }}
+            className={authInputClassName}
           />
-        </div>
+        </AuthField>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-primary">Password</label>
+        <AuthField label="Password" htmlFor="reg-password">
           <Input.Password
+            id="reg-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder="Create a strong password"
             size="large"
+            className={authInputClassName}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            style={{ borderRadius: '9999px' }}
           />
-        </div>
-      </div>
+        </AuthField>
+      </AuthFormFields>
 
-      <Button
-        type="primary"
-        block
-        size="large"
-        loading={register.isPending}
-        onClick={handleSubmit}
-        style={{ borderRadius: '9999px', fontWeight: 700 }}
-      >
-        Create account
-      </Button>
+      <AuthFormActions>
+        <AuthSubmitButton loading={register.isPending} onClick={handleSubmit}>
+          Create account
+        </AuthSubmitButton>
+      </AuthFormActions>
 
-      <p className="text-center text-sm text-muted">
+      <AuthFooterText>
         Already have an account?{' '}
-        <Link href={USER_ROUTES.login} className="font-semibold text-accent hover:opacity-80">
+        <Link href={USER_ROUTES.login} className="font-semibold text-accent transition-opacity hover:opacity-80">
           Sign in
         </Link>
-      </p>
-    </div>
+      </AuthFooterText>
+    </AuthFormStack>
   )
 }

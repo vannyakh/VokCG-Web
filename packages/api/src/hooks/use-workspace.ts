@@ -2,7 +2,9 @@
 
 import { useMemo } from 'react'
 
-import type { Workspace } from '@vokcg/types'
+import { useWorkspaceStore } from '@vokcg/store'
+import { useWorkspaceContext } from './use-workspace-saas'
+import type { Workspace, WorkspaceMember } from '@vokcg/types'
 
 const EMPTY_WORKSPACE: Workspace = {
   id: '',
@@ -18,20 +20,37 @@ const EMPTY_WORKSPACE: Workspace = {
   mrr: 0,
 }
 
-/** Stub until workspace API hooks are migrated */
 export function useWorkspace() {
-  const workspace = useMemo(() => EMPTY_WORKSPACE, [])
+  const selectedTenantId = useWorkspaceStore((s) => s.selectedTenantId)
+  const setSelectedTenantId = useWorkspaceStore((s) => s.setSelectedTenantId)
+
+  const { data, isLoading, isFetching, refetch } = useWorkspaceContext(selectedTenantId)
+
+  const workspace = useMemo(
+    () => data?.workspace ?? EMPTY_WORKSPACE,
+    [data?.workspace],
+  )
+
+  const members = useMemo(
+    (): WorkspaceMember[] => data?.members ?? [],
+    [data?.members],
+  )
+
+  const availableTenants = useMemo(
+    () => data?.tenants ?? [],
+    [data?.tenants],
+  )
 
   return {
     workspace,
-    members: [],
-    availableTenants: [],
-    selectedTenantId: workspace.id,
-    setSelectedTenantId: (_id: string) => {},
-    isLoading: false,
-    isFetching: false,
-    refetch: async () => {},
+    members,
+    availableTenants,
+    selectedTenantId: selectedTenantId ?? workspace.id,
+    setSelectedTenantId,
+    isLoading,
+    isFetching,
+    refetch,
     isDemo: !workspace.id,
-    canManageBilling: false,
+    canManageBilling: workspace.role === 'owner' || workspace.role === 'admin',
   }
 }

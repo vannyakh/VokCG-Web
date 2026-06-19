@@ -1,15 +1,25 @@
 'use client'
 
-import { App, Button, Input } from 'antd'
+import { App, Input } from 'antd'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import { useLogin } from '@vokcg/api'
-import { ADMIN_APP_URL, ADMIN_ROUTES, USER_ROUTES } from '@vokcg/constants'
-import { useAuthStore } from '@vokcg/store'
+import { USER_ROUTES } from '@vokcg/constants'
+import {
+  AuthCardHeader,
+  AuthField,
+  AuthFooterText,
+  AuthFormActions,
+  AuthFormFields,
+  AuthFormStack,
+  AuthSubmitButton,
+  authInputClassName,
+  LoadingScreen,
+} from '@vokcg/ui'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const login = useLogin()
@@ -24,67 +34,63 @@ export default function LoginPage() {
     login.mutate(
       { email, password },
       {
-        onSuccess: () => {
-          if (useAuthStore.getState().isAdmin()) {
-            window.location.href = `${ADMIN_APP_URL}${ADMIN_ROUTES.login}?from=${ADMIN_ROUTES.overview}`
-            return
-          }
-          router.push(redirectTo)
-        },
+        onSuccess: () => router.push(redirectTo),
         onError: (err) => message.error(err.message),
       },
     )
   }
 
   return (
-    <div className="flex flex-col gap-7">
-      <div className="flex flex-col gap-4 p-2">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-primary">Email</label>
+    <AuthFormStack>
+
+      <AuthFormFields>
+        <AuthField label="Email" htmlFor="email">
           <Input
+            id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="you@example.com"
             size="large"
             autoFocus
+            className={authInputClassName}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            style={{ borderRadius: '9999px' }}
           />
-        </div>
+        </AuthField>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-primary">Password</label>
+        <AuthField label="Password" htmlFor="password">
           <Input.Password
+            id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder="Your password"
             size="large"
+            className={authInputClassName}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            style={{ borderRadius: '9999px' }}
           />
-        </div>
-      </div>
+        </AuthField>
+      </AuthFormFields>
 
-      <div className="flex justify-center p-2">
-        <Button
-          type="primary"
-          block
-          size="large"
-          loading={login.isPending}
-          onClick={handleSubmit}
-          style={{ borderRadius: '9999px', fontWeight: 700 }}
-        >
+      <AuthFormActions>
+        <AuthSubmitButton loading={login.isPending} onClick={handleSubmit}>
           Sign in
-        </Button>
-      </div>
+        </AuthSubmitButton>
+      </AuthFormActions>
 
-      <p className="text-center text-sm text-muted">
+      <AuthFooterText>
         No account?{' '}
-        <Link href={USER_ROUTES.register} className="font-semibold text-accent hover:opacity-80">
+        <Link href={USER_ROUTES.register} className="font-semibold text-accent transition-opacity hover:opacity-80">
           Create one
         </Link>
-      </p>
-    </div>
+      </AuthFooterText>
+    </AuthFormStack>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <LoginForm />
+    </Suspense>
   )
 }

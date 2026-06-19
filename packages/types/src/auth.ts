@@ -15,7 +15,8 @@ export type Role = {
   permissions: Permission[]
 }
 
-export type AuthUser = {
+/** App user — no platform RBAC fields */
+export type User = {
   id: string
   email: string
   username: string
@@ -23,24 +24,45 @@ export type AuthUser = {
   avatar_path?: string | null
   avatar_url?: string | null
   is_active: boolean
-  is_superuser: boolean
-  roles: Role[]
-  permissions: string[]
   created_at: string
   updated_at: string
 }
 
-export type AuthTokenPayload = {
+/** Admin staff — includes RBAC roles and permissions */
+export type AdminUser = User & {
+  is_superuser: boolean
+  roles: Role[]
+  permissions: string[]
+}
+
+/** @deprecated Use `AdminUser` for admin staff or `User` for app users */
+export type AuthUser = AdminUser
+
+/** Token payload returned by user login/refresh (`data.user`) */
+export type UserAuthData = {
   access_token: string
   refresh_token: string
   token_type: string
   expires_in: number
-  user: AuthUser
+  user: User
 }
+
+/** Token payload returned by admin login/refresh (`data.admin`) */
+export type AdminAuthData = {
+  access_token: string
+  refresh_token: string
+  token_type: string
+  expires_in: number
+  admin: AdminUser
+}
+
+/** @deprecated Use `UserAuthData` */
+export type AuthTokenPayload = UserAuthData
 
 export type AuditLog = {
   id: string
   user_id?: string | null
+  admin_user_id?: string | null
   action: string
   resource: string
   resource_id?: string | null

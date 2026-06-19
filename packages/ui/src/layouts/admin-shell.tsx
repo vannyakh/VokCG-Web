@@ -8,7 +8,7 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { ADMIN_TAB_META, tabFromPath } from '@vokcg/constants'
 import type { AdminTab } from '@vokcg/constants'
-import { useAuthMe } from '@vokcg/api'
+import { useAdminMe } from '@vokcg/api'
 import { selectOpenTabs, useAdminUiStore } from '@vokcg/store'
 
 import { PageTransitionProgress } from '../components/page-transition-progress'
@@ -30,7 +30,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
-  useAuthMe()
+  useAdminMe()
 
   const activeTab = tabFromPath(pathname)
 
@@ -178,6 +178,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
         )}
 
         <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-canvas">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 z-0 h-40 bg-[radial-gradient(circle_at_top,color-mix(in_srgb,var(--color-primary)_10%,transparent),transparent_70%)]"
+          />
           <PageTransitionProgress activeKey={activeTab} enabled={transitionProgressBar} />
 
           {transitionAnimation ? (

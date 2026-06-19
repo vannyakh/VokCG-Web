@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { deleteApi, getApi, postApi, putApi } from '../client'
-import { useAuthStore } from '@vokcg/store'
+import { adminDeleteApi as deleteApi, adminGetApi as getApi, adminPostApi as postApi, adminPutApi as putApi } from '../client'
+import { useAdminAuthStore } from '@vokcg/store'
 import type { ApiResponse } from '@vokcg/types'
 import type {
   Plan,
@@ -16,7 +16,7 @@ import type {
 } from '@vokcg/types'
 
 export function useAdminPlans(options?: { enabled?: boolean }) {
-  const accessToken = useAuthStore((s) => s.accessToken)
+  const accessToken = useAdminAuthStore((s) => s.accessToken)
   return useQuery({
     queryKey: ['admin', 'plans'],
     queryFn: () => getApi<ApiResponse<Plan[]>>('/api/v1/admin/plans'),
@@ -61,7 +61,7 @@ export function useDeletePlan() {
 }
 
 export function useAdminTenants(options?: { enabled?: boolean }) {
-  const accessToken = useAuthStore((s) => s.accessToken)
+  const accessToken = useAdminAuthStore((s) => s.accessToken)
   return useQuery({
     queryKey: ['admin', 'tenants'],
     queryFn: () => getApi<ApiResponse<Tenant[]>>('/api/v1/admin/tenants'),
@@ -106,7 +106,7 @@ export function useDeleteTenant() {
 }
 
 export function useAdminSubscriptions(options?: { enabled?: boolean }) {
-  const accessToken = useAuthStore((s) => s.accessToken)
+  const accessToken = useAdminAuthStore((s) => s.accessToken)
   return useQuery({
     queryKey: ['admin', 'subscriptions'],
     queryFn: () => getApi<ApiResponse<Subscription[]>>('/api/v1/admin/subscriptions'),

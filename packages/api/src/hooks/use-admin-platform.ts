@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { deleteApi, getApi, postApi, putApi } from '../client'
+import { adminDeleteApi as deleteApi, adminGetApi as getApi, adminPostApi as postApi, adminPutApi as putApi } from '../client'
 import type { ApiResponse } from '@vokcg/types'
 import type {
   ApiKey,

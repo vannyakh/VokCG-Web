@@ -2,23 +2,22 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 import { STORAGE_KEYS } from '@vokcg/config'
-import type { AuthUser } from '@vokcg/types'
+import type { AdminUser, User } from '@vokcg/types'
 
-type AuthState = {
+/** User app auth store — app users only, no RBAC */
+type UserAuthState = {
   accessToken: string
   refreshToken: string
-  user: AuthUser | null
-  setSession: (accessToken: string, refreshToken: string, user: AuthUser) => void
-  setUser: (user: AuthUser) => void
+  user: User | null
+  setSession: (accessToken: string, refreshToken: string, user: User) => void
+  setUser: (user: User) => void
   setAccessToken: (accessToken: string) => void
   clearSession: () => void
-  hasPermission: (code: string) => boolean
-  isAdmin: () => boolean
 }
 
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create<UserAuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       accessToken: '',
       refreshToken: '',
       user: null,
@@ -27,18 +26,46 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user }),
       setAccessToken: (accessToken) => set({ accessToken }),
       clearSession: () => set({ accessToken: '', refreshToken: '', user: null }),
+    }),
+    { name: STORAGE_KEYS.userAuth },
+  ),
+)
+
+/** Admin dashboard auth store — admin staff with RBAC */
+type AdminAuthState = {
+  accessToken: string
+  refreshToken: string
+  admin: AdminUser | null
+  setSession: (accessToken: string, refreshToken: string, admin: AdminUser) => void
+  setAdmin: (admin: AdminUser) => void
+  setAccessToken: (accessToken: string) => void
+  clearSession: () => void
+  hasPermission: (code: string) => boolean
+  isAdmin: () => boolean
+}
+
+export const useAdminAuthStore = create<AdminAuthState>()(
+  persist(
+    (set, get) => ({
+      accessToken: '',
+      refreshToken: '',
+      admin: null,
+      setSession: (accessToken, refreshToken, admin) =>
+        set({ accessToken, refreshToken, admin }),
+      setAdmin: (admin) => set({ admin }),
+      setAccessToken: (accessToken) => set({ accessToken }),
+      clearSession: () => set({ accessToken: '', refreshToken: '', admin: null }),
       hasPermission: (code) => {
-        const user = get().user
-        if (!user) return false
-        if (user.is_superuser) return true
-        return user.permissions.includes(code)
+        const admin = get().admin
+        if (!admin) return false
+        if (admin.is_superuser) return true
+        return admin.permissions.includes(code)
       },
       isAdmin: () => {
-        const user = get().user
-        if (!user) return false
-        return user.is_superuser || user.permissions.includes('users.read')
+        const admin = get().admin
+        return Boolean(admin && (admin.is_superuser || admin.permissions.length > 0))
       },
     }),
-    { name: STORAGE_KEYS.auth },
+    { name: STORAGE_KEYS.adminAuth },
   ),
 )
