@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 import { Tooltip } from '../tooltip'
 import { useMenuContext, useMenuLevel } from './menu-context'
-import { NAV_MENU, navItemButtonClass, navTileClass } from './nav-styles'
+import { NAV_MENU, navItemButtonClass } from './nav-styles'
 import type { NavItem } from './types'
 
 type Props = { item: NavItem; inPopup?: boolean }
@@ -19,22 +19,28 @@ function resolveItem(item: NavItem) {
 
 function NavBadge({ label }: { label: string }) {
   return (
-    <span className="ml-auto shrink-0 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+    <span
+      className="ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+      style={{
+        background: 'rgba(245,158,11,0.1)',
+        color: '#d97706',
+      }}
+    >
       {label}
     </span>
   )
 }
 
 export function NavMenuItem({ item, inPopup = false }: Props) {
-  const { menuId, activePath, collapse, itemHeight = 40, onSelect, hoveredId, setHoveredId } = useMenuContext()
+  const { menuId, activePath, collapse, itemHeight = 44, onSelect, hoveredId, setHoveredId } = useMenuContext()
   const level = useMenuLevel()
   const { disabled, badge } = resolveItem(item)
 
-  const isActive   = !!item.path && item.path === activePath && !disabled
-  const isLeaf     = !item.children?.length
-  const isNested   = level > 0
+  const isActive    = !!item.path && item.path === activePath && !disabled
+  const isLeaf      = !item.children?.length
+  const isNested    = level > 0
   const isCollapsed = collapse && !inPopup
-  const isHovered  = hoveredId === item.id
+  const isHovered   = hoveredId === item.id
 
   const handleMouseEnter = () => { if (!disabled && !isCollapsed) setHoveredId(item.id) }
   const handleMouseLeave = () => { if (hoveredId === item.id) setHoveredId(null) }
@@ -45,11 +51,26 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Fluid hover background pill — slides between items via layoutId */}
-      {isHovered && !isActive && (
+      {/* Default subtle background — sidebar top-level only */}
+      {!isActive && !isCollapsed && !isNested && !inPopup && (
+        <span
+          className="absolute inset-0 rounded-[12px]"
+          style={{
+            background: isHovered
+              ? 'color-mix(in srgb, var(--text-muted) 9%, transparent)'
+              : 'color-mix(in srgb, var(--text-muted) 4%, transparent)',
+            transition: 'background 150ms ease',
+          }}
+          aria-hidden
+        />
+      )}
+
+      {/* Fluid hover pill — slides via layoutId */}
+      {isHovered && !isActive && !isCollapsed && (
         <motion.span
           layoutId={`${menuId}-hover-pill`}
-          className="absolute inset-0 rounded-[10px] bg-active/70"
+          className="absolute inset-0 rounded-[12px]"
+          style={{ background: 'transparent' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -58,22 +79,22 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
         />
       )}
 
-      {/* Active background */}
-      {isActive && (
+      {/* Active background — sidebar top-level only (not in flyout, not nested) */}
+      {isActive && !isCollapsed && !isNested && !inPopup && (
         <span
-          className="absolute inset-0 rounded-[10px]"
+          className="absolute inset-0 rounded-[12px]"
           style={{
             background: 'color-mix(in srgb, var(--color-primary) 14%, transparent)',
-            boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent)',
+            boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent)',
           }}
           aria-hidden
         />
       )}
 
-      {/* Active left accent bar */}
-      {isActive && !isCollapsed && (
+      {/* Active left accent bar — sidebar top-level only */}
+      {isActive && !isCollapsed && !isNested && !inPopup && (
         <span
-          className="absolute inset-y-[7px] left-0 w-[3px] rounded-full"
+          className="absolute inset-y-[8px] left-0 w-[3px] rounded-full"
           style={{ background: 'var(--color-primary)' }}
           aria-hidden
         />
@@ -89,42 +110,52 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
         style={{
           height: itemHeight,
           borderRadius: isCollapsed ? 0 : NAV_MENU.itemRadius,
-          paddingLeft: isCollapsed ? 0 : inPopup ? 10 : isNested ? 10 : 12,
-          paddingRight: isCollapsed ? 0 : 10,
+          paddingLeft:  isCollapsed ? 0 : inPopup ? 12 : isNested ? 12 : 14,
+          paddingRight: isCollapsed ? 0 : 12,
           position: 'relative',
           zIndex: 1,
         }}
       >
         {isCollapsed ? (
+          /* ── Collapsed tile ── */
           <span
             className="flex items-center justify-center rounded-xl transition-all duration-150"
             style={{
-              width: NAV_MENU.collapsedTileSize,
+              width:  NAV_MENU.collapsedTileSize,
               height: NAV_MENU.collapsedTileSize,
               background: isActive
                 ? 'color-mix(in srgb, var(--color-primary) 16%, transparent)'
-                : 'transparent',
+                : isHovered
+                  ? 'color-mix(in srgb, var(--text-muted) 10%, transparent)'
+                  : 'color-mix(in srgb, var(--text-muted) 5%, transparent)',
               boxShadow: isActive
-                ? 'inset 0 0 0 1.5px color-mix(in srgb, var(--color-primary) 28%, transparent)'
+                ? 'inset 0 0 0 1.5px color-mix(in srgb, var(--color-primary) 30%, transparent)'
                 : 'none',
               color: isActive ? 'var(--color-primary)' : 'var(--text-nav-inactive)',
             }}
           >
-            <item.icon size={17} strokeWidth={isActive ? 2.3 : 1.75} className="shrink-0" />
+            <item.icon size={18} strokeWidth={isActive ? 2.2 : 1.8} className="shrink-0" />
           </span>
         ) : (
-          <item.icon
-            size={15}
-            strokeWidth={isActive ? 2.2 : 1.75}
-            className="shrink-0 transition-colors duration-150"
-          />
+          /* ── Expanded icon ── */
+          <span
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors duration-150"
+            style={{
+              background: isActive
+                ? 'color-mix(in srgb, var(--color-primary) 16%, transparent)'
+                : 'color-mix(in srgb, var(--text-muted) 8%, transparent)',
+              color: isActive ? 'var(--color-primary)' : 'var(--text-nav-inactive)',
+            }}
+          >
+            <item.icon size={15} strokeWidth={isActive ? 2.2 : 1.8} className="shrink-0" />
+          </span>
         )}
 
         {(!collapse || inPopup) && (
           <>
             <span
               className={[
-                'min-w-0 flex-1 truncate text-[13px] leading-none transition-colors duration-150',
+                'min-w-0 flex-1 truncate text-[13.5px] leading-none',
                 isActive ? 'font-semibold' : 'font-medium',
               ].join(' ')}
             >

@@ -51,6 +51,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const [collapsed, setCollapsed] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   const openTabs = useMemo(
     () => selectOpenTabs(tabHistory, removedTabs, activeTab),
@@ -62,7 +63,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }, [activeTab, openTab])
 
   const handleRefresh = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ADMIN_TAB_META[activeTab].queryKey })
+    setRefreshing(true)
+    queryClient
+      .invalidateQueries({ queryKey: ADMIN_TAB_META[activeTab].queryKey })
+      .finally(() => setRefreshing(false))
   }, [activeTab, queryClient])
 
   const handleTabClose = useCallback(
@@ -160,6 +164,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <AdminHeader
           activeTab={activeTab}
           collapsed={collapsed}
+          refreshing={refreshing}
           onSidebarToggle={() => setCollapsed((c) => !c)}
           onRefresh={handleRefresh}
           onSettingsOpen={() => setSettingsOpen(true)}

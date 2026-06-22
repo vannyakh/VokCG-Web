@@ -225,16 +225,28 @@ export function UserMenu() {
         type="button"
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex items-center gap-2 rounded-xl px-1.5 py-1 transition-colors hover:bg-active/60"
+        className="flex items-center gap-2 rounded-xl py-1 pl-1.5 pr-2.5 transition-all duration-150"
         style={{
+          background: open
+            ? 'color-mix(in srgb, var(--color-primary) 8%, var(--bg-active))'
+            : 'transparent',
           outline: open
-            ? '2px solid color-mix(in srgb, var(--color-primary) 30%, transparent)'
-            : 'none',
+            ? '1.5px solid color-mix(in srgb, var(--color-primary) 25%, transparent)'
+            : '1.5px solid transparent',
           outlineOffset: 1,
+        }}
+        onMouseEnter={(e) => {
+          if (!open) (e.currentTarget as HTMLElement).style.background = 'var(--bg-active)'
+        }}
+        onMouseLeave={(e) => {
+          if (!open) (e.currentTarget as HTMLElement).style.background = 'transparent'
         }}
       >
         <UserAvatar username={user.username} avatarUrl={user.avatar_url} size="sm" />
-        <span className="hidden truncate text-[13px] font-medium md:block" style={{ color: 'var(--text-primary)' }}>
+        <span
+          className="hidden truncate text-[13px] font-medium md:block"
+          style={{ color: 'var(--text-primary)' }}
+        >
           {user.username}
         </span>
       </button>

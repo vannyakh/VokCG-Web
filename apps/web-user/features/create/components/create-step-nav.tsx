@@ -1,69 +1,186 @@
 'use client'
 
+import { Check } from 'lucide-react'
 import { useMemo } from 'react'
-import { motion } from 'framer-motion'
+
 import { useLocale } from '@vokcg/i18n'
-import { useCreateStudioStore } from '@/store'
 import { CREATE_FLOW_STEPS, createFlowStepIndex, type CreateFlowStepId } from '@vokcg/constants'
-import { CreateFormCenter } from './create-form-center'
+import { useCreateStudioStore } from '@/store'
 
-type Props = { compact?: boolean; centered?: boolean; interactive?: boolean; variant?: 'default' | 'pills' }
+type Props = {
+  compact?: boolean
+  centered?: boolean
+  interactive?: boolean
+  variant?: 'default' | 'pills'
+}
 
-export function CreateStepNav({ compact = false, centered = false, interactive = true, variant = 'default' }: Props) {
+export function CreateStepNav({ interactive = true, variant = 'default' }: Props) {
   const { t } = useLocale()
   const activeStep = useCreateStudioStore((s) => s.activeStep)
   const setActiveStep = useCreateStudioStore((s) => s.setActiveStep)
   const activeIndex = createFlowStepIndex(activeStep)
-  const isPills = variant === 'pills'
 
-  const steps = useMemo(() => CREATE_FLOW_STEPS.map((step) => ({
-    ...step,
-    label: t(`create.steps.${step.id}.label`),
-    description: t(`create.steps.${step.id}.description`),
-  })), [t])
+  const steps = useMemo(
+    () =>
+      CREATE_FLOW_STEPS.map((step) => ({
+        ...step,
+        label: t(`create.steps.${step.id}.label`),
+      })),
+    [t],
+  )
 
-  const nav = (
-    <nav aria-label="Create video steps" className={[isPills ? 'grid w-full grid-cols-5 gap-1 py-0.5' : 'flex shrink-0 gap-1 overflow-x-auto py-2.5', !isPills && centered ? 'justify-center' : '', !isPills && compact ? 'scrollbar-none' : ''].filter(Boolean).join(' ')}>
+  if (variant === 'pills') {
+    return (
+      <nav
+        aria-label="Create video steps"
+        className="flex w-full items-center justify-between"
+        style={{ gap: 0 }}
+      >
+        {steps.map((step, index) => {
+          const Icon = step.icon
+          const isActive   = step.id === activeStep
+          const isComplete = index < activeIndex
+          const isLast     = index === steps.length - 1
+
+          return (
+            <div key={step.id} className="flex flex-1 items-center" style={{ minWidth: 0 }}>
+              {/* Step pill */}
+              <div
+                className="flex min-w-0 flex-1 flex-col items-center gap-1.5"
+                style={{ position: 'relative' }}
+              >
+                {/* Circle */}
+                {interactive ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveStep(step.id as CreateFlowStepId)}
+                    aria-current={isActive ? 'step' : undefined}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200"
+                    style={{
+                      background: isActive
+                        ? 'var(--color-primary)'
+                        : isComplete
+                          ? 'color-mix(in srgb, var(--color-primary) 15%, transparent)'
+                          : 'color-mix(in srgb, var(--text-muted) 10%, transparent)',
+                      border: isActive
+                        ? 'none'
+                        : isComplete
+                          ? '1.5px solid color-mix(in srgb, var(--color-primary) 40%, transparent)'
+                          : '1.5px solid var(--border-default)',
+                      boxShadow: isActive
+                        ? '0 2px 12px color-mix(in srgb, var(--color-primary) 40%, transparent)'
+                        : 'none',
+                      color: isActive ? '#fff' : isComplete ? 'var(--color-primary)' : 'var(--text-muted)',
+                    }}
+                  >
+                    {isComplete ? (
+                      <Check size={14} strokeWidth={2.5} />
+                    ) : (
+                      <Icon size={14} strokeWidth={isActive ? 2.2 : 1.8} />
+                    )}
+                  </button>
+                ) : (
+                  <div
+                    aria-current={isActive ? 'step' : undefined}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200"
+                    style={{
+                      background: isActive
+                        ? 'var(--color-primary)'
+                        : isComplete
+                          ? 'color-mix(in srgb, var(--color-primary) 15%, transparent)'
+                          : 'color-mix(in srgb, var(--text-muted) 10%, transparent)',
+                      border: isActive
+                        ? 'none'
+                        : isComplete
+                          ? '1.5px solid color-mix(in srgb, var(--color-primary) 40%, transparent)'
+                          : '1.5px solid var(--border-default)',
+                      boxShadow: isActive
+                        ? '0 2px 12px color-mix(in srgb, var(--color-primary) 40%, transparent)'
+                        : 'none',
+                      color: isActive ? '#fff' : isComplete ? 'var(--color-primary)' : 'var(--text-muted)',
+                    }}
+                  >
+                    {isComplete ? (
+                      <Check size={14} strokeWidth={2.5} />
+                    ) : (
+                      <Icon size={14} strokeWidth={isActive ? 2.2 : 1.8} />
+                    )}
+                  </div>
+                )}
+
+                {/* Label */}
+                <span
+                  className="truncate text-[10px] font-semibold transition-colors duration-200 sm:text-[11px]"
+                  style={{
+                    color: isActive
+                      ? 'var(--color-primary)'
+                      : isComplete
+                        ? 'var(--text-secondary)'
+                        : 'var(--text-muted)',
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  {step.label}
+                </span>
+              </div>
+
+              {/* Connector line */}
+              {!isLast && (
+                <div
+                  className="mx-1 h-px flex-1 shrink transition-colors duration-300 sm:mx-2"
+                  style={{
+                    background: index < activeIndex
+                      ? 'var(--color-primary)'
+                      : 'var(--border-default)',
+                    opacity: index < activeIndex ? 0.5 : 1,
+                    minWidth: 8,
+                    maxWidth: 48,
+                  }}
+                  aria-hidden
+                />
+              )}
+            </div>
+          )
+        })}
+      </nav>
+    )
+  }
+
+  /* ── Default / compact variant (legacy) ──────────────────────────────── */
+  return (
+    <nav aria-label="Create video steps" className="flex shrink-0 gap-1 overflow-x-auto py-2.5">
       {steps.map((step, index) => {
         const Icon = step.icon
-        const isActive = step.id === activeStep
+        const isActive   = step.id === activeStep
         const isComplete = index < activeIndex
 
-        if (isPills) {
-          const pillClass = ['flex min-w-0 items-center justify-center gap-1 rounded-full border px-1.5 py-1 sm:gap-1.5 sm:px-3 sm:py-1.5', isActive ? 'border-[color-mix(in_srgb,var(--color-primary)_40%,transparent)] bg-accent-muted text-primary shadow-[0_0_12px_color-mix(in_srgb,var(--color-primary)_15%,transparent)]' : isComplete ? 'border-subtle bg-subtle/40 text-secondary' : 'border-transparent text-muted', interactive && !isActive ? 'hover:border-subtle hover:bg-subtle/30 hover:text-primary' : '', !interactive ? 'cursor-default' : ''].filter(Boolean).join(' ')
-          const pillContent = (
-            <>
-              <span className={['flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold', isActive ? 'bg-accent text-white' : isComplete ? 'bg-accent/15 text-accent' : 'bg-subtle text-muted'].join(' ')}>{isComplete ? '✓' : index + 1}</span>
-              <span className="truncate text-[9px] font-semibold sm:text-[11px]">{step.label}</span>
-            </>
-          )
-          if (!interactive) return <div key={step.id} aria-current={isActive ? 'step' : undefined} className={pillClass}>{pillContent}</div>
-          return <button key={step.id} type="button" onClick={() => setActiveStep(step.id as CreateFlowStepId)} className={pillClass}>{pillContent}</button>
-        }
-
-        const stepClass = ['group relative flex min-w-0 shrink-0 items-center gap-2 rounded-lg px-2.5 py-2 transition-colors', isActive ? 'bg-accent-muted text-primary' : 'text-muted', interactive && !isActive ? 'hover:bg-subtle hover:text-primary' : '', !interactive ? 'cursor-default' : ''].filter(Boolean).join(' ')
-        const stepInner = (
-          <>
-            <span className={['flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[11px] font-extrabold', isActive ? 'bg-accent text-white' : isComplete ? 'bg-accent/20 text-accent' : 'bg-subtle text-muted'].join(' ')}>{isComplete ? '✓' : index + 1}</span>
-            {!compact && (
-              <span className="hidden min-w-0 flex-col items-start md:flex">
-                <span className="truncate text-[11px] font-bold leading-tight">{step.label}</span>
-                <span className="truncate text-[9px] font-medium text-muted/80">{step.description}</span>
-              </span>
-            )}
-            {compact && <Icon size={14} className={isActive ? 'text-accent' : 'text-muted'} />}
-            {isActive && <motion.div layoutId="create-step-indicator" className="absolute inset-x-2 -bottom-2 h-0.5 rounded-full bg-accent" />}
-          </>
+        return (
+          <button
+            key={step.id}
+            type="button"
+            onClick={() => interactive && setActiveStep(step.id as CreateFlowStepId)}
+            aria-current={isActive ? 'step' : undefined}
+            className="group flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 transition-colors"
+            style={{
+              background: isActive ? 'color-mix(in srgb, var(--color-primary) 10%, transparent)' : 'transparent',
+              color: isActive ? 'var(--color-primary)' : 'var(--text-muted)',
+              cursor: interactive ? 'pointer' : 'default',
+            }}
+          >
+            <span
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
+              style={{
+                background: isActive ? 'var(--color-primary)' : isComplete ? 'color-mix(in srgb, var(--color-primary) 20%, transparent)' : 'var(--border-default)',
+                color: isActive ? '#fff' : isComplete ? 'var(--color-primary)' : 'var(--text-muted)',
+              }}
+            >
+              {isComplete ? <Check size={10} strokeWidth={3} /> : index + 1}
+            </span>
+            <span className="text-[12px] font-semibold">{step.label}</span>
+            <Icon size={13} className="shrink-0 opacity-60" />
+          </button>
         )
-        if (!interactive) return <div key={step.id} aria-current={isActive ? 'step' : undefined} className={stepClass}>{stepInner}</div>
-        return <button key={step.id} type="button" onClick={() => setActiveStep(step.id as CreateFlowStepId)} className={stepClass}>{stepInner}</button>
       })}
     </nav>
   )
-
-  if (centered && !isPills) {
-    return <div className="w-full border-t border-subtle bg-surface/40"><CreateFormCenter>{nav}</CreateFormCenter></div>
-  }
-  if (isPills) return nav
-  return <div className="w-full border-b border-subtle bg-surface/80 px-3">{nav}</div>
 }

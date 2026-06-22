@@ -9,8 +9,8 @@ import { ADMIN_ROUTES } from '@vokcg/constants'
 import { useAdminAuthStore } from '@/store'
 import {
   AuthAlert,
+  AuthCardHeader,
   AuthField,
-  AuthFooterText,
   AuthFormActions,
   AuthFormFields,
   AuthFormStack,
@@ -55,12 +55,17 @@ function AdminLoginForm() {
   }
 
   return (
-    <AuthFormStack> 
-      {accessError === 'forbidden' ? (
+    <AuthFormStack>
+      <AuthCardHeader
+        title="Admin Console"
+        description="Sign in with your administrator credentials"
+      />
+
+      {accessError === 'forbidden' && (
         <AuthAlert tone="error">
           You don&apos;t have permission to access the admin console.
         </AuthAlert>
-      ) : null}
+      )}
 
       <AuthFormFields>
         <AuthField label="Email" htmlFor="admin-email">

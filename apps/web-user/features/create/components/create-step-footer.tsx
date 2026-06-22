@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from 'antd'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react'
 import { useLocale } from '@vokcg/i18n'
 import { useCreateStudioStore } from '@/store'
 import { CREATE_FLOW_STEPS, createFlowStepIndex } from '@vokcg/constants'
@@ -12,32 +12,103 @@ import { CreateFormCenter } from './create-form-center'
 export function CreateStepFooter() {
   const { t } = useLocale()
   const activeStep = useCreateStudioStore((s) => s.activeStep)
-  const nextStep = useCreateStudioStore((s) => s.nextStep)
-  const prevStep = useCreateStudioStore((s) => s.prevStep)
+  const nextStep   = useCreateStudioStore((s) => s.nextStep)
+  const prevStep   = useCreateStudioStore((s) => s.prevStep)
   const { config } = useCreateConfig()
   const validation = validateCreateFlowStep(activeStep, config)
 
-  const index = createFlowStepIndex(activeStep)
+  const index  = createFlowStepIndex(activeStep)
   const isFirst = index <= 0
-  const isLast = index >= CREATE_FLOW_STEPS.length - 1
+  const isLast  = index >= CREATE_FLOW_STEPS.length - 1
 
   return (
-    <div className="w-full shrink-0 border-t border-subtle bg-canvas/95 py-2.5 sm:py-3">
+    <div
+      className="w-full shrink-0"
+      style={{
+        background: 'var(--bg-surface)',
+        borderTop: '1px solid var(--border-default)',
+        padding: '12px 0',
+      }}
+    >
       <CreateFormCenter>
         <div className="flex flex-col gap-2">
+          {/* Validation hint */}
           {!validation.valid && validation.messageKey && (
-            <p className="text-center text-[11px] font-medium text-amber-600 dark:text-amber-400">{t(validation.messageKey)}</p>
+            <p
+              className="text-center text-[12px] font-medium"
+              style={{ color: '#d97706' }}
+            >
+              {t(validation.messageKey)}
+            </p>
           )}
-          <div className="flex items-center justify-between gap-2">
-            <Button size="middle" icon={<ChevronLeft size={14} />} onClick={prevStep} disabled={isFirst} className="min-w-0 font-semibold">
+
+          <div className="flex items-center justify-between gap-3">
+            {/* Back button */}
+            <Button
+              size="large"
+              icon={<ArrowLeft size={15} />}
+              onClick={prevStep}
+              disabled={isFirst}
+              style={{
+                borderRadius: 9999,
+                fontWeight: 600,
+                fontSize: 13,
+                height: 40,
+                paddingLeft: 20,
+                paddingRight: 20,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
               <span className="hidden sm:inline">{t('common.back')}</span>
             </Button>
-            <span className="shrink-0 text-[10px] font-semibold tabular-nums text-muted sm:text-[11px]">{t('common.stepOf', { current: index + 1, total: CREATE_FLOW_STEPS.length })}</span>
+
+            {/* Step counter */}
+            <span
+              className="shrink-0 tabular-nums"
+              style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}
+            >
+              {t('common.stepOf', { current: index + 1, total: CREATE_FLOW_STEPS.length })}
+            </span>
+
+            {/* Next / Generate */}
             {isLast ? (
-              <span className="max-w-[40%] truncate text-right text-[10px] font-semibold text-accent sm:max-w-none sm:text-[11px]">{t('create.generateBelow')}</span>
+              <div
+                className="flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold"
+                style={{
+                  color: 'var(--color-primary)',
+                  background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
+                  border: '1px solid color-mix(in srgb, var(--color-primary) 25%, transparent)',
+                  height: 40,
+                  alignItems: 'center',
+                }}
+              >
+                <Sparkles size={13} />
+                <span>{t('create.generateBelow')}</span>
+              </div>
             ) : (
-              <Button type="primary" size="middle" onClick={nextStep} disabled={!validation.valid} className="font-bold">
-                {t('common.next')}<ChevronRight size={14} className="ml-1 inline" />
+              <Button
+                type="primary"
+                size="large"
+                onClick={nextStep}
+                disabled={!validation.valid}
+                style={{
+                  borderRadius: 9999,
+                  fontWeight: 600,
+                  fontSize: 13,
+                  height: 40,
+                  paddingLeft: 24,
+                  paddingRight: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  boxShadow: '0 2px 12px color-mix(in srgb, var(--color-primary) 30%, transparent)',
+                  border: 'none',
+                }}
+              >
+                {t('common.next')}
+                <ArrowRight size={15} />
               </Button>
             )}
           </div>

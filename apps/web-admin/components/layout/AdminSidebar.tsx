@@ -1,15 +1,14 @@
 "use client"
 
 import { motion } from 'framer-motion'
-import { ChevronsLeft, Pin, PinOff, Shield } from 'lucide-react'
+import { ChevronLeft, LayoutDashboard } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { ADMIN_NAV_ITEMS, ADMIN_TAB_META, tabFromPath } from '@vokcg/constants'
 import type { AdminTab } from '@vokcg/constants'
-import { NavMenu } from '@vokcg/ui'
+import { NavMenu, Tooltip } from '@vokcg/ui'
 import type { NavItem } from '@vokcg/ui'
 import { ADMIN_SIDEBAR } from '@vokcg/config'
 import { useAdminUiStore } from '@/store'
-import { Tooltip } from '@vokcg/ui'
 
 const MINI_W = ADMIN_SIDEBAR.miniWidth
 
@@ -34,13 +33,19 @@ export function AdminSidebar({ activeTab, collapsed, onToggle, onTabOpen }: Prop
 
   const onEnter = useCallback(() => { if (canHoverOpen) setHovering(true)  }, [canHoverOpen])
   const onLeave = useCallback(() => setHovering(false), [])
-  const onPin   = useCallback(() => { setHovering(false); onToggle() }, [onToggle])
 
   const onDragStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
-    const startX = e.clientX, startW = sidebarWidth
-    const onMove = (ev: MouseEvent) => setSidebarWidth(Math.max(ADMIN_SIDEBAR.widthMin, Math.min(ADMIN_SIDEBAR.widthMax, startW + ev.clientX - startX)))
-    const onUp   = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
+    const startX = e.clientX
+    const startW = sidebarWidth
+    const onMove = (ev: MouseEvent) =>
+      setSidebarWidth(
+        Math.max(ADMIN_SIDEBAR.widthMin, Math.min(ADMIN_SIDEBAR.widthMax, startW + ev.clientX - startX)),
+      )
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
   }, [sidebarWidth, setSidebarWidth])
@@ -49,14 +54,12 @@ export function AdminSidebar({ activeTab, collapsed, onToggle, onTabOpen }: Prop
     setNavScrolled((navRef.current?.scrollTop ?? 0) > 4)
   }, [])
 
-  // Called by NavMenu when a leaf item is selected
   const handleSelect = useCallback((item: NavItem) => {
     if (!item.path || item.disabled || item.comingSoon) return
     const tab = tabFromPath(item.path) as AdminTab
     onTabOpen(tab)
   }, [onTabOpen])
 
-  // Active path driven by the current tab
   const activePath = ADMIN_TAB_META[activeTab]?.path ?? ''
 
   return (
@@ -76,12 +79,23 @@ export function AdminSidebar({ activeTab, collapsed, onToggle, onTabOpen }: Prop
       >
         {/* ── Brand ──────────────────────────────────────────── */}
         <div className="flex h-14 shrink-0 items-center overflow-hidden border-b border-default px-3.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-accent-muted ring-1 ring-[color-mix(in_srgb,var(--color-primary)_20%,transparent)]">
-            <Shield size={15} className="text-accent" />
+          <div
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+            style={{
+              background: 'color-mix(in srgb, var(--color-primary) 15%, transparent)',
+              boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent)',
+            }}
+          >
+            <LayoutDashboard size={15} className="text-accent" />
           </div>
+
           <div className="ml-3 min-w-0 overflow-hidden">
-            <p className="whitespace-nowrap text-[13px] font-extrabold tracking-tight text-primary">Admin</p>
-            <p className="whitespace-nowrap text-[10px] font-medium text-muted">Control Panel</p>
+            <p className="whitespace-nowrap text-[13px] font-extrabold tracking-tight text-primary">
+              Control Panel
+            </p>
+            <p className="whitespace-nowrap text-[10px] font-medium text-muted">
+              VokCG Admin
+            </p>
           </div>
         </div>
 
@@ -99,9 +113,11 @@ export function AdminSidebar({ activeTab, collapsed, onToggle, onTabOpen }: Prop
             onScroll={onNavScroll}
             className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-2"
           >
-            <p className="mb-1.5 overflow-hidden whitespace-nowrap px-3.5 text-[9px] font-bold uppercase tracking-[0.16em] text-muted/40">
-              {isOpen ? 'Navigation' : '···'}
-            </p>
+            {isOpen && (
+              <p className="mb-1.5 overflow-hidden whitespace-nowrap px-3.5 text-[9px] font-bold uppercase tracking-[0.16em] text-muted/40">
+                Navigation
+              </p>
+            )}
 
             <NavMenu
               items={ADMIN_NAV_ITEMS}
@@ -115,58 +131,42 @@ export function AdminSidebar({ activeTab, collapsed, onToggle, onTabOpen }: Prop
           </nav>
 
           <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-5"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-6"
             style={{ background: 'linear-gradient(to top, var(--bg-sidebar), transparent)' }}
           />
         </div>
 
-        {/* ── Footer ─────────────────────────────────────────── */}
-        <div className="flex shrink-0 items-center justify-between gap-1 border-t border-default px-2 py-2">
-          {!sidebarMiniMode && (
-            <button
-              type="button"
-              onClick={onToggle}
-              style={{ height: 38, borderRadius: 8 }}
-              className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden px-2.5 text-muted transition-colors hover:bg-black/4 hover:text-primary dark:hover:bg-white/4"
+        {/* ── Footer collapse button ──────────────────────────── */}
+        {!sidebarMiniMode && (
+          <div className="shrink-0 border-t border-default px-2 py-2">
+            <Tooltip
+              content={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              placement={isCollapsed ? 'right' : 'top'}
             >
-              <ChevronsLeft
-                size={15}
-                className={['shrink-0 transition-transform duration-300', isCollapsed ? 'rotate-180' : ''].join(' ')}
-              />
-              <span className="whitespace-nowrap text-[12px] font-medium">
-                {collapsed ? 'Expand' : 'Collapse'}
-              </span>
-            </button>
-          )}
-
-          {isCollapsed && hovering ? (
-            <Tooltip content="Pin sidebar open" placement="right">
               <button
                 type="button"
-                onClick={onPin}
-                style={{ height: 38, width: 38, borderRadius: 8 }}
-                className="flex shrink-0 items-center justify-center text-muted transition-colors hover:bg-black/6 hover:text-primary dark:hover:bg-white/6"
+                onClick={() => { setHovering(false); onToggle() }}
+                className="flex w-full items-center gap-2.5 overflow-hidden rounded-lg px-2.5 text-muted transition-colors hover:bg-[rgba(0,0,0,0.04)] hover:text-primary dark:hover:bg-[rgba(255,255,255,0.04)]"
+                style={{ height: 36 }}
               >
-                <Pin size={14} />
+                <ChevronLeft
+                  size={15}
+                  className={[
+                    'shrink-0 transition-transform duration-300',
+                    isCollapsed ? 'rotate-180' : '',
+                  ].join(' ')}
+                />
+                {isOpen && (
+                  <span className="whitespace-nowrap text-[12px] font-medium">
+                    {isCollapsed ? 'Expand' : 'Collapse'}
+                  </span>
+                )}
               </button>
             </Tooltip>
-          ) : !isCollapsed ? (
-            <Tooltip content="Unpin sidebar" placement="right">
-              <button
-                type="button"
-                onClick={onToggle}
-                style={{ height: 38, width: 38, borderRadius: 8 }}
-                className="flex shrink-0 items-center justify-center text-muted transition-colors hover:bg-black/6 hover:text-primary dark:hover:bg-white/6"
-              >
-                <PinOff size={14} />
-              </button>
-            </Tooltip>
-          ) : (
-            <div style={{ height: 38, width: 38 }} />
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Drag-to-resize */}
+        {/* Drag-to-resize handle */}
         {!sidebarMiniMode && isOpen && (
           <div
             onMouseDown={onDragStart}

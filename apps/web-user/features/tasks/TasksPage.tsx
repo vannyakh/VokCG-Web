@@ -25,18 +25,16 @@ import {
   getTaskStateMeta,
   isTaskActive,
   isTaskFailed,
-  isTaskDone,
   filterTasks,
   formatTaskId,
   getTaskContentSummary,
   getTaskFinalVideo,
-  getTaskVideos,
   downloadTaskVideo,
+  useAppMessage,
+  useMediaQuery,
 } from '@vokcg/ui'
 import type { Task, TaskViewMode } from '@vokcg/types'
 import type { TaskStatusFilter } from '@vokcg/ui'
-import { useAppMessage } from '@vokcg/ui'
-import { useMediaQuery } from '@vokcg/ui'
 
 const VIEW_MODE_KEY = STORAGE_KEYS.tasksViewMode
 const XL_MEDIA_QUERY = '(min-width: 80em)'
@@ -159,27 +157,73 @@ function TaskStatusCell({ task }: { task: Task }) {
   )
 }
 
-function TaskGridCard({ task, selected, checked, onSelect, onToggleCheck, onDelete }: { task: Task; selected: boolean; checked: boolean; onSelect: () => void; onToggleCheck: () => void; onDelete: (id: string) => void }) {
+function TaskGridCard({
+  task, selected, checked, onSelect, onToggleCheck, onDelete,
+}: {
+  task: Task; selected: boolean; checked: boolean
+  onSelect: () => void; onToggleCheck: () => void; onDelete: (id: string) => void
+}) {
   const summary = getTaskContentSummary(task)
+  const meta    = getTaskStateMeta(task.state)
+  const active  = isTaskActive(task.state)
+
   return (
     <motion.div variants={fadeUpItem}>
       <div
         role="button"
         tabIndex={0}
         title={summary.topic}
-        className={['w-full overflow-hidden rounded-xl border bg-surface cursor-pointer transition-colors', selected ? 'border-accent border-2' : checked ? 'border-accent/50' : 'border-default'].join(' ')}
+        className={[
+          'w-full overflow-hidden rounded-xl border bg-surface cursor-pointer transition-all duration-150',
+          selected ? 'border-accent border-2 shadow-md shadow-accent/10' : checked ? 'border-accent/50' : 'border-default',
+        ].join(' ')}
         onClick={onSelect}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect() } }}
       >
-        <div className="relative">
-          <TaskGridThumb task={task} selected={selected} />
-          <div className="absolute left-2 top-2" onClick={(e) => e.stopPropagation()}>
-            <Checkbox checked={checked} onChange={onToggleCheck} />
-          </div>
-          <div className="absolute right-2 top-2">
-            <TaskDeleteButton task={task} onDelete={onDelete} variant="overlay" />
-          </div>
+      {/* Thumbnail */}
+      <div className="relative">
+        <TaskGridThumb task={task} selected={selected} />
+
+        <div className="absolute left-2 top-2" onClick={(e) => e.stopPropagation()}>
+          <Checkbox checked={checked} onChange={onToggleCheck} />
         </div>
+
+        <div className="absolute right-2 top-2">
+          <TaskDeleteButton task={task} onDelete={onDelete} variant="overlay" />
+        </div>
+
+        {/* Active progress badge */}
+        {active && (
+          <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400" />
+            <span className="text-[10px] font-medium text-white">{task.progress ?? 0}%</span>
+          </div>
+        )}
+      </div>
+
+      {/* Card body */}
+      <div className="px-3 py-2.5">
+        <p className="line-clamp-1 text-[13px] font-medium leading-snug text-primary" title={summary.topic}>
+          {summary.topic}
+        </p>
+
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT_COLOR[meta.palette] ?? STATUS_DOT_COLOR['gray']}`} />
+            <span className="truncate text-[11px] text-secondary">{meta.label}</span>
+          </div>
+
+          {task.created_at && (
+            <span className="shrink-0 text-[11px] tabular-nums text-muted">
+              {new Date(task.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </span>
+          )}
+        </div>
+
+        {summary.aspect && summary.aspect !== '—' && (
+          <p className="mt-1 text-[11px] text-muted">{summary.aspect}</p>
+        )}
+      </div>
       </div>
     </motion.div>
   )
@@ -213,12 +257,21 @@ function ListRowSkeleton({ delay }: { delay: number }) {
         <Bone className="h-3.5 w-2/3 rounded-md" />
         <Bone className="h-2.5 w-1/3 rounded-md" />
       </div>
+      {/* keywords */}
       <Bone className="hidden h-3 w-28 shrink-0 rounded-md md:block" />
+      {/* source */}
       <Bone className="hidden h-3 w-16 shrink-0 rounded-md sm:block" />
+      {/* aspect */}
+      <Bone className="hidden h-3 w-12 shrink-0 rounded-md lg:block" />
+      {/* materials */}
+      <Bone className="hidden h-3 w-10 shrink-0 rounded-md lg:block" />
+      {/* status */}
       <div className="flex shrink-0 flex-col gap-1">
         <Bone className="h-3 w-20 rounded-md" />
         <Bone className="h-2.5 w-14 rounded-md" />
       </div>
+      {/* actions */}
+      <Bone className="h-6 w-6 shrink-0 rounded-md" />
     </div>
   )
 }
@@ -414,20 +467,18 @@ export function TasksPage() {
               <AnimatePresence mode="wait">
                 <motion.div key={viewMode} variants={viewSwitch} initial="initial" animate="animate" exit="exit">
                   {viewMode === 'grid' ? (
-                    <motion.div variants={staggerContainer} initial="initial" animate="animate">
-                      <div className={`grid ${gridCols} gap-4`}>
-                        {visibleTasks.map((task) => (
-                          <TaskGridCard
-                            key={task.id}
-                            task={task}
-                            selected={selectedTaskId === task.id}
-                            checked={selectedTaskIds.includes(task.id)}
-                            onSelect={() => setSelectedTaskId(task.id)}
-                            onToggleCheck={() => toggleTaskChecked(task.id)}
-                            onDelete={handleDelete}
-                          />
-                        ))}
-                      </div>
+                    <motion.div variants={staggerContainer} initial="initial" animate="animate" className={`grid ${gridCols} gap-4`}>
+                      {visibleTasks.map((task) => (
+                        <TaskGridCard
+                          key={task.id}
+                          task={task}
+                          selected={selectedTaskId === task.id}
+                          checked={selectedTaskIds.includes(task.id)}
+                          onSelect={() => setSelectedTaskId(task.id)}
+                          onToggleCheck={() => toggleTaskChecked(task.id)}
+                          onDelete={handleDelete}
+                        />
+                      ))}
                     </motion.div>
                   ) : (
                     <div className="tasks-table-shell overflow-hidden rounded-2xl">

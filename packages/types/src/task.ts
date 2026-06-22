@@ -8,6 +8,8 @@ export type TaskMaterial = string | {
 
 export type Task = {
   id: string
+  /** Raw field returned by the API — normalised to `id` by the API layer. */
+  task_id?: string
   state: TaskState
   progress?: number
   stage?: string

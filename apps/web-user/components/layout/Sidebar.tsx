@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ChevronsLeft, PinOff } from 'lucide-react'
+import { ChevronsLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useRef, useState } from 'react'
 
@@ -23,7 +23,7 @@ import {
 import { SidebarWorkspaceCard } from './SidebarWorkspaceCard'
 
 const MINI_W = STUDIO_SIDEBAR.miniWidth
-const NAV_ITEM_HEIGHT = 40
+const NAV_ITEM_HEIGHT = 44
 
 type SidebarProps = {
   activePath: string
@@ -36,9 +36,10 @@ function SidebarBrand({ expanded }: { expanded: boolean }) {
   return (
     <div
       className={[
-        'flex h-14 shrink-0 items-center border-b border-divider',
+        'flex h-14 shrink-0 items-center',
         expanded ? 'px-4' : 'justify-center px-2',
       ].join(' ')}
+      style={{ borderBottom: '1px solid var(--border-default)' }}
     >
       <StudioLogo size="md" showWordmark={expanded} />
     </div>
@@ -133,54 +134,58 @@ export function Sidebar({
 
       {!isMobile && (
         <div
-          className={[
-            'flex shrink-0 items-center gap-1.5 border-t border-divider px-2.5 py-2.5',
-            isCollapsed ? 'flex-col' : '',
-          ].join(' ')}
+          className="flex shrink-0 items-center px-2.5 py-2.5"
+          style={{ borderTop: '1px solid var(--border-default)' }}
         >
-          {!sidebarMiniMode && expanded && (
-            <button
-              type="button"
-              onClick={toggle}
-              className="group flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-divider bg-subtle/40 py-2 pl-3 pr-2.5 text-secondary transition-colors hover:border-accent/25 hover:bg-accent/6 hover:text-accent"
-            >
-              <ChevronsLeft
-                size={15}
-                className={[
-                  'shrink-0 transition-transform duration-300',
-                  isCollapsed ? 'rotate-180' : '',
-                ].join(' ')}
-              />
-              <span className="min-w-0 flex-1 truncate text-left text-[13px] font-medium">
-                {t('sidebar.collapse')}
-              </span>
-              <kbd className="hidden rounded bg-divider/80 px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted/60 group-hover:inline-flex">
-                [
-              </kbd>
-            </button>
-          )}
-
           {isCollapsed ? (
             <Tooltip content={t('sidebar.expand')} placement="right">
               <button
                 type="button"
                 onClick={toggle}
-                className="flex h-9 w-10 items-center justify-center rounded-xl border border-divider bg-subtle/40 text-secondary transition-colors hover:border-accent/25 hover:bg-accent/6 hover:text-accent"
+                className="flex h-9 w-full items-center justify-center rounded-xl transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-active)'
+                  e.currentTarget.style.color = 'var(--color-primary)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--text-muted)'
+                }}
               >
                 <ChevronsLeft size={15} className="rotate-180" />
               </button>
             </Tooltip>
-          ) : expanded ? (
-            <Tooltip content={t('sidebar.unpin')} placement="right">
-              <button
-                type="button"
-                onClick={toggle}
-                className="flex h-9 w-10 shrink-0 items-center justify-center rounded-xl border border-divider bg-subtle/40 text-secondary transition-colors hover:border-accent/25 hover:bg-accent/6 hover:text-accent"
+          ) : (
+            <button
+              type="button"
+              onClick={toggle}
+              className="group flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-active)'
+                e.currentTarget.style.color = 'var(--text-primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.color = 'var(--text-muted)'
+              }}
+            >
+              <ChevronsLeft size={14} className="shrink-0" />
+              <span className="min-w-0 flex-1 truncate text-left text-[13px] font-medium">
+                {t('sidebar.collapse')}
+              </span>
+              <kbd
+                className="hidden rounded-md px-1.5 py-0.5 font-mono text-[10px] leading-none group-hover:inline-flex"
+                style={{
+                  background: 'var(--border-default)',
+                  color: 'var(--text-muted)',
+                }}
               >
-                <PinOff size={14} />
-              </button>
-            </Tooltip>
-          ) : null}
+                [
+              </kbd>
+            </button>
+          )}
         </div>
       )}
 

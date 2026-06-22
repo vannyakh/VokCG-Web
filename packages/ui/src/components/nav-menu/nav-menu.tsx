@@ -14,7 +14,7 @@ export function NavMenu({
   collapse,
   accordion = true,
   rounded  = true,
-  itemHeight = 40,
+  itemHeight = 44,
   onSelect,
 }: Props) {
   const uid = useId()

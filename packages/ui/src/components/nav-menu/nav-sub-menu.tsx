@@ -106,12 +106,24 @@ export function NavSubMenu({ item, inPopup = false }: Props) {
             aria-hidden
           />
         )}
+        {/* Default background for every sub-menu trigger */}
+        {!isHeaderActive && (
+          <span
+            className="absolute inset-0 rounded-[12px] transition-all duration-150"
+            style={{
+              background: isHovered
+                ? 'color-mix(in srgb, var(--text-muted) 9%, transparent)'
+                : 'color-mix(in srgb, var(--text-muted) 4%, transparent)',
+            }}
+            aria-hidden
+          />
+        )}
         {isHeaderActive && (
           <span
-            className="absolute inset-0 rounded-[10px]"
+            className="absolute inset-0 rounded-[12px]"
             style={{
-              background: 'color-mix(in srgb, var(--color-primary) 12%, transparent)',
-              boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 18%, transparent)',
+              background: 'color-mix(in srgb, var(--color-primary) 13%, transparent)',
+              boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent)',
             }}
             aria-hidden
           />
@@ -121,15 +133,26 @@ export function NavSubMenu({ item, inPopup = false }: Props) {
           type="button"
           onClick={() => isOpen ? closeMenu(item.id) : openMenu(item.id, [])}
           className={[
-            'group relative z-10 flex w-full select-none items-center gap-2.5 text-left transition-colors duration-150',
+            'group relative z-10 flex w-full select-none items-center gap-3 text-left transition-colors duration-150',
             isHeaderActive ? 'text-accent' : 'text-nav-inactive hover:text-nav-active',
           ].join(' ')}
-          style={{ height: itemHeight, borderRadius: NAV_MENU.itemRadius, paddingLeft, paddingRight: 10 }}
+          style={{ height: itemHeight, borderRadius: NAV_MENU.itemRadius, paddingLeft, paddingRight: 12 }}
         >
-          <item.icon size={15} strokeWidth={isHeaderActive ? 2.2 : 1.75} className="shrink-0" />
+          {/* Icon box — matches NavMenuItem */}
+          <span
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors duration-150"
+            style={{
+              background: isHeaderActive
+                ? 'color-mix(in srgb, var(--color-primary) 16%, transparent)'
+                : 'color-mix(in srgb, var(--text-muted) 8%, transparent)',
+              color: isHeaderActive ? 'var(--color-primary)' : 'var(--text-nav-inactive)',
+            }}
+          >
+            <item.icon size={15} strokeWidth={isHeaderActive ? 2.2 : 1.8} />
+          </span>
           <span
             className={[
-              'min-w-0 flex-1 truncate text-[13px] leading-none',
+              'min-w-0 flex-1 truncate text-[13.5px] leading-none',
               isHeaderActive ? 'font-semibold' : 'font-medium',
             ].join(' ')}
           >
