@@ -6,7 +6,8 @@ import { createPortal } from 'react-dom'
 
 import { NAV_FLYOUT } from './nav-styles'
 
-function useFlyoutHover(openDelay = 80, closeDelay = 120) {
+// ─── Hover state machine ──────────────────────────────────────────────────────
+function useFlyoutHover(openDelay = 60, closeDelay = 100) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [open, setOpen] = useState(false)
 
@@ -29,6 +30,7 @@ function useFlyoutHover(openDelay = 80, closeDelay = 120) {
   return { open, enter, leave, pin }
 }
 
+// ─── Component ────────────────────────────────────────────────────────────────
 type CollapsedNavFlyoutProps = {
   trigger: ReactNode
   children: ReactNode
@@ -58,8 +60,8 @@ export function CollapsedNavFlyout({
       })
     }
     update()
-    window.addEventListener('scroll', update, true)
-    window.addEventListener('resize', update)
+    window.addEventListener('scroll', update, { passive: true, capture: true })
+    window.addEventListener('resize', update, { passive: true })
     return () => {
       window.removeEventListener('scroll', update, true)
       window.removeEventListener('resize', update)
@@ -81,18 +83,40 @@ export function CollapsedNavFlyout({
                   top: coords.top,
                   translateY: align === 'center' ? '-50%' : 0,
                 }}
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -4 }}
-                transition={{ duration: 0.12, ease: [0.2, 0, 0, 1] }}
+                initial={{ opacity: 0, x: -8, scale: 0.97 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -4, scale: 0.98 }}
+                transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
                 onMouseEnter={pin}
                 onMouseLeave={leave}
               >
+                {/* Arrow pointer */}
+                <span
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    left: -5,
+                    top: align === 'start' ? 14 : '50%',
+                    transform: align === 'start' ? 'none' : 'translateY(-50%)',
+                    width: 8,
+                    height: 8,
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--border-divider)',
+                    borderRight: 'none',
+                    borderBottom: 'none',
+                    borderTopLeftRadius: 2,
+                    rotate: '-45deg',
+                    boxShadow: '-1px -1px 2px rgba(0,0,0,0.04)',
+                  }}
+                />
+
+                {/* Panel */}
                 <div
-                  className="overflow-hidden bg-surface"
+                  className="overflow-hidden"
                   style={{
                     minWidth: NAV_FLYOUT.minWidth,
                     borderRadius: NAV_FLYOUT.radius,
+                    background: 'var(--bg-surface)',
                     border: '1px solid var(--border-divider)',
                     boxShadow: 'var(--shadow-md)',
                   }}
@@ -104,17 +128,12 @@ export function CollapsedNavFlyout({
                         borderBottom: '1px solid var(--border-divider)',
                       }}
                     >
-                      <p className="truncate text-[13px] font-semibold leading-none text-primary">
+                      <p className="truncate text-[12px] font-semibold uppercase tracking-wide text-muted">
                         {title}
                       </p>
                     </div>
                   )}
-                  <div
-                    className="flex flex-col"
-                    style={{ padding: NAV_FLYOUT.padding, gap: 2 }}
-                  >
-                    {children}
-                  </div>
+                  <div>{children}</div>
                 </div>
               </motion.div>
             )}
@@ -124,7 +143,12 @@ export function CollapsedNavFlyout({
       : null
 
   return (
-    <div ref={triggerRef} className="relative" onMouseEnter={enter} onMouseLeave={leave}>
+    <div
+      ref={triggerRef}
+      className="relative"
+      onMouseEnter={enter}
+      onMouseLeave={leave}
+    >
       {trigger}
       {flyout}
     </div>

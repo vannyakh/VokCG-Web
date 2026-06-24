@@ -3,7 +3,7 @@
 import { createContext, useContext } from 'react'
 import type { MenuContext } from './types'
 
-// ── Mirrors Vben createMenuContext / useMenuContext ──────────────────────────
+// ── Menu context ───────────────────────────────────────────────────────────────
 
 const Ctx = createContext<MenuContext | null>(null)
 
@@ -15,7 +15,7 @@ export function useMenuContext(): MenuContext {
   return ctx
 }
 
-// ── Sub-menu level context (mirrors Vben SubMenuProvider) ────────────────────
+// ── Sub-menu level context ─────────────────────────────────────────────────────
 // Each nested <NavSubMenu> increments the level so children can calculate indent.
 
 const LevelCtx = createContext<number>(0)

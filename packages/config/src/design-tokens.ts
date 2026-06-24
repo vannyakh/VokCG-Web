@@ -15,11 +15,11 @@ export const DESIGN_FONT = {
   sizeLg: 15,
 } as const
 
-/** Motion durations */
+/** Motion durations — expressed as strings for CSS, used directly in Ant Design tokens */
 export const DESIGN_MOTION = {
-  fast: '0.15s',
-  mid: '0.2s',
-  slow: '0.28s',
+  fast: '0.12s',
+  mid: '0.18s',
+  slow: '0.26s',
 } as const
 
 /** Ant Design ConfigProvider key for CSS variable prefix */
@@ -73,26 +73,59 @@ export const SEMANTIC_TOKENS_DARK = {
 
 export type SemanticCssVar = keyof typeof SEMANTIC_TOKENS_LIGHT
 
-/** Map semantic tokens → Ant Design seed tokens */
+/**
+ * Map semantic design tokens → Ant Design global seed tokens.
+ * These are the baseline values that Ant Design uses to derive component-level
+ * colour scales via its internal algorithm.  Component-specific overrides are
+ * applied separately in antd-theme.ts `buildComponents()`.
+ */
 export function semanticToAntdTokens(
   isDark: boolean,
 ): Record<string, string | number> {
   const t = isDark ? SEMANTIC_TOKENS_DARK : SEMANTIC_TOKENS_LIGHT
   return {
+    // ── Backgrounds ──────────────────────────────────────────────────────
     colorBgBase: t['--bg-surface'],
     colorBgContainer: t['--bg-surface'],
     colorBgElevated: isDark ? '#1e2433' : '#ffffff',
     colorBgLayout: t['--bg-canvas'],
     colorBgSpotlight: t['--bg-subtle'],
+    colorBgMask: isDark ? 'rgba(0, 0, 0, 0.55)' : 'rgba(0, 0, 0, 0.35)',
+
+    // ── Text ─────────────────────────────────────────────────────────────
     colorText: t['--text-primary'],
+    colorTextBase: t['--text-primary'],
     colorTextSecondary: t['--text-secondary'],
     colorTextTertiary: t['--text-muted'],
     colorTextQuaternary: t['--text-muted'],
+    colorTextDisabled: t['--text-muted'],
+    colorTextHeading: t['--text-primary'],
+    colorTextDescription: t['--text-secondary'],
+    colorTextPlaceholder: t['--text-muted'],
+
+    // ── Borders ───────────────────────────────────────────────────────────
     colorBorder: t['--border-default'],
     colorBorderSecondary: t['--border-subtle'],
+    colorSplit: t['--border-default'],
+    colorFill: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+    colorFillSecondary: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+    colorFillTertiary: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+    colorFillQuaternary: 'transparent',
+
+    // ── Status ────────────────────────────────────────────────────────────
     colorError: t['--text-error'],
     colorErrorBg: t['--bg-error'],
+    colorErrorBorder: isDark ? 'rgba(239,68,68,0.35)' : '#fca5a5',
+    colorSuccess: isDark ? '#4ade80' : '#16a34a',
+    colorSuccessBg: isDark ? 'rgba(74,222,128,0.1)' : 'rgba(22,163,74,0.08)',
+    colorWarning: isDark ? '#fbbf24' : '#d97706',
+    colorWarningBg: isDark ? 'rgba(251,191,36,0.1)' : 'rgba(217,119,6,0.08)',
+    colorInfo: isDark ? '#38bdf8' : '#0284c7',
+    colorInfoBg: isDark ? 'rgba(56,189,248,0.1)' : 'rgba(2,132,199,0.08)',
+
+    // ── Shadows ───────────────────────────────────────────────────────────
     boxShadow: t['--shadow-md'],
     boxShadowSecondary: t['--shadow-sm'],
+    boxShadowTertiary: 'none',
   }
 }

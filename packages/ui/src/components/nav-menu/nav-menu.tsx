@@ -4,7 +4,7 @@ import { useCallback, useId, useState } from 'react'
 import { LevelProvider, MenuContextProvider } from './menu-context'
 import { NavMenuItem } from './nav-item'
 import { NavSubMenu } from './nav-sub-menu'
-import { NAV_MENU } from './nav-styles'
+import { NAV_MENU, navSurface } from './nav-styles'
 import type { MenuContext, MenuProps, NavItem, NavMenuSection } from './types'
 
 type Props = MenuProps & {
@@ -12,7 +12,7 @@ type Props = MenuProps & {
   sections?: NavMenuSection[]
 }
 
-function renderNavItems(items: NavItem[]) {
+function renderNavItems(items: NavItem[], collapse: boolean) {
   return items.map((item) =>
     item.children?.length ? (
       <NavSubMenu key={item.id} item={item} />
@@ -57,6 +57,22 @@ export function NavMenu({
     })
   }, [])
 
+  const toggleMenu = useCallback(
+    (id: string, parentIds: string[]) => {
+      setOpenedMenus((prev) => {
+        if (prev.has(id)) {
+          const next = new Set(prev)
+          next.delete(id)
+          return next
+        }
+        const next = new Set(accordion ? parentIds : [...prev])
+        next.add(id)
+        return next
+      })
+    },
+    [accordion],
+  )
+
   const ctx: MenuContext = {
     menuId,
     activePath,
@@ -70,6 +86,7 @@ export function NavMenu({
     openedMenus,
     openMenu,
     closeMenu,
+    toggleMenu,
   }
 
   const groups: NavMenuSection[] = sections ?? (items ? [{ id: 'default', items }] : [])
@@ -81,15 +98,24 @@ export function NavMenu({
           className="flex flex-col"
           style={
             collapse
-              ? {
-                  paddingInline: NAV_MENU.collapsedPaddingX,
-                  gap: NAV_MENU.collapsedItemGap,
-                }
-              : undefined
+              ? { paddingInline: NAV_MENU.collapsedPaddingX, gap: NAV_MENU.collapsedItemGap }
+              : { gap: 0 }
           }
         >
-          {groups.map((section) => (
-            <div key={section.id}>{renderNavItems(section.items)}</div>
+          {groups.map((section, sIdx) => (
+            <div key={section.id} style={{ marginTop: sIdx > 0 ? NAV_MENU.sectionGap : 0 }}>
+              {/* Section label — expanded sidebar only */}
+              {section.label && !collapse && (
+                <div
+                  className="mb-0.5 truncate px-3 text-[10.5px] font-semibold uppercase tracking-widest"
+                  style={{ color: navSurface.sectionLabel, paddingTop: sIdx > 0 ? 8 : 4 }}
+                >
+                  {section.label}
+                </div>
+              )}
+
+              {renderNavItems(section.items, collapse)}
+            </div>
           ))}
         </div>
       </LevelProvider>

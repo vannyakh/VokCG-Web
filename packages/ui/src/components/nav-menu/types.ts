@@ -1,5 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 
+export type NavBadgeVariant = 'soon' | 'beta' | 'new' | 'custom'
+
 export type NavItem = {
   id: string
   label: string
@@ -9,10 +11,16 @@ export type NavItem = {
   /** Sub-menu children — when present this item becomes a group/dropdown */
   children?: NavItem[]
   disabled?: boolean
-  /** Small badge shown at the end of the row (e.g. "Soon", "Beta", plan name) */
+  /** Small badge shown at the end of the row */
   badge?: string
+  /** Badge colour variant. Defaults to 'soon' amber style */
+  badgeVariant?: NavBadgeVariant
   /** Shorthand: disabled + badge "Soon" */
   comingSoon?: boolean
+  /** Render a thin divider line above this item (expanded sidebar only) */
+  divider?: boolean
+  /** Override the tooltip shown in collapsed mode (defaults to label) */
+  tooltip?: string
 }
 
 /** Grouped nav items with optional section divider label (expanded mode only) */
@@ -47,4 +55,5 @@ export type MenuContext = MenuProps & {
   openedMenus: Set<string>
   openMenu:  (id: string, parentIds: string[]) => void
   closeMenu: (id: string) => void
+  toggleMenu: (id: string, parentIds: string[]) => void
 }

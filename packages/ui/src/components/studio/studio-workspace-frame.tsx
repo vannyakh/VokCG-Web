@@ -18,7 +18,7 @@ export function StudioWorkspaceFrame({ children, flush = false }: Props) {
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden p-2 sm:p-3">
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-divider bg-surface">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-surface">
         {children}
       </div>
     </div>

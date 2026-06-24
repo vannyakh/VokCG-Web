@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Maximize, Pause, Play, Volume2, VolumeX } from 'lucide-react'
+import { Maximize, Pause, Play, Volume1, Volume2, VolumeX, Loader2 } from 'lucide-react'
+import { Popover, Slider } from 'antd'
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
@@ -146,27 +147,38 @@ export function CustomVideoPlayer({
 }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const clickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const [playing, setPlaying] = useState(false)
   const [current, setCurrent] = useState(0)
   const [duration, setDuration] = useState(0)
   const [muted, setMuted] = useState(false)
+  const [volume, setVolume] = useState(1.0)
   const [hovering, setHovering] = useState(false)
+  const [volHover, setVolHover] = useState(false)
   const [scrubbing, setScrubbing] = useState(false)
+  const [buffering, setBuffering] = useState(false)
+  const [error, setError] = useState(false)
+  
+  const [playbackRate, setPlaybackRate] = useState(1.0)
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false)
+  
   const [showControls, setShowControls] = useState(false)
   const [showPlayAnim, setShowPlayAnim] = useState(false)
   const [animType, setAnimType] = useState<'play' | 'pause'>('play')
   const [animKey, setAnimKey] = useState(0)
-  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const SPEED_OPTIONS = [0.5, 1.0, 1.25, 1.5, 2.0]
   const controlsVisible = hovering || scrubbing || !playing || showControls
 
   const resetHideTimer = useCallback(() => {
     setShowControls(true)
     if (hideTimer.current) clearTimeout(hideTimer.current)
     hideTimer.current = setTimeout(() => {
-      if (!scrubbing) setShowControls(false)
+      if (!scrubbing && !showSpeedMenu) setShowControls(false)
     }, 2800)
-  }, [scrubbing])
+  }, [scrubbing, showSpeedMenu])
 
   useEffect(() => {
     const v = videoRef.current
@@ -174,21 +186,32 @@ export function CustomVideoPlayer({
     setPlaying(false)
     setCurrent(0)
     setDuration(0)
+    setPlaybackRate(1.0)
+    setError(false)
+    setBuffering(false)
+    v.playbackRate = 1.0
     v.load()
   }, [src])
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    v.volume = volume
+    v.muted = muted
+  }, [volume, muted])
+
+  useEffect(() => {
+    return () => {
       if (hideTimer.current) clearTimeout(hideTimer.current)
-    },
-    [],
-  )
+      if (clickTimeout.current) clearTimeout(clickTimeout.current)
+    }
+  }, [])
 
   const togglePlay = () => {
     const v = videoRef.current
     if (!v) return
     if (v.paused) {
-      void v.play()
+      void v.play().catch(() => {})
       setPlaying(true)
       setAnimType('play')
     } else {
@@ -199,6 +222,19 @@ export function CustomVideoPlayer({
     setAnimKey((prev) => prev + 1)
     setShowPlayAnim(true)
     resetHideTimer()
+  }
+
+  const handleVideoClick = () => {
+    if (clickTimeout.current) {
+      clearTimeout(clickTimeout.current)
+      clickTimeout.current = null
+      void toggleFullscreen()
+    } else {
+      clickTimeout.current = setTimeout(() => {
+        togglePlay()
+        clickTimeout.current = null
+      }, 250)
+    }
   }
 
   const seek = (value: number) => {
@@ -217,15 +253,105 @@ export function CustomVideoPlayer({
     resetHideTimer()
   }
 
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value)
+    const v = videoRef.current
+    if (!v) return
+    v.volume = val
+    setVolume(val)
+    if (val > 0) {
+      v.muted = false
+      setMuted(false)
+    } else {
+      v.muted = true
+      setMuted(true)
+    }
+    resetHideTimer()
+  }
+
   const toggleFullscreen = async () => {
     const el = containerRef.current
     if (!el) return
-    if (!document.fullscreenElement) {
-      await el.requestFullscreen()
-    } else {
-      await document.exitFullscreen()
+    try {
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen()
+      } else {
+        await document.exitFullscreen()
+      }
+    } catch (err) {
+      console.error('Fullscreen request failed:', err)
     }
     resetHideTimer()
+  }
+
+  const changeSpeed = (rate: number) => {
+    const v = videoRef.current
+    if (!v) return
+    v.playbackRate = rate
+    setPlaybackRate(rate)
+    setShowSpeedMenu(false)
+    resetHideTimer()
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const activeEl = document.activeElement
+    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) {
+      return
+    }
+
+    const v = videoRef.current
+    if (!v) return
+
+    switch (e.key) {
+      case ' ':
+        e.preventDefault()
+        togglePlay()
+        break
+      case 'ArrowLeft':
+        e.preventDefault()
+        v.currentTime = Math.max(0, v.currentTime - 5)
+        setCurrent(v.currentTime)
+        resetHideTimer()
+        break
+      case 'ArrowRight':
+        e.preventDefault()
+        v.currentTime = Math.min(duration, v.currentTime + 5)
+        setCurrent(v.currentTime)
+        resetHideTimer()
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        const newVolUp = Math.min(1, v.volume + 0.1)
+        v.volume = newVolUp
+        setVolume(newVolUp)
+        if (newVolUp > 0 && muted) {
+          v.muted = false
+          setMuted(false)
+        }
+        resetHideTimer()
+        break
+      case 'ArrowDown':
+        e.preventDefault()
+        const newVolDown = Math.max(0, v.volume - 0.1)
+        v.volume = newVolDown
+        setVolume(newVolDown)
+        if (newVolDown === 0) {
+          v.muted = true
+          setMuted(true)
+        }
+        resetHideTimer()
+        break
+      case 'm':
+      case 'M':
+        e.preventDefault()
+        toggleMute()
+        break
+      case 'f':
+      case 'F':
+        e.preventDefault()
+        void toggleFullscreen()
+        break
+    }
   }
 
   const progress = duration > 0 ? (current / duration) * 100 : 0
@@ -257,15 +383,19 @@ export function CustomVideoPlayer({
     <div
       ref={containerRef}
       style={containerStyle}
+      tabIndex={0}
+      className="outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
       onMouseEnter={() => {
         setHovering(true)
         resetHideTimer()
       }}
       onMouseLeave={() => {
         setHovering(false)
+        setShowSpeedMenu(false)
         if (playing && !scrubbing) setShowControls(false)
       }}
       onMouseMove={resetHideTimer}
+      onKeyDown={handleKeyDown}
     >
       <video
         ref={videoRef}
@@ -273,7 +403,7 @@ export function CustomVideoPlayer({
         preload="metadata"
         playsInline
         style={{ width: '100%', height: '100%', objectFit: fit, display: 'block' }}
-        onClick={togglePlay}
+        onClick={handleVideoClick}
         onTimeUpdate={() => {
           if (!scrubbing) setCurrent(videoRef.current?.currentTime ?? 0)
         }}
@@ -281,7 +411,28 @@ export function CustomVideoPlayer({
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => setPlaying(false)}
+        onWaiting={() => setBuffering(true)}
+        onPlaying={() => setBuffering(false)}
+        onSeeking={() => setBuffering(true)}
+        onSeeked={() => setBuffering(false)}
+        onCanPlay={() => setBuffering(false)}
+        onError={() => setError(true)}
       />
+
+      {/* Loading Spinner */}
+      {buffering && !error && (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
+          <Loader2 className="h-10 w-10 animate-spin text-white opacity-85" />
+        </div>
+      )}
+
+      {/* Error Fallback */}
+      {error && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/95 text-white p-4 text-center">
+          <p className="text-sm font-semibold text-red-400">Failed to load video</p>
+          <p className="text-xs text-white/50 mt-1">Please verify the connection or media source path.</p>
+        </div>
+      )}
 
       <AnimatePresence>
         {showPlayAnim && (
@@ -294,33 +445,30 @@ export function CustomVideoPlayer({
             onAnimationComplete={() => setShowPlayAnim(false)}
             className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-950/70 text-white backdrop-blur-md border border-white/20 shadow-lg shadow-black/40">
+            <div className="flex items-center justify-center text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
               {animType === 'play' ? (
-                <Play size={24} fill="white" className="ml-1" />
+                <Play size={44} fill="white" className="ml-1" />
               ) : (
-                <Pause size={24} fill="white" />
+                <Pause size={44} fill="white" />
               )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {!playing && !showPlayAnim && (
+      {!playing && !showPlayAnim && !buffering && !error && (
         <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center">
-          <motion.div
+          <motion.button
+            type="button"
+            onClick={togglePlay}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex h-14 w-14 items-center justify-center rounded-full border transition-all duration-300"
-            style={{
-              background: 'rgba(15,23,42,0.65)',
-              borderColor: 'rgba(255,255,255,0.15)',
-              backdropFilter: 'blur(8px)',
-              opacity: hovering ? 1 : 0.85,
-              boxShadow: '0 4px 18px rgba(0,0,0,0.4)',
-            }}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.95 }}
+            className="pointer-events-auto flex items-center justify-center text-white cursor-pointer focus:outline-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
           >
-            <Play size={20} color="white" fill="white" className="ml-0.5" />
-          </motion.div>
+            <Play size={44} color="white" fill="white" className="ml-1" />
+          </motion.button>
         </div>
       )}
 
@@ -330,13 +478,8 @@ export function CustomVideoPlayer({
         transition={{ duration: 0.25, ease: 'easeInOut' }}
         style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 2, pointerEvents: controlsVisible ? 'auto' : 'none' }}
       >
-        <div className="px-4 pb-4 pt-12" style={{ background: 'linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.4) 60%, transparent 100%)' }}>
-          <div 
-            className="px-4 py-2.5 rounded-xl border border-white/10 backdrop-blur-md shadow-lg shadow-black/30"
-            style={{
-              background: 'rgba(15,23,42,0.45)',
-            }}
-          >
+        <div className="px-6 pb-6 pt-16" style={{ background: 'linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 100%)' }}>
+          <div className="flex flex-col">
             <SeekBar
               progress={progress}
               duration={duration}
@@ -347,21 +490,126 @@ export function CustomVideoPlayer({
                 resetHideTimer()
               }}
             />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between mt-1.5">
+              <div className="flex items-center gap-2">
                 <button type="button" aria-label={playing ? 'Pause' : 'Play'} onClick={togglePlay} className="flex h-7 w-7 items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 transition-colors">
                   {playing ? <Pause size={15} /> : <Play size={15} />}
                 </button>
-                <button type="button" aria-label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute} className="flex h-7 w-7 items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 transition-colors">
-                  {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-                </button>
-                <span className="min-w-[80px] font-mono text-[11px] font-semibold text-white/80 select-none ml-1">
-                  {formatTime(current)} / {formatTime(duration)}
-                </span>
+                
+                <div 
+                  className="flex items-center"
+                  onMouseEnter={() => setVolHover(true)}
+                  onMouseLeave={() => setVolHover(false)}
+                >
+                  <button type="button" aria-label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute} className="flex h-7 w-7 items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 transition-colors">
+                    {muted || volume === 0 ? (
+                      <VolumeX size={15} />
+                    ) : volume < 0.5 ? (
+                      <Volume1 size={15} />
+                    ) : (
+                      <Volume2 size={15} />
+                    )}
+                  </button>
+                  <motion.div
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: volHover ? 64 : 0, opacity: volHover ? 1 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden flex items-center h-7"
+                  >
+                    <Slider
+                      min={0}
+                      max={1}
+                      step={0.05}
+                      value={muted ? 0 : volume}
+                      onChange={(val) => {
+                        const v = videoRef.current
+                        if (!v) return
+                        v.volume = val
+                        setVolume(val)
+                        if (val > 0) {
+                          v.muted = false
+                          setMuted(false)
+                        } else {
+                          v.muted = true
+                          setMuted(true)
+                        }
+                        resetHideTimer()
+                      }}
+                      tooltip={{ open: false }}
+                      className="w-12 h-1 mx-2 bg-transparent"
+                      style={{ margin: '0 8px', height: '4px' }}
+                    />
+                  </motion.div>
+                </div>
+
+                <Popover
+                  content={
+                    <div className="flex flex-col gap-1.5 min-w-[125px]">
+                      <div className="flex justify-between items-center gap-4 text-[10px] font-medium font-mono text-slate-400">
+                        <span>Elapsed</span>
+                        <span className="text-white font-semibold">{formatTime(current)}</span>
+                      </div>
+                      <div className="flex justify-between items-center gap-4 text-[10px] font-medium font-mono text-slate-400">
+                        <span>Remaining</span>
+                        <span className="text-white font-semibold">-{formatTime(duration - current)}</span>
+                      </div>
+                      <div className="h-px bg-white/10 my-0.5" />
+                      <div className="flex justify-between items-center gap-4 text-[10px] font-medium font-mono text-slate-400">
+                        <span>Duration</span>
+                        <span className="text-white font-semibold">{formatTime(duration)}</span>
+                      </div>
+                    </div>
+                  }
+                  trigger="hover"
+                  placement="top"
+                  overlayStyle={{ zIndex: 100 }}
+                  color="rgba(15, 23, 42, 0.95)"
+                >
+                  <span className="cursor-help font-mono text-[11px] font-semibold text-white/80 select-none ml-1">
+                    {formatTime(current)} / {formatTime(duration)}
+                  </span>
+                </Popover>
               </div>
-              <button type="button" aria-label="Fullscreen" onClick={() => void toggleFullscreen()} className="flex h-7 w-7 items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 transition-colors">
-                <Maximize size={14} />
-              </button>
+
+              <div className="relative flex items-center gap-1">
+                <Popover
+                  content={
+                    <div className="flex flex-col gap-0.5 p-0.5 min-w-[70px]">
+                      {SPEED_OPTIONS.map((rate) => (
+                        <button
+                          key={rate}
+                          type="button"
+                          onClick={() => changeSpeed(rate)}
+                          className={`rounded px-2.5 py-1 text-[10px] font-semibold transition-colors text-left ${
+                            playbackRate === rate
+                              ? 'bg-white/15 text-white'
+                              : 'text-white/70 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          {rate}x
+                        </button>
+                      ))}
+                    </div>
+                  }
+                  trigger="click"
+                  open={showSpeedMenu}
+                  onOpenChange={setShowSpeedMenu}
+                  placement="topRight"
+                  color="rgba(15, 23, 42, 0.95)"
+                  overlayStyle={{ zIndex: 100 }}
+                >
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold text-white/80 hover:text-white hover:bg-white/15 transition-colors focus:outline-none"
+                  >
+                    <span>{playbackRate}x</span>
+                  </button>
+                </Popover>
+
+                <button type="button" aria-label="Fullscreen" onClick={() => void toggleFullscreen()} className="flex h-7 w-7 items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 transition-colors">
+                  <Maximize size={14} />
+                </button>
+              </div>
             </div>
           </div>
         </div>

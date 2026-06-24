@@ -2,12 +2,13 @@
 
 import { motion } from 'framer-motion'
 import { ChevronsLeft } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useRef, useState } from 'react'
 
 import { useWorkspace } from '@/api'
 import { STUDIO_SHELL, STUDIO_SIDEBAR } from '@vokcg/config'
-import { studioNavItemSections } from '@vokcg/constants'
+import { studioNavItemSections, USER_ROUTES } from '@vokcg/constants'
 import type { NavItem } from '@vokcg/constants'
 import { useLocale } from '@vokcg/i18n'
 import { useSidebarStore } from '@/store'
@@ -16,7 +17,6 @@ import {
   NavMenu,
   sidebarPanelSpring,
   sidebarShellSpring,
-  StudioLogo,
   Tooltip,
 } from '@vokcg/ui'
 
@@ -32,6 +32,53 @@ type SidebarProps = {
   onMobileClose?: () => void
 }
 
+function BrannamLogo({ expanded }: { expanded: boolean }) {
+  const boxSize = expanded ? 38 : 34
+
+  return (
+    <Link
+      href={USER_ROUTES.create}
+      className="flex items-center gap-2 rounded-xl outline-offset-2 transition-all hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-primary)]"
+    >
+      <div
+        className="relative flex shrink-0 items-center justify-center overflow-hidden"
+        style={{ width: boxSize, height: boxSize }}
+      >
+        <svg
+          viewBox="0 0 361 361"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-full w-full"
+          aria-hidden
+        >
+          <path
+            d="M361 161C355.676 114.875 331.59 71.3771 295.884 41.6956C260.178 12.0142 214.407 -2.76582 168.085 0.427762C121.763 3.62135 78.4538 24.5429 47.1588 58.8436C15.8638 93.1443 -1.00929 138.186 0.0467399 184.606C1.10277 231.025 20.0067 275.253 52.8291 308.095C85.6516 340.937 129.868 359.867 176.287 360.951C222.706 362.035 267.758 345.189 302.077 313.914C336.396 282.64 357.344 239.343 360.565 193.023L360.752 191H323.158C320.601 227.769 304.25 261.578 277.008 286.404C249.765 311.23 214.003 324.602 177.156 323.742C140.308 322.882 105.21 307.855 79.1551 281.785C53.1007 255.715 38.0948 220.607 37.2565 183.759C36.4183 146.911 49.8121 111.157 74.654 83.9294C99.4959 56.7016 133.875 40.0941 170.645 37.559C207.415 35.024 243.748 46.7563 272.092 70.3174C300.435 93.8785 317.774 124.386 322 161H361Z"
+            fill="currentColor"
+            fillOpacity="0.9"
+            className="text-[var(--text-primary)] transition-colors duration-300"
+          />
+          <path
+            d="M23 175.5H97.4626C106.45 175.5 114.745 170.676 119.19 162.866L141.096 124.375C143.535 120.088 149.818 120.413 151.803 124.929L197.195 228.205C199.08 232.495 204.935 233.064 207.612 229.218L236.048 188.363C241.656 180.304 250.853 175.5 260.671 175.5H287"
+            stroke="var(--color-primary)"
+            strokeWidth="26"
+            strokeLinecap="round"
+            className="transition-colors duration-300"
+          />
+        </svg>
+      </div>
+
+      {expanded && (
+        <span
+          className="min-w-0 font-extrabold text-[24px] tracking-[-0.02em] leading-none"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          VokCG
+        </span>
+      )}
+    </Link>
+  )
+}
+
 function SidebarBrand({ expanded }: { expanded: boolean }) {
   return (
     <div
@@ -44,7 +91,7 @@ function SidebarBrand({ expanded }: { expanded: boolean }) {
         paddingInline: expanded ? undefined : 10,
       }}
     >
-      <StudioLogo size={expanded ? 'lg' : 'md'} showWordmark={expanded} />
+      <BrannamLogo expanded={expanded} />
     </div>
   )
 }
@@ -201,9 +248,8 @@ export function Sidebar({
       {!isMobile && !sidebarMiniMode && !isCollapsed && (
         <div
           onMouseDown={onDragStart}
-          className={`absolute inset-y-0 right-0 z-40 w-1 cursor-col-resize transition-all duration-150 ${
-            isDragging ? 'bg-accent/80 shadow-[0_0_8px_var(--color-primary)]' : 'bg-transparent hover:bg-accent/25'
-          }`}
+          className={`absolute inset-y-0 right-0 z-40 w-1 cursor-col-resize transition-all duration-150 ${isDragging ? 'bg-accent/80 shadow-[0_0_8px_var(--color-primary)]' : 'bg-transparent hover:bg-accent/25'
+            }`}
           aria-hidden
         />
       )}

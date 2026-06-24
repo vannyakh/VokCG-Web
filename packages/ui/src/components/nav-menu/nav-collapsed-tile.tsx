@@ -12,13 +12,10 @@ type Props = {
 export function NavCollapsedTile({ icon: Icon, active = false }: Props) {
   return (
     <motion.span
-      className="flex items-center justify-center transition-colors duration-150"
-      style={{
-        ...navCollapsedTileStyle(active),
-        borderRadius: NAV_MENU.collapsedTileRadius,
-      }}
-      whileHover={{ scale: 1.04 }}
-      whileTap={{ scale: 0.96 }}
+      className="flex items-center justify-center rounded-[11px]"
+      style={navCollapsedTileStyle(active)}
+      whileHover={{ scale: 1.06, transition: { duration: 0.12 } }}
+      whileTap={{ scale: 0.94, transition: { duration: 0.08 } }}
     >
       <Icon
         size={NAV_MENU.collapsedIconSize}
