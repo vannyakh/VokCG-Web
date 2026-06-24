@@ -9,7 +9,6 @@ import { ADMIN_ROUTES } from '@vokcg/constants'
 import { useAdminAuthStore } from '@/store'
 import {
   AuthAlert,
-  AuthCardHeader,
   AuthField,
   AuthFormActions,
   AuthFormFields,
@@ -27,12 +26,44 @@ function AdminLoginForm() {
   const { message } = App.useApp()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   const redirectTo = searchParams.get('from') ?? ADMIN_ROUTES.overview
   const accessError = searchParams.get('error')
 
+  const handleEmailChange = (val: string) => {
+    setEmail(val)
+    if (emailError) setEmailError('')
+  }
+
+  const handlePasswordChange = (val: string) => {
+    setPassword(val)
+    if (passwordError) setPasswordError('')
+  }
+
   const handleSubmit = () => {
-    if (!email || !password) return
+    let hasError = false
+
+    if (!email) {
+      setEmailError('Email is required')
+      hasError = true
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setEmailError('Please enter a valid email address')
+      hasError = true
+    } else {
+      setEmailError('')
+    }
+
+    if (!password) {
+      setPasswordError('Password is required')
+      hasError = true
+    } else {
+      setPasswordError('')
+    }
+
+    if (hasError) return
+
     login.mutate(
       { email, password },
       {
@@ -56,10 +87,6 @@ function AdminLoginForm() {
 
   return (
     <AuthFormStack>
-      <AuthCardHeader
-        title="Admin Console"
-        description="Sign in with your administrator credentials"
-      />
 
       {accessError === 'forbidden' && (
         <AuthAlert tone="error">
@@ -68,27 +95,29 @@ function AdminLoginForm() {
       )}
 
       <AuthFormFields>
-        <AuthField label="Email" htmlFor="admin-email">
+        <AuthField label="Email" htmlFor="admin-email" error={emailError}>
           <Input
             id="admin-email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => handleEmailChange(e.target.value)}
             type="email"
             placeholder="you@example.com"
             size="large"
             autoFocus
+            status={emailError ? 'error' : undefined}
             className={authInputClassName}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
           />
         </AuthField>
 
-        <AuthField label="Password" htmlFor="admin-password">
+        <AuthField label="Password" htmlFor="admin-password" error={passwordError}>
           <Input.Password
             id="admin-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => handlePasswordChange(e.target.value)}
             placeholder="Your password"
             size="large"
+            status={passwordError ? 'error' : undefined}
             className={authInputClassName}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
           />

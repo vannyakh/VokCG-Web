@@ -152,31 +152,61 @@ body {
 .border-accent   { border-color: color-mix(in srgb, var(--color-primary) 45%, transparent); }
 .bg-accent-muted { background: color-mix(in srgb, var(--color-primary) 10%, transparent); }
 
+/* ── Auth page animations and structures ────────────────────────────── */
+
+@keyframes auth-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-auth-card {
+  animation: auth-fade-in-up 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.auth-grid-bg {
+  background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--border-default) 20%, transparent) 1px, transparent 0);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 40%, transparent 100%);
+}
+
 /* ── Auth page inputs ───────────────────────────────────────────────── */
 
 .ant-input.auth-input,
 .ant-input-affix-wrapper.auth-input {
-  background-color: color-mix(in srgb, var(--bg-surface) 55%, transparent) !important;
-  border-color: var(--border-default) !important;
+  background-color: color-mix(in srgb, var(--bg-surface) 45%, transparent) !important;
+  border-color: color-mix(in srgb, var(--border-default) 60%, transparent) !important;
   border-radius: 9999px !important;
   height: 46px !important;
   padding-left: 18px !important;
   padding-right: 18px !important;
   font-size: 14px !important;
   box-shadow: none !important;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease !important;
 }
 
 .ant-input.auth-input:hover,
 .ant-input-affix-wrapper.auth-input:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 55%, var(--border-default)) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--border-default)) !important;
+  background-color: color-mix(in srgb, var(--bg-surface) 60%, transparent) !important;
 }
 
 .ant-input.auth-input:focus,
 .ant-input-affix-wrapper.auth-input:focus,
 .ant-input-affix-wrapper.auth-input.ant-input-affix-wrapper-focused {
   border-color: var(--color-primary) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent) !important;
+  background-color: var(--bg-surface) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent) !important;
 }
 
 .ant-input-affix-wrapper.auth-input .ant-input {

@@ -38,6 +38,18 @@ export function AuthLayout({ children, footer }: AuthLayoutProps) {
         }}
       />
 
+      {/* Radial grid overlay */}
+      <div
+        className="auth-grid-bg"
+        aria-hidden
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
+
       {/* Subtle noise texture overlay */}
       <div
         aria-hidden
@@ -59,7 +71,7 @@ export function AuthLayout({ children, footer }: AuthLayoutProps) {
           position: 'relative',
           zIndex: 1,
           width: '100%',
-          maxWidth: 400,
+          maxWidth: 420,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -82,8 +94,13 @@ export function AuthLayout({ children, footer }: AuthLayoutProps) {
           </span>
         </div>
 
-        {/* Form — no card, just content */}
-        <div style={{ width: '100%' }}>
+        {/* Form — no card background, animated */}
+        <div
+          className="animate-auth-card"
+          style={{
+            width: '100%',
+          }}
+        >
           {children}
         </div>
 
