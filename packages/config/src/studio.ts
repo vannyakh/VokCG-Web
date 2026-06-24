@@ -79,14 +79,21 @@ export const STUDIO_PAGE = {
 
 export type StudioPageWidth = keyof typeof STUDIO_PAGE.width
 
+/** Shared studio chrome — keep header + sidebar brand row aligned */
+export const STUDIO_SHELL = {
+  headerHeight: 56,
+  headerHeightClass: 'h-14',
+  navItemHeight: 36,
+} as const
+
 export const STUDIO_SIDEBAR = {
-  miniWidth: 72,
+  miniWidth: 80,
   widthMin: 200,
   widthMax: 280,
   widthDefault: 240,
   mobileDrawerWidth: 'min(88vw, 280px)',
   expandedWidth: 256,
-  collapsedWidth: 72,
+  collapsedWidth: 80,
   brandIconSize: 36,
   navIconSize: 40,
   navItemRadius: 12,

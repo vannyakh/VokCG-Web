@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
 
 import { useAuthMe } from '@/api'
-import { STUDIO_PAGE } from '@vokcg/config'
+import { STUDIO_PAGE, isFullBleedRoute } from '@vokcg/config'
 import { useSidebarStore } from '@/store'
 import { backdropFade, MOBILE_MEDIA_QUERY, sidebarShellSpring, useMediaQuery } from '@vokcg/ui'
 
@@ -14,6 +14,7 @@ import { Sidebar } from './Sidebar'
 
 export function StudioShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
+  const fullBleed = isFullBleedRoute(pathname)
   useAuthMe()
 
   const isMobile = useMediaQuery(MOBILE_MEDIA_QUERY)
@@ -98,7 +99,12 @@ export function StudioShell({ children }: { children: ReactNode }) {
             onMenuClick={() => setMobileNavOpen((open) => !open)}
           />
 
-          <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-canvas">
+          <main
+            className={[
+              'relative flex min-h-0 flex-1 flex-col overflow-hidden',
+              fullBleed ? 'bg-surface' : 'bg-canvas',
+            ].join(' ')}
+          >
             <div className={STUDIO_PAGE.shell}>{children}</div>
           </main>
         </motion.div>

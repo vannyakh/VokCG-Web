@@ -5,17 +5,26 @@ import Link from 'next/link'
 import { USER_ROUTES } from '@vokcg/constants'
 
 type StudioLogoProps = {
-  size?: 'sm' | 'md' | 'xl'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   showWordmark?: boolean
   className?: string
   link?: boolean
 }
 
-const SIZE_BOX = { sm: 36, md: 40, xl: 48 } as const
-const SIZE_TEXT: Record<string, string> = {
-  sm: 'text-[18px]',
-  md: 'text-[22px]',
+const SIZE_BOX = { sm: 28, md: 34, lg: 38, xl: 48 } as const
+
+const SIZE_TEXT: Record<keyof typeof SIZE_BOX, string> = {
+  sm: 'text-[16px]',
+  md: 'text-[19px]',
+  lg: 'text-[22px]',
   xl: 'text-[28px]',
+}
+
+const SIZE_GAP: Record<keyof typeof SIZE_BOX, string> = {
+  sm: 'gap-1.5',
+  md: 'gap-2',
+  lg: 'gap-2',
+  xl: 'gap-2.5',
 }
 
 export function StudioLogo({
@@ -27,30 +36,25 @@ export function StudioLogo({
   const boxSize = SIZE_BOX[size]
 
   const content = (
-    <div className={['flex min-w-0 items-center gap-2.5', className].filter(Boolean).join(' ')}>
-      {/* Logo mark — VokCG SVG path as icon */}
+    <div
+      className={['flex min-w-0 items-center', SIZE_GAP[size], className].filter(Boolean).join(' ')}
+    >
       <div
-        className="relative shrink-0 p-2.5 overflow-hidden"
-        style={{
-          width: boxSize,
-          height: boxSize,
-        }}
+        className="relative flex shrink-0 items-center justify-center overflow-hidden"
+        style={{ width: boxSize, height: boxSize }}
       >
         <svg
           viewBox="0 0 361 361"
-          width={boxSize}
-          height={boxSize}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="absolute inset-0"
+          className="h-full w-full"
+          aria-hidden
         >
-          {/* Outer ring */}
           <path
             d="M361 161C355.676 114.875 331.59 71.3771 295.884 41.6956C260.178 12.0142 214.407 -2.76582 168.085 0.427762C121.763 3.62135 78.4538 24.5429 47.1588 58.8436C15.8638 93.1443 -1.00929 138.186 0.0467399 184.606C1.10277 231.025 20.0067 275.253 52.8291 308.095C85.6516 340.937 129.868 359.867 176.287 360.951C222.706 362.035 267.758 345.189 302.077 313.914C336.396 282.64 357.344 239.343 360.565 193.023L360.752 191H323.158C320.601 227.769 304.25 261.578 277.008 286.404C249.765 311.23 214.003 324.602 177.156 323.742C140.308 322.882 105.21 307.855 79.1551 281.785C53.1007 255.715 38.0948 220.607 37.2565 183.759C36.4183 146.911 49.8121 111.157 74.654 83.9294C99.4959 56.7016 133.875 40.0941 170.645 37.559C207.415 35.024 243.748 46.7563 272.092 70.3174C300.435 93.8785 317.774 124.386 322 161H361Z"
             fill="white"
             fillOpacity="0.92"
           />
-          {/* Signal path */}
           <path
             d="M23 175.5H97.4626C106.45 175.5 114.745 170.676 119.19 162.866L141.096 124.375C143.535 120.088 149.818 120.413 151.803 124.929L197.195 228.205C199.08 232.495 204.935 233.064 207.612 229.218L236.048 188.363C241.656 180.304 250.853 175.5 260.671 175.5H287"
             stroke="white"
@@ -62,7 +66,9 @@ export function StudioLogo({
 
       {showWordmark && (
         <div className="min-w-0 overflow-hidden">
-          <p className={`truncate font-extrabold leading-none tracking-tight text-primary ${SIZE_TEXT[size]}`}>
+          <p
+            className={`truncate font-extrabold leading-none tracking-[-0.02em] text-primary ${SIZE_TEXT[size]}`}
+          >
             VokCG
           </p>
         </div>

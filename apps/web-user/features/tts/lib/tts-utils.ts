@@ -1,5 +1,5 @@
 import type { TtsVoice } from '@/types/tts'
-import { loadContentDraft, storeContentDraft } from '../../script/lib/content-draft'
+import { loadContentDraft, storeContentDraft } from '@/lib/content-draft'
 
 export type VoiceAvatarTone = 'purple' | 'green' | 'teal' | 'coral' | 'blue'
 

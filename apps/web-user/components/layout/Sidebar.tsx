@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useRef, useState } from 'react'
 
 import { useWorkspace } from '@/api'
-import { STUDIO_SIDEBAR } from '@vokcg/config'
-import { studioNavItems } from '@vokcg/constants'
+import { STUDIO_SHELL, STUDIO_SIDEBAR } from '@vokcg/config'
+import { studioNavItemSections } from '@vokcg/constants'
 import type { NavItem } from '@vokcg/constants'
 import { useLocale } from '@vokcg/i18n'
 import { useSidebarStore } from '@/store'
@@ -23,7 +23,7 @@ import {
 import { SidebarWorkspaceCard } from './SidebarWorkspaceCard'
 
 const MINI_W = STUDIO_SIDEBAR.miniWidth
-const NAV_ITEM_HEIGHT = 44
+const NAV_ITEM_HEIGHT = STUDIO_SHELL.navItemHeight
 
 type SidebarProps = {
   activePath: string
@@ -36,12 +36,15 @@ function SidebarBrand({ expanded }: { expanded: boolean }) {
   return (
     <div
       className={[
-        'flex h-14 shrink-0 items-center',
-        expanded ? 'px-4' : 'justify-center px-2',
+        `flex ${STUDIO_SHELL.headerHeightClass} shrink-0 items-center`,
+        expanded ? 'px-3' : 'justify-center',
       ].join(' ')}
-      style={{ borderBottom: '1px solid var(--border-default)' }}
+      style={{
+        borderBottom: '1px solid var(--border-default)',
+        paddingInline: expanded ? undefined : 10,
+      }}
     >
-      <StudioLogo size="md" showWordmark={expanded} />
+      <StudioLogo size={expanded ? 'lg' : 'md'} showWordmark={expanded} />
     </div>
   )
 }
@@ -61,7 +64,7 @@ export function Sidebar({
   const navRef = useRef<HTMLElement>(null)
 
   const { t } = useLocale()
-  const navItems: NavItem[] = studioNavItems(false, workspace, t)
+  const navSections = studioNavItemSections(false, workspace, t)
   const isCollapsed = !isMobile && (sidebarMiniMode || collapsed)
   const expanded = isMobile || !isCollapsed
   const shellWidth = hidden ? 0 : isCollapsed ? MINI_W : sidebarWidth
@@ -111,10 +114,10 @@ export function Sidebar({
         <nav
           ref={navRef}
           onScroll={onNavScroll}
-          className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-2"
+          className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-1.5"
         >
           <NavMenu
-            items={navItems}
+            sections={navSections}
             activePath={activePath}
             collapse={!expanded}
             accordion
@@ -134,15 +137,18 @@ export function Sidebar({
 
       {!isMobile && (
         <div
-          className="flex shrink-0 items-center px-2.5 py-2.5"
-          style={{ borderTop: '1px solid var(--border-default)' }}
+          className="flex shrink-0 items-center py-1.5"
+          style={{
+            borderTop: '1px solid var(--border-default)',
+            paddingInline: isCollapsed ? 10 : 8,
+          }}
         >
           {isCollapsed ? (
             <Tooltip content={t('sidebar.expand')} placement="right">
               <button
                 type="button"
                 onClick={toggle}
-                className="flex h-9 w-full items-center justify-center rounded-xl transition-colors"
+                className="flex h-9 w-full items-center justify-center rounded-[11px] transition-colors"
                 style={{ color: 'var(--text-muted)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'var(--bg-active)'
@@ -153,14 +159,14 @@ export function Sidebar({
                   e.currentTarget.style.color = 'var(--text-muted)'
                 }}
               >
-                <ChevronsLeft size={15} className="rotate-180" />
+                <ChevronsLeft size={17} className="rotate-180" />
               </button>
             </Tooltip>
           ) : (
             <button
               type="button"
               onClick={toggle}
-              className="group flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 transition-colors"
+              className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 transition-colors"
               style={{ color: 'var(--text-muted)' }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'var(--bg-active)'

@@ -77,7 +77,6 @@ export function BillingPage() {
 
   return (
     <BillingShell
-      title={t('billing.title')}
       description={t('billing.description')}
       badge={plan?.name}
       extra={

@@ -3,6 +3,7 @@
 import { Menu, Moon, PanelLeftClose, PanelLeftOpen, Sun, X } from 'lucide-react'
 
 import { studioPageMeta } from '@vokcg/constants'
+import { STUDIO_SHELL } from '@vokcg/config'
 import { useLocale } from '@vokcg/i18n'
 import { useSidebarStore } from '@/store'
 import { Tooltip, useColorMode } from '@vokcg/ui'
@@ -60,7 +61,7 @@ export function Header({
 
   return (
     <header
-      className="flex h-14 shrink-0 items-center gap-3 px-4"
+      className={`flex ${STUDIO_SHELL.headerHeightClass} shrink-0 items-center gap-3 px-4`}
       style={{
         background: 'var(--bg-surface)',
         borderBottom: '1px solid var(--border-default)',

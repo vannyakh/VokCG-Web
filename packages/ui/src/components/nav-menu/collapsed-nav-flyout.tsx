@@ -4,14 +4,27 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
+import { NAV_FLYOUT } from './nav-styles'
+
 function useFlyoutHover(openDelay = 80, closeDelay = 120) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [open, setOpen] = useState(false)
 
-  const clear = () => { if (timer.current) clearTimeout(timer.current) }
-  const enter = () => { clear(); timer.current = setTimeout(() => setOpen(true), openDelay) }
-  const leave = () => { clear(); timer.current = setTimeout(() => setOpen(false), closeDelay) }
-  const pin   = () => { clear(); setOpen(true) }
+  const clear = () => {
+    if (timer.current) clearTimeout(timer.current)
+  }
+  const enter = () => {
+    clear()
+    timer.current = setTimeout(() => setOpen(true), openDelay)
+  }
+  const leave = () => {
+    clear()
+    timer.current = setTimeout(() => setOpen(false), closeDelay)
+  }
+  const pin = () => {
+    clear()
+    setOpen(true)
+  }
 
   return { open, enter, leave, pin }
 }
@@ -19,10 +32,16 @@ function useFlyoutHover(openDelay = 80, closeDelay = 120) {
 type CollapsedNavFlyoutProps = {
   trigger: ReactNode
   children: ReactNode
+  title?: string
   align?: 'center' | 'start'
 }
 
-export function CollapsedNavFlyout({ trigger, children, align = 'center' }: CollapsedNavFlyoutProps) {
+export function CollapsedNavFlyout({
+  trigger,
+  children,
+  title,
+  align = 'center',
+}: CollapsedNavFlyoutProps) {
   const { open, enter, leave, pin } = useFlyoutHover()
   const triggerRef = useRef<HTMLDivElement>(null)
   const [coords, setCoords] = useState({ top: 0, left: 0 })
@@ -34,7 +53,7 @@ export function CollapsedNavFlyout({ trigger, children, align = 'center' }: Coll
       if (!el) return
       const rect = el.getBoundingClientRect()
       setCoords({
-        left: rect.right + 6,
+        left: rect.right + NAV_FLYOUT.offsetX,
         top: align === 'start' ? rect.top : rect.top + rect.height / 2,
       })
     }
@@ -54,27 +73,48 @@ export function CollapsedNavFlyout({ trigger, children, align = 'center' }: Coll
             {open && (
               <motion.div
                 key="collapsed-nav-flyout"
+                role="menu"
+                aria-label={title}
                 className="fixed z-[200]"
                 style={{
                   left: coords.left,
                   top: coords.top,
                   translateY: align === 'center' ? '-50%' : 0,
                 }}
-                initial={{ opacity: 0, x: -8, scale: 0.96 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: -4, scale: 0.98 }}
-                transition={{ duration: 0.14, ease: [0.2, 0, 0, 1] }}
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -4 }}
+                transition={{ duration: 0.12, ease: [0.2, 0, 0, 1] }}
                 onMouseEnter={pin}
                 onMouseLeave={leave}
               >
                 <div
-                  className="overflow-hidden rounded-2xl border border-divider bg-surface"
+                  className="overflow-hidden bg-surface"
                   style={{
-                    minWidth: 176,
-                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.16)',
+                    minWidth: NAV_FLYOUT.minWidth,
+                    borderRadius: NAV_FLYOUT.radius,
+                    border: '1px solid var(--border-divider)',
+                    boxShadow: 'var(--shadow-md)',
                   }}
                 >
-                  <div className="p-1.5">{children}</div>
+                  {title && (
+                    <div
+                      style={{
+                        padding: `${NAV_FLYOUT.headerPaddingY}px ${NAV_FLYOUT.headerPaddingX}px`,
+                        borderBottom: '1px solid var(--border-divider)',
+                      }}
+                    >
+                      <p className="truncate text-[13px] font-semibold leading-none text-primary">
+                        {title}
+                      </p>
+                    </div>
+                  )}
+                  <div
+                    className="flex flex-col"
+                    style={{ padding: NAV_FLYOUT.padding, gap: 2 }}
+                  >
+                    {children}
+                  </div>
                 </div>
               </motion.div>
             )}

@@ -156,7 +156,6 @@ export function BillingPlansPage() {
 
   return (
     <BillingShell
-      title={t('nav.plans')}
       description={t('billing.plansDescription')}
       badge={workspace.plan?.name}
     >

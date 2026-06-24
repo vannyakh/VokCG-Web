@@ -1,7 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { Button, Card, Checkbox, Drawer, Input, Popconfirm, Select, Table } from 'antd'
+import { Button, Checkbox, Drawer, Input, Popconfirm, Select, Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { Download, LayoutGrid, List, ListVideo, RefreshCw, Search, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -16,7 +16,8 @@ import {
   TaskVideoPoster,
   TaskDeleteButton,
   TaskPreviewPanel,
-  Page,
+  StudioListShell,
+  StudioEmptyState,
   fadeUpItem,
   panelSlide,
   staggerContainer,
@@ -286,22 +287,20 @@ function ListSkeleton() {
 
 function TasksEmptyState({ t, variant, onClearFilters }: { t: (key: string) => string; variant: 'none' | 'filtered'; onClearFilters?: () => void }) {
   return (
-    <Card className="border-default bg-surface">
-      <div className="flex flex-col items-center gap-4 py-10">
-        <ListVideo size={38} className="text-slate-400 dark:text-slate-500" />
-        <div className="max-w-md text-center">
-          <p className="font-bold text-primary">{variant === 'filtered' ? t('tasks.noMatches') : t('tasks.noTasks')}</p>
-          <p className="mt-1 text-sm text-secondary">{variant === 'filtered' ? t('tasks.noMatchesHint') : t('tasks.noTasksHint')}</p>
-        </div>
-        {variant === 'filtered' ? (
+    <StudioEmptyState
+      icon={ListVideo}
+      title={variant === 'filtered' ? t('tasks.noMatches') : t('tasks.noTasks')}
+      description={variant === 'filtered' ? t('tasks.noMatchesHint') : t('tasks.noTasksHint')}
+      action={
+        variant === 'filtered' ? (
           <Button size="small" onClick={onClearFilters} className="rounded-lg">{t('tasks.clearFilters')}</Button>
         ) : (
           <Link href={USER_ROUTES.create}>
             <Button type="primary" size="small" className="rounded-lg font-bold">{t('tasks.createVideo')}</Button>
           </Link>
-        )}
-      </div>
-    </Card>
+        )
+      }
+    />
   )
 }
 
@@ -417,9 +416,7 @@ export function TasksPage() {
 
   return (
     <>
-      <Page
-        width="full"
-        title={t('tasks.title')}
+      <StudioListShell
         description={t('tasks.description')}
         extra={
           <div className="flex items-center gap-2">
@@ -522,7 +519,7 @@ export function TasksPage() {
             )}
           </AnimatePresence>
         </div>
-      </Page>
+      </StudioListShell>
 
       <Drawer
         open={!!selectedTaskId && !isXlUp}

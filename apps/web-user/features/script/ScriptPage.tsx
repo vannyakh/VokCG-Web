@@ -1,11 +1,12 @@
 'use client'
 
 import { ScriptWriterWorkspace } from './components/script-writer-workspace'
+import { StudioWorkspaceFrame } from '@vokcg/ui'
 
 export function ScriptPage() {
   return (
-    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden p-2 sm:p-3">
+    <StudioWorkspaceFrame>
       <ScriptWriterWorkspace />
-    </div>
+    </StudioWorkspaceFrame>
   )
 }

@@ -4,16 +4,31 @@ import { useCallback, useId, useState } from 'react'
 import { LevelProvider, MenuContextProvider } from './menu-context'
 import { NavMenuItem } from './nav-item'
 import { NavSubMenu } from './nav-sub-menu'
-import type { MenuContext, MenuProps, NavItem } from './types'
+import { NAV_MENU } from './nav-styles'
+import type { MenuContext, MenuProps, NavItem, NavMenuSection } from './types'
 
-type Props = MenuProps & { items: NavItem[] }
+type Props = MenuProps & {
+  items?: NavItem[]
+  sections?: NavMenuSection[]
+}
+
+function renderNavItems(items: NavItem[]) {
+  return items.map((item) =>
+    item.children?.length ? (
+      <NavSubMenu key={item.id} item={item} />
+    ) : (
+      <NavMenuItem key={item.id} item={item} />
+    ),
+  )
+}
 
 export function NavMenu({
   items,
+  sections,
   activePath,
   collapse,
   accordion = true,
-  rounded  = true,
+  rounded = true,
   itemHeight = 44,
   onSelect,
 }: Props) {
@@ -57,15 +72,25 @@ export function NavMenu({
     closeMenu,
   }
 
+  const groups: NavMenuSection[] = sections ?? (items ? [{ id: 'default', items }] : [])
+
   return (
     <MenuContextProvider value={ctx}>
       <LevelProvider value={0}>
-        <div className={collapse ? 'flex flex-col gap-0.5' : 'flex flex-col gap-0.5 px-1'}>
-          {items.map((item) =>
-            item.children?.length
-              ? <NavSubMenu key={item.id} item={item} />
-              : <NavMenuItem key={item.id} item={item} />,
-          )}
+        <div
+          className="flex flex-col"
+          style={
+            collapse
+              ? {
+                  paddingInline: NAV_MENU.collapsedPaddingX,
+                  gap: NAV_MENU.collapsedItemGap,
+                }
+              : undefined
+          }
+        >
+          {groups.map((section) => (
+            <div key={section.id}>{renderNavItems(section.items)}</div>
+          ))}
         </div>
       </LevelProvider>
     </MenuContextProvider>

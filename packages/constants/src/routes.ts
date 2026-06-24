@@ -8,6 +8,10 @@ export const USER_ROUTES = {
   settings: '/settings',
   billing: '/billing',
   billingPlans: '/billing/plans',
+  exploreTemplates: '/explore/templates',
+  exploreAvatar: '/explore/avatar',
+  exploreMusic: '/explore/music',
+  explorePublish: '/explore/publish',
   login: '/login',
   register: '/register',
 } as const

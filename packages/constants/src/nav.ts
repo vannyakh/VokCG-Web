@@ -45,6 +45,55 @@ export type NavSection = {
   items: MainNavItem[]
 }
 
+export type StudioNavSection = {
+  id: string
+  items: NavItem[]
+}
+
+function buildSectionNavItems(
+  section: NavSection,
+  workspace: { plan?: { name: string } | null } | undefined,
+  t: (key: string) => string,
+): NavItem[] {
+  if (section.single && section.items.length === 1) {
+    const item = section.items[0]!
+    return [
+      {
+        id: item.to,
+        label: t(item.labelKey),
+        icon: item.icon,
+        path: item.comingSoon ? undefined : item.to,
+        badge: item.comingSoon ? t('nav.badge.soon') : item.badge,
+        comingSoon: item.comingSoon,
+      },
+    ]
+  }
+
+  return [
+    {
+      id: section.id,
+      label: t(section.sectionKey),
+      icon: SECTION_ICONS[section.id] ?? Clapperboard,
+      children: section.items.map((item) => {
+        let badge = item.badge
+        if (item.comingSoon) {
+          badge = t('nav.badge.soon')
+        } else if (section.id === 'billing' && item.to === USER_ROUTES.billing && workspace?.plan) {
+          badge = workspace.plan.name
+        }
+        return {
+          id: item.to,
+          label: t(item.labelKey),
+          icon: item.icon,
+          path: item.comingSoon ? undefined : item.to,
+          badge,
+          comingSoon: item.comingSoon,
+        }
+      }),
+    },
+  ]
+}
+
 const SECTION_ICONS: Record<string, LucideIcon> = {
   video: Clapperboard,
   audio: Volume2,
@@ -88,10 +137,10 @@ export const STUDIO_NAV_SECTIONS: NavSection[] = [
     id: 'explore',
     sectionKey: 'nav.section.explore',
     items: [
-      { to: '/explore/templates', labelKey: 'nav.templates', icon: LayoutTemplate, comingSoon: true },
-      { to: '/explore/avatar', labelKey: 'nav.aiAvatar', icon: ScanFace, comingSoon: true },
-      { to: '/explore/music', labelKey: 'nav.musicLibrary', icon: Music, comingSoon: true },
-      { to: '/explore/publish', labelKey: 'nav.autoPublish', icon: CalendarClock, comingSoon: true },
+      { to: USER_ROUTES.exploreTemplates, labelKey: 'nav.templates', icon: LayoutTemplate },
+      { to: USER_ROUTES.exploreAvatar, labelKey: 'nav.aiAvatar', icon: ScanFace },
+      { to: USER_ROUTES.exploreMusic, labelKey: 'nav.musicLibrary', icon: Music },
+      { to: USER_ROUTES.explorePublish, labelKey: 'nav.autoPublish', icon: CalendarClock },
     ],
   },
   {
@@ -108,50 +157,23 @@ export function studioNavSections(isAdmin: boolean): NavSection[] {
   })).filter((section) => section.items.length > 0)
 }
 
+export function studioNavItemSections(
+  isAdmin: boolean,
+  workspace: { plan?: { name: string } | null } | undefined,
+  t: (key: string) => string,
+): StudioNavSection[] {
+  return studioNavSections(isAdmin).map((section) => ({
+    id: section.id,
+    items: buildSectionNavItems(section, workspace, t),
+  }))
+}
+
 export function studioNavItems(
   isAdmin: boolean,
   workspace: { plan?: { name: string } | null } | undefined,
   t: (key: string) => string,
 ): NavItem[] {
-  return studioNavSections(isAdmin).flatMap((section): NavItem[] => {
-    if (section.single && section.items.length === 1) {
-      const item = section.items[0]!
-      return [
-        {
-          id: item.to,
-          label: t(item.labelKey),
-          icon: item.icon,
-          path: item.comingSoon ? undefined : item.to,
-          badge: item.comingSoon ? t('nav.badge.soon') : item.badge,
-          comingSoon: item.comingSoon,
-        },
-      ]
-    }
-
-    return [
-      {
-        id: section.id,
-        label: t(section.sectionKey),
-        icon: SECTION_ICONS[section.id] ?? Clapperboard,
-        children: section.items.map((item) => {
-          let badge = item.badge
-          if (item.comingSoon) {
-            badge = t('nav.badge.soon')
-          } else if (section.id === 'billing' && item.to === USER_ROUTES.billing && workspace?.plan) {
-            badge = workspace.plan.name
-          }
-          return {
-            id: item.to,
-            label: t(item.labelKey),
-            icon: item.icon,
-            path: item.comingSoon ? undefined : item.to,
-            badge,
-            comingSoon: item.comingSoon,
-          }
-        }),
-      },
-    ]
-  })
+  return studioNavItemSections(isAdmin, workspace, t).flatMap((section) => section.items)
 }
 
 export function studioPageMeta(pathname: string): { sectionKey: string; labelKey: string } {

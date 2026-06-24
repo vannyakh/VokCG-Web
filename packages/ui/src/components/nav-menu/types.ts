@@ -15,6 +15,14 @@ export type NavItem = {
   comingSoon?: boolean
 }
 
+/** Grouped nav items with optional section divider label (expanded mode only) */
+export type NavMenuSection = {
+  id: string
+  /** Optional label above the divider line */
+  label?: string
+  items: NavItem[]
+}
+
 export type MenuProps = {
   /** Active route path */
   activePath: string

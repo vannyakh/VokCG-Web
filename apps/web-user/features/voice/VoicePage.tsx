@@ -6,7 +6,7 @@ import { useRef, useState } from 'react'
 import { useLocale } from '@vokcg/i18n'
 import { CLONE_PROVIDERS } from '@/types/tts'
 import { VoiceClonePanel } from './components/voice-clone-panel'
-import { Page } from '@vokcg/ui'
+import { StudioListShell } from '@vokcg/ui'
 
 type ViewMode = 'grid' | 'list'
 
@@ -81,12 +81,7 @@ export function VoicePage() {
   )
 
   return (
-    <Page
-      width="full"
-      title={t('voiceStudio.title')}
-      description={t('voiceStudio.description')}
-      extra={toolbar}
-    >
+    <StudioListShell description={t('voiceStudio.description')} extra={toolbar}>
       <VoiceClonePanel
         viewMode={viewMode}
         activeProvider={activeProvider}
@@ -94,6 +89,6 @@ export function VoicePage() {
         createOpen={createOpen}
         onCreateOpenChange={setCreateOpen}
       />
-    </Page>
+    </StudioListShell>
   )
 }

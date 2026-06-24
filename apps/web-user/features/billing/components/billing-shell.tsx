@@ -1,20 +1,20 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { Page } from '@vokcg/ui'
+
+import { StudioListShell } from '@vokcg/ui'
 
 type Props = {
-  title: string
   description?: string
   badge?: string
   extra?: ReactNode
   children: ReactNode
 }
 
-export function BillingShell({ title, description, badge, extra, children }: Props) {
+export function BillingShell({ description, badge, extra, children }: Props) {
   return (
-    <Page title={title} description={description} badge={badge} extra={extra} width="full" scroll spacing="comfortable">
+    <StudioListShell description={description} badge={badge} extra={extra}>
       {children}
-    </Page>
+    </StudioListShell>
   )
 }
