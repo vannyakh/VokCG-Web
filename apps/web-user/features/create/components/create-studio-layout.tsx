@@ -6,7 +6,7 @@ import { CreateStepNav } from './create-step-nav'
 
 export function CreateStudioLayout() {
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden" style={{ background: 'var(--bg-canvas)' }}>
+    <div className="relative flex h-full min-h-0 w-full flex-col" style={{ background: 'var(--bg-canvas)' }}>
 
       {/* ── Step navigation bar ── */}
       <div
@@ -18,12 +18,12 @@ export function CreateStudioLayout() {
         }}
       >
         <CreateFormCenter>
-          <CreateStepNav variant="pills" interactive={false} />
+          <CreateStepNav variant="pills" interactive={true} />
         </CreateFormCenter>
       </div>
 
       {/* ── Step content ── */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col">
         <CreateFlowPanel />
       </div>
 

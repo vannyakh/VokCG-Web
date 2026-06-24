@@ -105,7 +105,7 @@ export function StudioShell({ children }: { children: ReactNode }) {
               fullBleed ? 'bg-surface' : 'bg-canvas',
             ].join(' ')}
           >
-            <div className={STUDIO_PAGE.shell}>{children}</div>
+            <div className="relative flex h-full min-h-0 w-full flex-col">{children}</div>
           </main>
         </motion.div>
       </div>

@@ -225,21 +225,15 @@ export function UserMenu() {
         type="button"
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex items-center gap-2 rounded-xl py-1 pl-1.5 pr-2.5 transition-all duration-150"
+        className="flex items-center gap-2 rounded-xl py-1 pl-1.5 pr-2.5 transition-all duration-150 hover:bg-[var(--bg-active)]"
         style={{
           background: open
             ? 'color-mix(in srgb, var(--color-primary) 8%, var(--bg-active))'
-            : 'transparent',
+            : undefined,
           outline: open
             ? '1.5px solid color-mix(in srgb, var(--color-primary) 25%, transparent)'
             : '1.5px solid transparent',
           outlineOffset: 1,
-        }}
-        onMouseEnter={(e) => {
-          if (!open) (e.currentTarget as HTMLElement).style.background = 'var(--bg-active)'
-        }}
-        onMouseLeave={(e) => {
-          if (!open) (e.currentTarget as HTMLElement).style.background = 'transparent'
         }}
       >
         <UserAvatar username={user.username} avatarUrl={user.avatar_url} size="sm" />

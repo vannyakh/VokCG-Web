@@ -95,8 +95,7 @@ function buildSectionNavItems(
 }
 
 const SECTION_ICONS: Record<string, LucideIcon> = {
-  video: Clapperboard,
-  audio: Volume2,
+  studio: Clapperboard,
   billing: CreditCard,
   explore: Sparkles,
   account: Settings,
@@ -104,17 +103,11 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
 
 export const STUDIO_NAV_SECTIONS: NavSection[] = [
   {
-    id: 'video',
-    sectionKey: 'nav.section.video',
+    id: 'studio',
+    sectionKey: 'nav.section.studio',
     items: [
       { to: USER_ROUTES.create, labelKey: 'nav.create', icon: Clapperboard },
       { to: USER_ROUTES.scriptWriter, labelKey: 'nav.scriptWriter', icon: FileText },
-    ],
-  },
-  {
-    id: 'audio',
-    sectionKey: 'nav.section.audio',
-    items: [
       { to: USER_ROUTES.ttsStudio, labelKey: 'nav.ttsStudio', icon: Volume2 },
       { to: USER_ROUTES.voiceStudio, labelKey: 'nav.voiceStudio', icon: Mic },
     ],

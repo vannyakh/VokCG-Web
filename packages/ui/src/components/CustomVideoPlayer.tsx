@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Maximize, Pause, Play, Volume2, VolumeX } from 'lucide-react'
 
 function formatTime(seconds: number) {
@@ -97,9 +97,9 @@ function SeekBar({ progress, duration, onSeek, onScrubStart, onScrubEnd }: SeekB
         aria-valuenow={Math.round(progress)}
         className="relative cursor-pointer rounded-full"
         style={{
-          height: hovering || dragging ? '8px' : '4px',
-          background: 'rgba(255,255,255,0.3)',
-          transition: 'height 0.15s ease',
+          height: hovering || dragging ? '6px' : '4px',
+          background: 'rgba(255,255,255,0.2)',
+          transition: 'height 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           touchAction: 'none',
         }}
         onPointerDown={onPointerDown}
@@ -107,18 +107,21 @@ function SeekBar({ progress, duration, onSeek, onScrubStart, onScrubEnd }: SeekB
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
-        <div className="pointer-events-none absolute left-0 top-0 h-full rounded-full bg-accent" style={{ width: `${progress}%` }} />
-        {(hovering || dragging) && (
-          <div
-            className="pointer-events-none absolute top-1/2 h-3.5 w-3.5 rounded-full bg-white"
-            style={{
-              left: `${progress}%`,
-              transform: 'translate(-50%, -50%)',
-              boxShadow: '0 0 0 2px rgba(59,130,246,0.85)',
-              transition: dragging ? 'none' : 'left 0.05s linear',
-            }}
-          />
-        )}
+        <div 
+          className="pointer-events-none absolute left-0 top-0 h-full rounded-full bg-accent shadow-[0_0_8px_var(--color-primary)]" 
+          style={{ width: `${progress}%` }} 
+        />
+        <div
+          className="pointer-events-none absolute top-1/2 rounded-full bg-white transition-all duration-200"
+          style={{
+            left: `${progress}%`,
+            width: hovering || dragging ? 12 : 6,
+            height: hovering || dragging ? 12 : 6,
+            transform: 'translate(-50%, -50%)',
+            boxShadow: '0 0 0 3px var(--color-primary)',
+            opacity: hovering || dragging ? 1 : 0,
+          }}
+        />
       </div>
     </div>
   )
@@ -150,6 +153,9 @@ export function CustomVideoPlayer({
   const [hovering, setHovering] = useState(false)
   const [scrubbing, setScrubbing] = useState(false)
   const [showControls, setShowControls] = useState(false)
+  const [showPlayAnim, setShowPlayAnim] = useState(false)
+  const [animType, setAnimType] = useState<'play' | 'pause'>('play')
+  const [animKey, setAnimKey] = useState(0)
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const controlsVisible = hovering || scrubbing || !playing || showControls
@@ -184,10 +190,14 @@ export function CustomVideoPlayer({
     if (v.paused) {
       void v.play()
       setPlaying(true)
+      setAnimType('play')
     } else {
       v.pause()
       setPlaying(false)
+      setAnimType('pause')
     }
+    setAnimKey((prev) => prev + 1)
+    setShowPlayAnim(true)
     resetHideTimer()
   }
 
@@ -273,54 +283,86 @@ export function CustomVideoPlayer({
         onEnded={() => setPlaying(false)}
       />
 
-      {!playing && (
+      <AnimatePresence>
+        {showPlayAnim && (
+          <motion.div
+            key={animKey}
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.4 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            onAnimationComplete={() => setShowPlayAnim(false)}
+            className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+          >
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-950/70 text-white backdrop-blur-md border border-white/20 shadow-lg shadow-black/40">
+              {animType === 'play' ? (
+                <Play size={24} fill="white" className="ml-1" />
+              ) : (
+                <Pause size={24} fill="white" />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!playing && !showPlayAnim && (
         <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center">
-          <div
-            className="flex h-14 w-14 items-center justify-center rounded-full border transition-opacity"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex h-14 w-14 items-center justify-center rounded-full border transition-all duration-300"
             style={{
               background: 'rgba(15,23,42,0.65)',
-              borderColor: 'rgba(148,163,184,0.3)',
-              backdropFilter: 'blur(6px)',
+              borderColor: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
               opacity: hovering ? 1 : 0.85,
+              boxShadow: '0 4px 18px rgba(0,0,0,0.4)',
             }}
           >
-            <Play size={22} color="white" fill="white" style={{ marginLeft: 3 }} />
-          </div>
+            <Play size={20} color="white" fill="white" className="ml-0.5" />
+          </motion.div>
         </div>
       )}
 
       <motion.div
         initial={false}
-        animate={{ opacity: controlsVisible ? 1 : 0, y: controlsVisible ? 0 : 10 }}
-        transition={{ duration: 0.2 }}
+        animate={{ opacity: controlsVisible ? 1 : 0, y: controlsVisible ? 0 : 8 }}
+        transition={{ duration: 0.25, ease: 'easeInOut' }}
         style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 2, pointerEvents: controlsVisible ? 'auto' : 'none' }}
       >
-        <div className="px-3 pb-3 pt-8" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.88))' }}>
-          <SeekBar
-            progress={progress}
-            duration={duration}
-            onSeek={seek}
-            onScrubStart={() => setScrubbing(true)}
-            onScrubEnd={() => {
-              setScrubbing(false)
-              resetHideTimer()
+        <div className="px-4 pb-4 pt-12" style={{ background: 'linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.4) 60%, transparent 100%)' }}>
+          <div 
+            className="px-4 py-2.5 rounded-xl border border-white/10 backdrop-blur-md shadow-lg shadow-black/30"
+            style={{
+              background: 'rgba(15,23,42,0.45)',
             }}
-          />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <button type="button" aria-label={playing ? 'Pause' : 'Play'} onClick={togglePlay} className="flex h-7 w-7 items-center justify-center rounded-full text-white hover:bg-white/20">
-                {playing ? <Pause size={16} /> : <Play size={16} />}
+          >
+            <SeekBar
+              progress={progress}
+              duration={duration}
+              onSeek={seek}
+              onScrubStart={() => setScrubbing(true)}
+              onScrubEnd={() => {
+                setScrubbing(false)
+                resetHideTimer()
+              }}
+            />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <button type="button" aria-label={playing ? 'Pause' : 'Play'} onClick={togglePlay} className="flex h-7 w-7 items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 transition-colors">
+                  {playing ? <Pause size={15} /> : <Play size={15} />}
+                </button>
+                <button type="button" aria-label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute} className="flex h-7 w-7 items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 transition-colors">
+                  {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                </button>
+                <span className="min-w-[80px] font-mono text-[11px] font-semibold text-white/80 select-none ml-1">
+                  {formatTime(current)} / {formatTime(duration)}
+                </span>
+              </div>
+              <button type="button" aria-label="Fullscreen" onClick={() => void toggleFullscreen()} className="flex h-7 w-7 items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 transition-colors">
+                <Maximize size={14} />
               </button>
-              <button type="button" aria-label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute} className="flex h-7 w-7 items-center justify-center rounded-full text-white hover:bg-white/20">
-                {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-              </button>
-              <span className="min-w-[80px] font-mono text-xs font-semibold text-white/90">
-                {formatTime(current)} / {formatTime(duration)}
-              </span>
             </div>
-            <button type="button" aria-label="Fullscreen" onClick={() => void toggleFullscreen()} className="flex h-7 w-7 items-center justify-center rounded-full text-white hover:bg-white/20">
-              <Maximize size={15} />
-            </button>
           </div>
         </div>
       </motion.div>

@@ -1,5 +1,4 @@
-'use client'
-
+import { Lock } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 type Props = {
@@ -14,10 +13,13 @@ export function StudioPreviewButton({ children, variant = 'primary' }: Props) {
       type="button"
       disabled
       className={[
-        'inline-flex h-9 items-center justify-center rounded-full px-4 text-[12px] font-semibold opacity-60',
-        variant === 'primary' ? 'bg-accent text-white' : 'border border-default bg-surface text-secondary',
+        'inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3.5 text-[11px] font-bold tracking-wide uppercase opacity-55 border select-none cursor-not-allowed',
+        variant === 'primary' 
+          ? 'bg-[var(--color-primary)] text-white border-transparent' 
+          : 'border-default bg-surface text-muted',
       ].join(' ')}
     >
+      <Lock size={10} strokeWidth={2.5} className="opacity-80" />
       {children}
     </button>
   )

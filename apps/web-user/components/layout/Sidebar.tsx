@@ -61,6 +61,7 @@ export function Sidebar({
     useSidebarStore()
 
   const [navScrolled, setNavScrolled] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const navRef = useRef<HTMLElement>(null)
 
   const { t } = useLocale()
@@ -73,10 +74,12 @@ export function Sidebar({
   const onDragStart = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault()
+      setIsDragging(true)
       const startX = e.clientX
       const startW = sidebarWidth
       const onMove = (ev: MouseEvent) => setSidebarWidth(startW + ev.clientX - startX)
       const onUp = () => {
+        setIsDragging(false)
         document.removeEventListener('mousemove', onMove)
         document.removeEventListener('mouseup', onUp)
       }
@@ -198,7 +201,9 @@ export function Sidebar({
       {!isMobile && !sidebarMiniMode && !isCollapsed && (
         <div
           onMouseDown={onDragStart}
-          className="absolute inset-y-0 right-0 z-40 w-1 cursor-col-resize bg-transparent transition-colors hover:bg-accent/25"
+          className={`absolute inset-y-0 right-0 z-40 w-1 cursor-col-resize transition-all duration-150 ${
+            isDragging ? 'bg-accent/80 shadow-[0_0_8px_var(--color-primary)]' : 'bg-transparent hover:bg-accent/25'
+          }`}
           aria-hidden
         />
       )}

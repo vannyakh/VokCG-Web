@@ -2,11 +2,11 @@ import type { CSSProperties } from 'react'
 
 export const NAV_MENU = {
   marginX: 4,
-  itemRadius: 8,
+  itemRadius: 9999,
   collapsedPaddingX: 10,
   collapsedTileSize: 42,
-  collapsedTileRadius: 11,
-  collapsedIconSize: 20,
+  collapsedTileRadius: 9999,
+  collapsedIconSize: 18,
   collapsedIconStroke: 1.85,
   collapsedIconStrokeActive: 2.25,
   collapsedItemHeight: 42,
@@ -38,7 +38,7 @@ export const navSurface = {
 
 export function navRowRadius(nested: boolean, inPopup: boolean) {
   if (inPopup) return 8
-  return nested ? 8 : NAV_MENU.itemRadius
+  return 9999
 }
 
 export function navIconColor(active: boolean): CSSProperties {
@@ -49,8 +49,8 @@ export function navIconColor(active: boolean): CSSProperties {
 
 export function navCollapsedTileStyle(active: boolean): CSSProperties {
   return {
-    width: NAV_MENU.collapsedTileSize,
-    height: NAV_MENU.collapsedTileSize,
+    width: 52,
+    height: 32,
     background: active ? navSurface.active : 'transparent',
     color: active ? 'var(--color-primary)' : 'var(--text-nav-inactive)',
   }
@@ -93,8 +93,6 @@ export function navItemButtonClass({
       ? 'text-accent'
       : disabled
         ? 'cursor-not-allowed text-muted/40'
-        : inPopup
-          ? 'text-nav-inactive hover:bg-[color-mix(in_srgb,var(--text-muted)_8%,transparent)] hover:text-nav-active'
-          : 'text-nav-inactive hover:text-nav-active',
+        : 'text-nav-inactive hover:bg-[color-mix(in_srgb,var(--text-muted)_6%,transparent)] hover:text-nav-active',
   ].join(' ')
 }

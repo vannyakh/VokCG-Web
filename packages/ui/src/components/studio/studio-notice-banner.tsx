@@ -6,25 +6,29 @@ import type { ReactNode } from 'react'
 
 type Tone = 'preview' | 'info' | 'warning' | 'readonly'
 
-const TONE_STYLES: Record<Tone, { background: string; border: string; color: string }> = {
+const TONE_STYLES: Record<Tone, { background: string; border: string; accent: string; color: string }> = {
   preview: {
-    background: 'color-mix(in srgb, var(--color-primary) 8%, var(--bg-surface))',
-    border: 'color-mix(in srgb, var(--color-primary) 18%, var(--border-divider))',
-    color: 'var(--text-secondary)',
+    background: 'color-mix(in srgb, var(--color-primary) 6%, var(--bg-surface))',
+    border: 'color-mix(in srgb, var(--color-primary) 15%, var(--border-default))',
+    accent: 'var(--color-primary)',
+    color: 'var(--text-primary)',
   },
   info: {
-    background: 'color-mix(in srgb, var(--bg-subtle) 70%, var(--bg-surface))',
-    border: 'var(--border-divider)',
+    background: 'color-mix(in srgb, var(--text-muted) 8%, var(--bg-surface))',
+    border: 'var(--border-default)',
+    accent: 'var(--text-muted)',
     color: 'var(--text-secondary)',
   },
   warning: {
-    background: 'color-mix(in srgb, #f59e0b 10%, var(--bg-surface))',
-    border: 'color-mix(in srgb, #f59e0b 24%, var(--border-divider))',
-    color: 'var(--text-secondary)',
+    background: 'color-mix(in srgb, #f59e0b 8%, var(--bg-surface))',
+    border: 'color-mix(in srgb, #f59e0b 20%, var(--border-default))',
+    accent: '#f59e0b',
+    color: 'var(--text-primary)',
   },
   readonly: {
-    background: 'color-mix(in srgb, var(--text-muted) 6%, var(--bg-surface))',
-    border: 'var(--border-divider)',
+    background: 'color-mix(in srgb, var(--text-muted) 4%, var(--bg-surface))',
+    border: 'var(--border-subtle)',
+    accent: 'color-mix(in srgb, var(--text-muted) 40%, transparent)',
     color: 'var(--text-muted)',
   },
 }
@@ -40,15 +44,19 @@ export function StudioNoticeBanner({ children, tone = 'info', icon: Icon = Info 
 
   return (
     <div
-      className="flex gap-3 rounded-xl px-4 py-3 text-[13px] leading-relaxed"
+      className="relative flex gap-3.5 rounded-xl border pl-4.5 pr-5 py-3.5 text-[13px] leading-relaxed shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-all duration-300"
       style={{
         background: styles.background,
-        border: `1px solid ${styles.border}`,
+        borderColor: styles.border,
         color: styles.color,
       }}
     >
-      <Icon size={16} className="mt-0.5 shrink-0 opacity-80" />
-      <div className="min-w-0 flex-1">{children}</div>
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+        style={{ background: styles.accent }}
+      />
+      <Icon size={16} className="mt-0.5 shrink-0 opacity-90" style={{ color: styles.accent }} />
+      <div className="min-w-0 flex-1 font-medium">{children}</div>
     </div>
   )
 }

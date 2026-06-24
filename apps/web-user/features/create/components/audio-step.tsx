@@ -11,7 +11,7 @@ import { useCreateConfig } from '../hooks/use-create-config'
 import { voiceSelectOptions } from '../../tts/lib/tts-utils'
 import { CustomAudioPlayer } from '../../voice/components/custom-audio-player'
 import { VoiceClonePanel } from '../../voice/components/voice-clone-panel'
-import { FieldMenuSelect, MenuSelect, numberOptions, StepSection } from './form-primitives'
+import { FieldMenuSelect, MenuSelect, numberOptions, RangeField, StepSection } from './form-primitives'
 
 const VOICE_VOLUMES = [0.6, 0.8, 1.0, 1.2, 1.5, 2.0, 3.0, 4.0, 5.0] as const
 const VOICE_RATES = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.8, 2.0] as const
@@ -133,8 +133,8 @@ function AudioSettingsSection() {
         </>
       )}
 
-      <FieldMenuSelect label="Speech Volume (1.0 represents 100%)" options={numberOptions(VOICE_VOLUMES)} value={String(audio.voiceVolume)} onChange={(v) => patch({ voiceVolume: Number(v) })} />
-      <FieldMenuSelect label="Speech Rate (1.0 means 1x speed)" options={numberOptions(VOICE_RATES)} value={String(audio.voiceRate)} onChange={(v) => patch({ voiceRate: Number(v) })} />
+      <RangeField label="Speech Volume" value={audio.voiceVolume} min={0.1} max={5.0} step={0.1} onChange={(v) => patch({ voiceVolume: v })} />
+      <RangeField label="Speech Rate (Speed)" value={audio.voiceRate} min={0.5} max={2.0} step={0.1} onChange={(v) => patch({ voiceRate: v })} />
       <FieldMenuSelect label="Background Music" options={BGM_OPTIONS} value={audio.bgmType} onChange={(v) => patch({ bgmType: v })} />
 
       {audio.bgmType === 'custom' && (
@@ -144,7 +144,7 @@ function AudioSettingsSection() {
         </div>
       )}
 
-      <FieldMenuSelect label="Background Music Volume" options={numberOptions(BGM_VOLUMES)} value={String(audio.bgmVolume)} onChange={(v) => patch({ bgmVolume: Number(v) })} />
+      <RangeField label="Background Music Volume" value={audio.bgmVolume} min={0.0} max={1.0} step={0.05} onChange={(v) => patch({ bgmVolume: v })} />
     </div>
   )
 }

@@ -186,3 +186,49 @@ export function filterTemplates(templates: ScriptTemplate[], query: string) {
   const q = query.trim().toLowerCase(); if (!q) return templates
   return templates.filter((t) => t.id.includes(q) || t.nameKey.toLowerCase().includes(q) || t.metaKey.toLowerCase().includes(q))
 }
+
+export const WORD_COUNT_TARGETS: Record<ScriptLength, { min: number; max: number }> = {
+  short: { min: 80, max: 150 },
+  medium: { min: 300, max: 600 },
+  long: { min: 750, max: 1200 },
+  extended: { min: 1500, max: 2500 },
+}
+
+export const TOPIC_SUGGESTIONS: Record<ScriptTemplateId, string[]> = {
+  youtube: [
+    '5 Secrets to scale your SaaS business in 2026',
+    'Why traditional databases are dying (and what is next)',
+    'A complete walkthrough of the new Apple Vision headset',
+  ],
+  reel: [
+    '3 tools I use to write code 10x faster 🚀',
+    'Stop using standard loops in JavaScript! Do this instead',
+    'Morning routine of a remote Google engineer',
+  ],
+  demo: [
+    'VokCG: The AI video platform that converts text into high-converting ads',
+    'Introducing DevSync: Instant collaborative terminal sharing',
+    'How our new browser extension automates receipt sorting',
+  ],
+  tutorial: [
+    'How to build a complete Next.js app with authentication in 10 minutes',
+    'Mastering CSS Grid: A step-by-step guide for beginners',
+    'Deploying your first Python backend to the cloud',
+  ],
+  ad: [
+    'Tired of editing videos for hours? Try VokCG now for free!',
+    'Upgrade your workspace with our ergonomic standing desks',
+    'The ultimate cyber-security boot camp for career changers',
+  ],
+  explainer: [
+    'How does quantum computing actually work? (Simply explained)',
+    'What is inflation and how does it affect your savings?',
+    'The history of the internet and how it evolved',
+  ],
+  podcast: [
+    'Welcome back to Code Talk. Today we are joined by a senior AI researcher.',
+    'Ep 42: The future of web development frameworks with our special guest.',
+    'Welcome to Startup Journey. Let’s talk about how to get your first 100 users.',
+  ],
+}
+

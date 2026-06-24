@@ -14,36 +14,72 @@ function computeIntensity(col: number, row: number, cols: number, rows: number, 
   return ((p1 + p2 + p3) / 3) * 0.45 + 0.55
 }
 
-function dotRGBA(v: number): [number, number, number, number] {
-  if (v > 0.9) return [255, 255, 255, 1]
-  if (v > 0.76) {
-    const l = (v - 0.76) / 0.14
-    return [Math.round(124 + (255 - 124) * l), Math.round(109 + (255 - 109) * l), 250, 0.4 + l * 0.6]
+function parseHex(hex: string): [number, number, number] {
+  const clean = hex.trim().replace('#', '')
+  if (clean.length === 3) {
+    const c0 = clean.charAt(0)
+    const c1 = clean.charAt(1)
+    const c2 = clean.charAt(2)
+    const r = parseInt(c0 + c0, 16)
+    const g = parseInt(c1 + c1, 16)
+    const b = parseInt(c2 + c2, 16)
+    return [r, g, b]
   }
-  if (v > 0.52) {
-    const l = (v - 0.52) / 0.24
-    return [Math.round(60 + (124 - 60) * l), Math.round(55 + (109 - 55) * l), Math.round(140 + (250 - 140) * l), 0.2 + l * 0.4]
+  if (clean.length === 6) {
+    const r = parseInt(clean.slice(0, 2), 16)
+    const g = parseInt(clean.slice(2, 4), 16)
+    const b = parseInt(clean.slice(4, 6), 16)
+    return [r, g, b]
   }
-  const l = v / 0.52
-  return [Math.round(28 + (60 - 28) * l), Math.round(28 + (55 - 28) * l), Math.round(35 + (140 - 35) * l), 0.08 + l * 0.2]
+  return [59, 130, 246] // fallback #3b82f6
+}
+
+function getDotColor(v: number, pr: number, pg: number, pb: number): [number, number, number, number] {
+  if (v > 0.9) return [255, 255, 255, 1.0]
+  if (v > 0.7) {
+    const l = (v - 0.7) / 0.2
+    return [
+      Math.round(pr + (255 - pr) * l),
+      Math.round(pg + (255 - pg) * l),
+      Math.round(pb + (255 - pb) * l),
+      0.5 + l * 0.5
+    ]
+  }
+  if (v > 0.4) {
+    const l = (v - 0.4) / 0.3
+    const mr = Math.round(pr * 0.48)
+    const mg = Math.round(pg * 0.48)
+    const mb = Math.round(pb * 0.48)
+    return [
+      Math.round(mr + (pr - mr) * l),
+      Math.round(mg + (pg - mg) * l),
+      Math.round(mb + (pb - mb) * l),
+      0.12 + l * 0.38
+    ]
+  }
+  const l = v / 0.4
+  const mr = Math.round(pr * 0.2)
+  const mg = Math.round(pg * 0.2)
+  const mb = Math.round(pb * 0.2)
+  return [mr, mg, mb, 0.03 + l * 0.09]
 }
 
 function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
   const map = {
-    tl: { top: 8, left: 8, borderWidth: '1px 0 0 1px', borderRadius: '2px 0 0 0' },
-    tr: { top: 8, right: 8, borderWidth: '1px 1px 0 0', borderRadius: '0 2px 0 0' },
-    bl: { bottom: 8, left: 8, borderWidth: '0 0 1px 1px', borderRadius: '0 0 0 2px' },
-    br: { bottom: 8, right: 8, borderWidth: '0 1px 1px 0', borderRadius: '0 0 2px 0' },
+    tl: { top: 8, left: 8, borderWidth: '1.5px 0 0 1.5px', borderRadius: '4px 0 0 0' },
+    tr: { top: 8, right: 8, borderWidth: '1.5px 1.5px 0 0', borderRadius: '0 4px 0 0' },
+    bl: { bottom: 8, left: 8, borderWidth: '0 0 1.5px 1.5px', borderRadius: '0 0 0 4px' },
+    br: { bottom: 8, right: 8, borderWidth: '0 1.5px 1.5px 0', borderRadius: '0 0 4px 0' },
   } as const
   return (
     <div
       style={{
         position: 'absolute',
-        width: 12,
-        height: 12,
+        width: 14,
+        height: 14,
         borderStyle: 'solid',
-        borderColor: '#1e1e22',
-        opacity: 0.6,
+        borderColor: 'var(--border-default)',
+        opacity: 0.8,
         ...map[pos],
       }}
     />
@@ -57,7 +93,7 @@ function PulseDot() {
         width: 6,
         height: 6,
         borderRadius: '50%',
-        background: '#7c6dfa',
+        background: 'var(--color-primary)',
         animation: 'dotPulse 2s ease-in-out infinite',
       }}
     />
@@ -98,6 +134,7 @@ export function DotGridLoader({
   const rafRef = useRef<number | null>(null)
   const tickRef = useRef(0)
   const gridRef = useRef({ cols: 28, rows: 24 })
+  const primaryColorRef = useRef<[number, number, number]>([59, 130, 246])
 
   const [observedSize, setObservedSize] = useState<{ width: number; height: number } | null>(null)
   const boxSize = fill ? (observedSize ?? { width, height }) : { width, height }
@@ -105,6 +142,15 @@ export function DotGridLoader({
 
   const title = status?.title ?? 'Processing'
   const isFullBleed = fill && !compact
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const style = getComputedStyle(document.documentElement)
+    const colorStr = style.getPropertyValue('--color-primary')
+    if (colorStr) {
+      primaryColorRef.current = parseHex(colorStr)
+    }
+  }, [])
 
   useEffect(() => {
     if (!fill) return
@@ -138,12 +184,16 @@ export function DotGridLoader({
       const { cols, rows } = gridRef.current
       const gx = canvas!.width / cols
       const gy = canvas!.height / rows
-      ctx!.fillStyle = '#0c0c0d'
-      ctx!.fillRect(0, 0, canvas!.width, canvas!.height)
+      
+      // Clear instead of drawing static solid backgrounds to support dark/light theme
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height)
+      
+      const [pr, pg, pb] = primaryColorRef.current
+
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const v = computeIntensity(c, r, cols, rows, tickRef.current)
-          const [cr, cg, cb, a] = dotRGBA(v)
+          const [cr, cg, cb, a] = getDotColor(v, pr, pg, pb)
           const rad = 1.6 * (0.75 + v * 0.5)
           ctx!.beginPath()
           ctx!.arc(gx * (c + 0.5), gy * (r + 0.5), rad, 0, Math.PI * 2)
@@ -177,14 +227,15 @@ export function DotGridLoader({
       >
         <div
           style={{
-            background: '#0c0c0d',
+            background: 'var(--bg-canvas)',
             borderRadius: fill ? 0 : 20,
-            border: fill ? 'none' : '1px solid #1e1e22',
+            border: fill ? 'none' : '1px solid var(--border-default)',
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             flexShrink: 0,
+            boxShadow: fill ? 'none' : 'var(--shadow-md)',
             ...(fill ? { width: '100%', height: '100%', flex: 1 } : { width: boxSize.width, height: boxSize.height }),
           }}
         >
@@ -196,7 +247,7 @@ export function DotGridLoader({
               <Corner pos="br" />
             </>
           )}
-          <div style={{ position: 'absolute', inset: 0 }}>
+          <div style={{ position: 'absolute', inset: 0, opacity: 0.95 }}>
             <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
           </div>
           {!hideHud && (
@@ -205,16 +256,17 @@ export function DotGridLoader({
                 compact
                   ? {
                       position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2,
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      display: 'flex', alignItems: 'center',
+                      justifyContent: 'space-between',
                       gap: 6, padding: '5px 7px', minHeight: 24,
-                      background: 'linear-gradient(180deg,rgba(12,12,13,.92) 0%,rgba(12,12,13,.45) 70%,transparent 100%)',
+                      background: 'linear-gradient(180deg, var(--bg-canvas) 0%, color-mix(in srgb, var(--bg-canvas) 45%, transparent) 70%, transparent 100%)',
                       pointerEvents: 'none',
                     }
                   : {
                       position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2,
                       display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
                       gap: 10, padding: '12px 14px',
-                      background: 'linear-gradient(180deg,rgba(12,12,13,.94) 0%,rgba(12,12,13,.72) 55%,transparent 100%)',
+                      background: 'linear-gradient(180deg, var(--bg-canvas) 0%, color-mix(in srgb, var(--bg-canvas) 72%, transparent) 55%, transparent 100%)',
                       pointerEvents: 'none',
                     }
               }
@@ -223,21 +275,21 @@ export function DotGridLoader({
                 <span
                   style={
                     compact
-                      ? { fontSize: 8, fontWeight: 700, color: '#f4f4f5', letterSpacing: '0.1em', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 72 }
-                      : { fontSize: 11, fontWeight: 600, color: '#f4f4f5', letterSpacing: '0.08em', textTransform: 'uppercase' }
+                      ? { fontSize: 8, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.1em', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 72 }
+                      : { fontSize: 11, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '0.08em', textTransform: 'uppercase' }
                   }
                 >
                   {title}
                 </span>
-                {!compact && <span style={{ fontSize: 10, color: '#71717a', letterSpacing: '0.04em' }}>VokCGStudio · {jobId}</span>}
+                {!compact && <span style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>VokCGStudio · {jobId}</span>}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                 <PulseDot />
                 <span
                   style={
                     compact
-                      ? { fontSize: 8, fontWeight: 700, color: '#a78bfa', letterSpacing: '0.04em', fontVariantNumeric: 'tabular-nums' }
-                      : { fontSize: 11, fontWeight: 600, color: '#a78bfa', letterSpacing: '0.04em', fontVariantNumeric: 'tabular-nums' }
+                      ? { fontSize: 8, fontWeight: 700, color: 'var(--color-primary)', letterSpacing: '0.04em', fontVariantNumeric: 'tabular-nums' }
+                      : { fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', letterSpacing: '0.04em', fontVariantNumeric: 'tabular-nums' }
                   }
                 >
                   {displayProgress}%

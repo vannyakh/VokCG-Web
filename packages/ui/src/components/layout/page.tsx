@@ -52,6 +52,8 @@ export type PageProps = {
   contentInsetX?: boolean | PageSpacing
   /** Scroll content independently. Defaults to `!autoContentHeight`. */
   scroll?: boolean
+  /** Stick the page header to the top on scroll @default false */
+  stickyHeader?: boolean
   /** Show a divider under the header @default true */
   headerBorder?: boolean
   contentClass?: string
@@ -99,6 +101,7 @@ export function Page({
   insetX,
   contentInsetX,
   scroll,
+  stickyHeader = false,
   headerBorder = true,
   contentClass = '',
   headerClass = '',
@@ -115,6 +118,7 @@ export function Page({
 
   const showHeader = hasNode(title) || hasNode(description) || hasNode(extra) || Boolean(badge)
   const hasTitleBlock = hasNode(title) || Boolean(badge)
+  const hasOnlyExtra = !hasTitleBlock && !hasNode(description) && hasNode(extra)
   const headerAlign = hasTitleBlock
     ? 'items-start justify-between'
     : hasNode(description)
@@ -180,9 +184,12 @@ export function Page({
           ref={headerRef}
           className={joinClasses(
             'page-header w-full shrink-0',
+            stickyHeader && 'sticky top-0 z-10',
             headerBorder && 'border-b border-default',
+            stickyHeader && 'backdrop-blur-md',
             headerClass,
           )}
+          style={stickyHeader ? { background: 'color-mix(in srgb, var(--bg-surface) 90%, transparent)' } : undefined}
         >
           <div
             className={joinClasses(
@@ -192,7 +199,7 @@ export function Page({
               headerInnerClass,
             )}
           >
-            <div className={`flex flex-wrap gap-3 ${headerAlign}`}>
+            <div className={`flex flex-wrap gap-3 ${hasOnlyExtra ? 'items-center justify-end' : headerAlign}`}>
               {(hasTitleBlock || hasNode(description)) && (
                 <div className="min-w-0 flex-1">
                   {hasTitleBlock && (
@@ -201,14 +208,23 @@ export function Page({
                         <h1 className="text-base font-bold tracking-tight text-primary">{title}</h1>
                       )}
                       {badge && (
-                        <Tag className="m-0 border-amber-500/30 bg-amber-500/10 text-[10px] font-bold uppercase text-amber-600 dark:text-amber-400">
+                        <Tag className="m-0 inline-flex items-center gap-1 border-amber-500/30 bg-amber-500/10 text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                          <span
+                            className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500"
+                            style={{ animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite' }}
+                          />
                           {badge}
                         </Tag>
                       )}
                     </div>
                   )}
                   {hasNode(description) && (
-                    <p className={`text-[13px] text-muted ${hasTitleBlock ? 'mt-0.5' : ''}`.trim()}>
+                    <p
+                      className={joinClasses(
+                        'text-[13px] leading-relaxed text-muted',
+                        hasTitleBlock ? 'mt-1' : '',
+                      )}
+                    >
                       {description}
                     </p>
                   )}

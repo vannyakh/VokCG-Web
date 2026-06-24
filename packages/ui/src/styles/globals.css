@@ -972,3 +972,28 @@ body {
 .ant-spin-dot-item { background-color: var(--color-primary) !important; }
 
 .ant-divider { border-color: var(--border-default) !important; }
+
+/* ── Form Table Modernization Overrides ─────────────────────────────── */
+.form-table-input,
+.form-table-select .ant-select-selector {
+  border-radius: 9999px !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+}
+
+.ant-pagination-item,
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link,
+.ant-pagination-jump-prev .ant-pagination-item-link,
+.ant-pagination-jump-next .ant-pagination-item-link {
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-table-grid tbody tr {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+

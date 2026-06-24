@@ -30,32 +30,17 @@ export function SidebarWorkspaceCard({ workspace, isDemo }: Props) {
   return (
     <Link
       href={USER_ROUTES.billing}
-      className="group mx-2 mb-2.5 flex shrink-0 items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors"
-      style={{
-        background: 'color-mix(in srgb, var(--bg-surface) 60%, var(--bg-sidebar))',
-        border: '1px solid var(--border-default)',
-      }}
-      onMouseEnter={(e) => {
-        ;(e.currentTarget as HTMLElement).style.background =
-          'color-mix(in srgb, var(--color-primary) 6%, var(--bg-surface))'
-        ;(e.currentTarget as HTMLElement).style.borderColor =
-          'color-mix(in srgb, var(--color-primary) 22%, transparent)'
-      }}
-      onMouseLeave={(e) => {
-        ;(e.currentTarget as HTMLElement).style.background =
-          'color-mix(in srgb, var(--bg-surface) 60%, var(--bg-sidebar))'
-        ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'
-      }}
+      className="group mx-2 mb-2.5 flex shrink-0 items-center gap-3 rounded-2xl border border-default bg-[color-mix(in_srgb,var(--bg-surface)_60%,var(--bg-sidebar))] px-3 py-2.5 transition-all duration-200 hover:border-[color-mix(in_srgb,var(--color-primary)_22%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-primary)_6%,var(--bg-surface))]"
     >
       {/* Icon */}
       <div
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200 group-hover:scale-[1.03]"
         style={{
           background: 'color-mix(in srgb, var(--color-primary) 12%, transparent)',
           color: 'var(--color-primary)',
         }}
       >
-        <Zap size={15} strokeWidth={2.2} />
+        <Zap size={15} strokeWidth={2.2} className="transition-transform duration-200 group-hover:rotate-6" />
       </div>
 
       {/* Info */}

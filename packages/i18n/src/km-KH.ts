@@ -31,6 +31,7 @@ const kmKH: Messages = {
     section: {
       video: 'វីដេអូ',
       audio: 'សំឡេង',
+      studio: 'ឧបករណ៍ស្ទូឌីយោ',
       billing: 'វិក្កយបត្រ',
       explore: 'រុករក',
       account: 'គណនី',
@@ -65,6 +66,7 @@ const kmKH: Messages = {
   },
   create: {
     ...enUS.create,
+    lockedHint: 'សូមបំពេញជំហានមុនៗជាមុនសិន',
     studioLabel: 'ស្ទូឌីយោ · បង្កើត',
     preview: 'មើលជាមុន',
     generateBelow: 'បង្កើតខាងក្រោម ↑',
@@ -169,6 +171,27 @@ const kmKH: Messages = {
       saveAvatar: 'រក្សាទុក',
       uploadingAvatar: 'កំពុងផ្ទុក…',
       avatarUpdated: 'បានធ្វើបច្ចុប្បន្នភាពរូបភាព',
+    },
+  },
+  scriptWriter: {
+    ...enUS.scriptWriter,
+    title: 'Script Writer',
+    deleteHistory: 'លុបប្រវត្តិ',
+    clearHistory: 'លុបប្រវត្តិទាំងអស់',
+    wordCountGoal: 'គោលដៅចំនួនពាក្យ',
+    currentProgress: 'វឌ្ឍនភាពបច្ចុប្បន្ន',
+    targetRange: 'គោលដៅ៖ {{min}} - {{max}} ពាក្យ',
+    trySuggestion: 'សាកល្បងប្រធានបទគំរូ៖',
+    actionTranslateTitle: 'បកប្រែស្គ្រីប',
+    selectLanguage: 'ជ្រើសរើសភាសាគោលដៅ',
+    translateBtn: 'បកប្រែ',
+    translatedSuccess: 'បានបកប្រែស្គ្រីបទៅជាភាសា {{lang}}',
+    presets: {
+      punchier: '⚡ ធ្វើឲ្យទាក់ទាញជាងមុន',
+      professional: '👔 បែបអាជីព/ផ្លូវការ',
+      question: '❓ បន្ថែមសំណួរ',
+      analogy: '💡 ប្រើការប្រៀបធៀប',
+      conversational: '💬 បែបសាមញ្ញ/និយាយលេង',
     },
   },
   voiceStudio: {

@@ -16,6 +16,7 @@ import { USER_ROUTES } from '@vokcg/constants'
 import type { CreateStudioConfig } from '@/types/create-config'
 import type { ScriptResponse, TermsResponse } from '@/types/content'
 import { useAppMessage } from '@vokcg/ui'
+import { motion, AnimatePresence } from 'framer-motion'
 import { configToScriptPayload, configToTermsPayload, CREATE_CONFIG_DEFAULTS } from '../../create/lib/create-config'
 import {
   buildGenerationSubject, buildHookVariations, buildScriptPrompt,
@@ -25,6 +26,7 @@ import {
   parseScriptSections, platformForTemplate, relativeHistoryTime, saveScriptHistory,
   SCRIPT_LENGTHS, SCRIPT_PLATFORMS, SCRIPT_TEMPLATES, SCRIPT_TONES,
   sectionNamesForTemplate, sectionsToScript,
+  WORD_COUNT_TARGETS, TOPIC_SUGGESTIONS,
   type HookVariation, type ScriptHistoryEntry, type ScriptLength, type ScriptPlatform,
   type ScriptSection, type ScriptTemplateId, type ScriptTone, type ScriptVersion,
 } from '../lib/script-writer-utils'
@@ -85,7 +87,16 @@ export function ScriptWriterWorkspace() {
   const [modalOnConfirm, setModalOnConfirm] = useState<(() => void) | null>(null)
   const [pendingRewriteSection, setPendingRewriteSection] = useState<ScriptSection | null>(null)
   const [busySectionId, setBusySectionId] = useState<string | null>(null)
+  const [translateModalOpen, setTranslateModalOpen] = useState(false)
+  const [translateLanguage, setTranslateLanguage] = useState('English')
   const draftLoaded = useRef(false)
+
+  const handleDeleteHistory = (id: string) => {
+    const nextHistory = history.filter((item) => item.id !== id)
+    setHistory(nextHistory)
+    saveScriptHistory(nextHistory)
+    message.success(t('scriptWriter.deleteHistory'))
+  }
 
   const template = useMemo(
     () => SCRIPT_TEMPLATES.find((item) => item.id === templateId) ?? SCRIPT_TEMPLATES[0]!,
@@ -183,7 +194,54 @@ export function ScriptWriterWorkspace() {
     onSettled: () => setBusySectionId(null),
   })
 
-  const busy = generateScriptMutation.isPending || generateTermsMutation.isPending || sectionMutation.isPending
+  const translateMutation = useMutation({
+    mutationFn: (targetLang: string) => {
+      const translationPrompt = `You are a professional translator. Translate the following script to ${targetLang}. Maintain the exact section layout, tone, and HTML structure (if any). Do not add any conversational meta-remarks or introductions, return ONLY the translated script text:\n\n${script}`
+      return postApi<ScriptResponse>('/api/v1/scripts', {
+        video_subject: topic,
+        video_language: targetLang,
+        paragraph_number: sections.length || 3,
+        video_script_prompt: translationPrompt,
+        generation_mode: 'structured',
+        section_names: sectionNames,
+      })
+    },
+    onSuccess: (payload, targetLang) => {
+      const nextScript = payload.data.video_script || ''
+      const nextSections = parseScriptSections(nextScript, sectionNames)
+      setScript(nextScript)
+      setSections(nextSections)
+      setVariations(buildHookVariations(nextSections))
+      setLanguage(targetLang)
+      pushVersion(nextSections, nextScript)
+      message.success(t('scriptWriter.translatedSuccess', { lang: targetLang }))
+    },
+    onError: (error) => message.error(toErrorText(error) || t('scriptWriter.generateFailed')),
+  })
+
+  const chaptersMutation = useMutation({
+    mutationFn: () => {
+      const prompt = `Analyze this video script and extract 3-5 chapter markers with timestamps (e.g. 0:00 - Introduction) based on its structure. Return ONLY the timestamps list:\n\n${script}`
+      return postApi<ScriptResponse>('/api/v1/scripts', {
+        video_subject: topic,
+        video_language: language || 'English',
+        paragraph_number: sections.length || 3,
+        video_script_prompt: prompt,
+        generation_mode: 'structured',
+        section_names: sectionNames,
+      })
+    },
+    onSuccess: (payload) => {
+      openModal(
+        t('scriptWriter.actionChapters'),
+        t('scriptWriter.chaptersHint') || 'Suggested chapters for your script:',
+        { readOnly: true, value: payload.data.video_script || '', confirmLabel: t('common.close'), onConfirm: () => undefined }
+      )
+    },
+    onError: (error) => message.error(toErrorText(error) || t('scriptWriter.generateFailed')),
+  })
+
+  const busy = generateScriptMutation.isPending || generateTermsMutation.isPending || sectionMutation.isPending || translateMutation.isPending || chaptersMutation.isPending
 
   const handleGenerate = () => {
     if (!topic.trim()) { message.warning(t('scriptWriter.topicRequired')); return }
@@ -270,6 +328,14 @@ export function ScriptWriterWorkspace() {
       })
       return
     }
+    if (action === 'translate') {
+      setTranslateModalOpen(true)
+      return
+    }
+    if (action === 'chapters') {
+      chaptersMutation.mutate()
+      return
+    }
     message.info(t('scriptWriter.actionSoon'))
   }
 
@@ -278,7 +344,7 @@ export function ScriptWriterWorkspace() {
   return (
     <>
       <div className="flex h-full min-h-0 overflow-hidden rounded-xl border border-default bg-canvas">
-        <TemplatePanel t={t} templateSearch={templateSearch} onSearchChange={setTemplateSearch} filteredTemplates={filteredTemplates} templateId={templateId} onSelectTemplate={handleTemplateSelect} history={history} onHistorySelect={(entry) => { setTemplateId(entry.templateId); setTopic(entry.title) }} onNewScript={handleNewScript} />
+        <TemplatePanel t={t} templateSearch={templateSearch} onSearchChange={setTemplateSearch} filteredTemplates={filteredTemplates} templateId={templateId} onSelectTemplate={handleTemplateSelect} history={history} onHistorySelect={(entry) => { setTemplateId(entry.templateId); setTopic(entry.title) }} onNewScript={handleNewScript} onDeleteHistory={handleDeleteHistory} />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar t={t} tab={tab} versionsCount={versions.length} readMinutes={readMinutes} credits={credits} onTabChange={(next) => { if (next === 'tts') handleSendToTts(); else setTab(next) }} onCopyAll={() => void handleCopyAll()} copyDisabled={!hasScript} />
@@ -296,7 +362,7 @@ export function ScriptWriterWorkspace() {
 
               {tab === 'generate' && (
                 <div className="flex flex-col gap-3.5">
-                  <BriefCard t={t} templateLabel={t(`scriptWriter.${template.nameKey}`)} platform={platform} length={length} audience={audience} language={language} topic={topic} keywords={keywords} keywordDraft={keywordDraft} addingKeyword={addingKeyword} tone={tone} credits={credits} busy={busy} languageOptions={languageOptions} onPlatformChange={setPlatform} onLengthChange={setLength} onAudienceChange={setAudience} onLanguageChange={setLanguage} onTopicChange={setTopic} onToneChange={setTone} onGenerate={handleGenerate} onRemoveKeyword={(keyword) => setKeywords((prev) => prev.filter((item) => item !== keyword))} onKeywordDraftChange={setKeywordDraft} onStartAddKeyword={() => setAddingKeyword(true)} onCancelAddKeyword={() => { setAddingKeyword(false); setKeywordDraft('') }} onConfirmAddKeyword={() => { addKeyword(keywordDraft); setKeywordDraft(''); setAddingKeyword(false) }} onAiKeywords={() => generateTermsMutation.mutate('keywords')} aiKeywordsDisabled={!script.trim() || busy} />
+                  <BriefCard t={t} templateLabel={t(`scriptWriter.${template.nameKey}`)} platform={platform} length={length} audience={audience} language={language} topic={topic} keywords={keywords} keywordDraft={keywordDraft} addingKeyword={addingKeyword} tone={tone} credits={credits} busy={busy} languageOptions={languageOptions} onPlatformChange={setPlatform} onLengthChange={setLength} onAudienceChange={setAudience} onLanguageChange={setLanguage} onTopicChange={setTopic} onToneChange={setTone} onGenerate={handleGenerate} onRemoveKeyword={(keyword) => setKeywords((prev) => prev.filter((item) => item !== keyword))} onKeywordDraftChange={setKeywordDraft} onStartAddKeyword={() => setAddingKeyword(true)} onCancelAddKeyword={() => { setAddingKeyword(false); setKeywordDraft('') }} onConfirmAddKeyword={() => { addKeyword(keywordDraft); setKeywordDraft(''); setAddingKeyword(false) }} onAiKeywords={() => generateTermsMutation.mutate('keywords')} aiKeywordsDisabled={!topic.trim() || busy} templateId={templateId} />
 
                   {status === 'generating' && (
                     <div className="overflow-hidden rounded-xl border border-default bg-surface">
@@ -320,24 +386,69 @@ export function ScriptWriterWorkspace() {
               )}
             </div>
 
-            <InsightsPanel t={t} hasScript={hasScript} wordCount={wordCount} duration={estimateSpeechDurationWords(wordCount)} gradeLevel={gradeLevel} clarityScore={quality.clarity} quality={quality} onExportTxt={() => handleExport('txt')} onExportMd={() => handleExport('md')} onSendToTts={() => handleSendToTts()} onUseInCreate={handleUseInCreate} onAiAction={runAiAction} />
+            <InsightsPanel t={t} hasScript={hasScript} wordCount={wordCount} duration={estimateSpeechDurationWords(wordCount)} gradeLevel={gradeLevel} clarityScore={quality.clarity} quality={quality} onExportTxt={() => handleExport('txt')} onExportMd={() => handleExport('md')} onSendToTts={() => handleSendToTts()} onUseInCreate={handleUseInCreate} onAiAction={runAiAction} length={length} />
           </div>
         </div>
       </div>
 
       <Modal open={modalOpen} title={modalTitle} onCancel={() => { setPendingRewriteSection(null); setModalOpen(false) }} onOk={handleModalConfirm} okText={modalConfirmLabel} cancelText={t('common.cancel')}>
         <p className="mb-3 text-sm text-muted">{modalHint}</p>
+        {pendingRewriteSection && (
+          <div className="mb-3">
+            <span className="text-[10px] font-semibold text-muted block mb-1.5">Quick Presets:</span>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { key: 'punchier', text: 'Make it punchier and more engaging.' },
+                { key: 'professional', text: 'Make the tone more professional and formal.' },
+                { key: 'question', text: 'Add a thought-provoking rhetorical question.' },
+                { key: 'analogy', text: 'Use a simple real-world analogy to explain.' },
+                { key: 'conversational', text: 'Make it sound more conversational and natural.' },
+              ].map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => setModalValue(p.text)}
+                  className="rounded-full bg-subtle hover:bg-default border border-default px-2.5 py-1 text-[10px] text-secondary hover:text-primary transition-colors cursor-pointer"
+                >
+                  {t(`scriptWriter.presets.${p.key}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <Input.TextArea value={modalValue} onChange={(e) => setModalValue(e.target.value)} readOnly={modalReadOnly} autoSize={{ minRows: 3, maxRows: 8 }} placeholder={t('scriptWriter.rewritePlaceholder')} />
+      </Modal>
+
+      <Modal
+        open={translateModalOpen}
+        title={t('scriptWriter.actionTranslateTitle')}
+        onCancel={() => setTranslateModalOpen(false)}
+        onOk={() => {
+          translateMutation.mutate(translateLanguage)
+          setTranslateModalOpen(false)
+        }}
+        confirmLoading={translateMutation.isPending}
+        okText={t('scriptWriter.translateBtn')}
+        cancelText={t('common.cancel')}
+      >
+        <p className="mb-3 text-sm text-muted">{t('scriptWriter.selectLanguage')}</p>
+        <Select
+          className="w-full"
+          value={translateLanguage}
+          onChange={(val) => setTranslateLanguage(val)}
+          options={languageOptions}
+        />
       </Modal>
     </>
   )
 }
 
-function TemplatePanel({ t, templateSearch, onSearchChange, filteredTemplates, templateId, onSelectTemplate, history, onHistorySelect, onNewScript }: {
+function TemplatePanel({ t, templateSearch, onSearchChange, filteredTemplates, templateId, onSelectTemplate, history, onHistorySelect, onNewScript, onDeleteHistory }: {
   t: (key: string, params?: Record<string, string | number>) => string
   templateSearch: string; onSearchChange: (v: string) => void; filteredTemplates: typeof SCRIPT_TEMPLATES
   templateId: ScriptTemplateId; onSelectTemplate: (id: ScriptTemplateId) => void
   history: ScriptHistoryEntry[]; onHistorySelect: (entry: ScriptHistoryEntry) => void; onNewScript: () => void
+  onDeleteHistory: (id: string) => void
 }) {
   return (
     <aside className="hidden w-[224px] shrink-0 flex-col border-r border-default bg-surface lg:flex">
@@ -361,11 +472,21 @@ function TemplatePanel({ t, templateSearch, onSearchChange, filteredTemplates, t
         })}
         <p className="mt-2 px-3.5 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-muted">{t('scriptWriter.recentScripts')}</p>
         {history.length === 0 ? <p className="px-3.5 pb-3 text-xs text-muted">{t('scriptWriter.noHistory')}</p> : history.map((entry) => (
-          <button key={entry.id} type="button" onClick={() => onHistorySelect(entry)} className="flex w-full items-center gap-2 px-3.5 py-1.5 text-left hover:bg-subtle">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-            <span className="min-w-0 flex-1 truncate text-xs text-secondary">{entry.title}</span>
-            <span className="text-[10px] text-muted">{relativeHistoryTime(entry.createdAt)}</span>
-          </button>
+          <div key={entry.id} className="group flex w-full items-center justify-between gap-1.5 px-3.5 py-1 hover:bg-subtle">
+            <button type="button" onClick={() => onHistorySelect(entry)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+              <span className="min-w-0 flex-1 truncate text-xs text-secondary">{entry.title}</span>
+              <span className="text-[10px] text-muted shrink-0">{relativeHistoryTime(entry.createdAt)}</span>
+            </button>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onDeleteHistory(entry.id) }}
+              className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-error text-muted transition-opacity duration-200"
+              title={t('scriptWriter.deleteHistory')}
+            >
+              <X size={12} />
+            </button>
+          </div>
         ))}
       </div>
       <div className="mt-auto border-t border-default p-3"><Button type="primary" block icon={<Plus size={14} />} onClick={onNewScript}>{t('scriptWriter.newScript')}</Button></div>
@@ -403,29 +524,92 @@ function BriefCard(props: {
   onLanguageChange: (v: string) => void; onTopicChange: (v: string) => void; onToneChange: (v: ScriptTone) => void; onGenerate: () => void
   onRemoveKeyword: (k: string) => void; onKeywordDraftChange: (v: string) => void; onStartAddKeyword: () => void; onCancelAddKeyword: () => void
   onConfirmAddKeyword: () => void; onAiKeywords: () => void; aiKeywordsDisabled: boolean
+  templateId: ScriptTemplateId
 }) {
-  const { t, templateLabel, platform, length, audience, language, topic, keywords, keywordDraft, addingKeyword, tone, credits, busy, languageOptions, onPlatformChange, onLengthChange, onAudienceChange, onLanguageChange, onTopicChange, onToneChange, onGenerate, onRemoveKeyword, onKeywordDraftChange, onStartAddKeyword, onCancelAddKeyword, onConfirmAddKeyword, onAiKeywords, aiKeywordsDisabled } = props
+  const { t, templateLabel, platform, length, audience, language, topic, keywords, keywordDraft, addingKeyword, tone, credits, busy, languageOptions, onPlatformChange, onLengthChange, onAudienceChange, onLanguageChange, onTopicChange, onToneChange, onGenerate, onRemoveKeyword, onKeywordDraftChange, onStartAddKeyword, onCancelAddKeyword, onConfirmAddKeyword, onAiKeywords, aiKeywordsDisabled, templateId } = props
   return (
-    <div className="overflow-hidden rounded-xl border border-default bg-surface">
-      <div className="flex items-center gap-2 border-b border-default px-3.5 py-2.5"><Sparkles size={14} className="text-muted" /><span className="text-xs font-medium text-secondary">{t('scriptWriter.brief')}</span><span className="ml-auto rounded-full bg-accent-muted px-2 py-0.5 text-[10px] font-semibold text-accent">{templateLabel}</span></div>
-      <div className="grid grid-cols-1 gap-2.5 p-3.5 md:grid-cols-2">
+    <div className="overflow-hidden rounded-xl border border-default bg-surface shadow-md transition-shadow hover:shadow-lg">
+      <div className="flex items-center gap-2 border-b border-default bg-subtle/50 px-3.5 py-2.5">
+        <Sparkles size={14} className="text-accent animate-pulse" />
+        <span className="text-xs font-semibold text-primary">{t('scriptWriter.brief')}</span>
+        <span className="ml-auto rounded-full bg-accent-muted px-2.5 py-0.5 text-[10px] font-bold text-accent border border-accent/20">{templateLabel}</span>
+      </div>
+      <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-2">
         <FieldSelect label={t('scriptWriter.platformLabel')} value={platform} onChange={(v) => onPlatformChange(v as ScriptPlatform)} options={SCRIPT_PLATFORMS.map((item) => ({ value: item, label: t(`scriptWriter.platform.${item}`) }))} />
         <FieldSelect label={t('scriptWriter.targetLength')} value={length} onChange={(v) => onLengthChange(v as ScriptLength)} options={SCRIPT_LENGTHS.map((item) => ({ value: item, label: t(`scriptWriter.length.${item}`) }))} />
-        <div className="flex flex-col gap-1.5"><label className="text-[10px] font-semibold uppercase tracking-wide text-muted">{t('scriptWriter.audience')}</label><Input size="small" value={audience} onChange={(e) => onAudienceChange(e.target.value)} placeholder={t('scriptWriter.audiencePlaceholder')} /></div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted">{t('scriptWriter.audience')}</label>
+          <Input size="middle" value={audience} onChange={(e) => onAudienceChange(e.target.value)} placeholder={t('scriptWriter.audiencePlaceholder')} className="rounded-lg text-xs" />
+        </div>
         <FieldSelect label={t('scriptWriter.language')} value={language} onChange={onLanguageChange} options={languageOptions} />
       </div>
-      <div className="px-3.5 pb-3.5"><label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-muted">{t('scriptWriter.topic')}</label><Input.TextArea value={topic} onChange={(e) => onTopicChange(e.target.value)} rows={3} placeholder={t('scriptWriter.topicPlaceholder')} className="text-sm leading-relaxed" /></div>
-      <div className="px-3.5 pb-2.5">
-        <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-muted">{t('scriptWriter.keywordsLabel')}</label>
+      <div className="px-4 pb-4">
+        <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-muted">{t('scriptWriter.topic')}</label>
+        <Input.TextArea value={topic} onChange={(e) => onTopicChange(e.target.value)} rows={3} placeholder={t('scriptWriter.topicPlaceholder')} className="text-sm leading-relaxed rounded-lg" />
+        {(!topic || topic.length < 15) && (
+          <div className="mt-2">
+            <span className="text-[10px] font-semibold text-muted block mb-1.5">{t('scriptWriter.trySuggestion')}</span>
+            <div className="flex flex-wrap gap-1.5">
+              {(TOPIC_SUGGESTIONS[templateId] || []).map((suggestion, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => onTopicChange(suggestion)}
+                  className="rounded-full bg-subtle hover:bg-default border border-default px-2.5 py-1 text-[10px] text-secondary hover:text-primary transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="px-4 pb-4">
+        <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-muted">{t('scriptWriter.keywordsLabel')}</label>
         <div className="flex flex-wrap items-center gap-1.5">
-          {keywords.map((keyword) => (<span key={keyword} className="inline-flex items-center gap-1 rounded-full border border-default bg-subtle px-2.5 py-1 text-xs text-secondary">{keyword}<button type="button" onClick={() => onRemoveKeyword(keyword)} aria-label="Remove"><X size={12} className="text-muted hover:text-error" /></button></span>))}
-          {addingKeyword ? (<Input size="small" autoFocus value={keywordDraft} onChange={(e) => onKeywordDraftChange(e.target.value)} onPressEnter={onConfirmAddKeyword} onBlur={() => { onConfirmAddKeyword(); onCancelAddKeyword() }} placeholder={t('scriptWriter.addKeyword')} className="max-w-[120px] rounded-full text-xs" />) : (<button type="button" onClick={onStartAddKeyword} className="inline-flex items-center gap-1 rounded-full border border-dashed border-default px-2.5 py-1 text-xs text-muted hover:bg-subtle"><Plus size={11} />{t('scriptWriter.addKeyword')}</button>)}
-          <button type="button" onClick={onAiKeywords} disabled={aiKeywordsDisabled} className="inline-flex items-center gap-1 rounded-full border border-dashed border-default px-2.5 py-1 text-xs text-muted hover:bg-subtle disabled:opacity-50"><Sparkles size={11} />{t('scriptWriter.aiKeywords')}</button>
+          {keywords.map((keyword) => (
+            <span key={keyword} className="inline-flex items-center gap-1 rounded-full border border-accent/20 bg-accent-muted/40 px-3 py-1 text-xs text-accent font-medium shadow-sm">
+              {keyword}
+              <button type="button" onClick={() => onRemoveKeyword(keyword)} aria-label="Remove" className="cursor-pointer">
+                <X size={12} className="text-accent/60 hover:text-error transition-colors" />
+              </button>
+            </span>
+          ))}
+          {addingKeyword ? (
+            <Input size="small" autoFocus value={keywordDraft} onChange={(e) => onKeywordDraftChange(e.target.value)} onPressEnter={onConfirmAddKeyword} onBlur={() => { onConfirmAddKeyword(); onCancelAddKeyword() }} placeholder={t('scriptWriter.addKeyword')} className="max-w-[120px] rounded-full text-xs" />
+          ) : (
+            <button type="button" onClick={onStartAddKeyword} className="inline-flex items-center gap-1 rounded-full border border-dashed border-default px-3 py-1 text-xs text-muted hover:bg-subtle hover:text-secondary cursor-pointer transition-colors"><Plus size={11} />{t('scriptWriter.addKeyword')}</button>
+          )}
+          <button type="button" onClick={onAiKeywords} disabled={aiKeywordsDisabled} className="inline-flex items-center gap-1 rounded-full border border-dashed border-accent/30 text-accent bg-accent-muted/10 hover:bg-accent-muted/20 px-3 py-1 text-xs font-medium cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"><Sparkles size={11} />{t('scriptWriter.aiKeywords')}</button>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-2 border-t border-default px-3.5 py-2.5">
-        <div className="flex flex-1 flex-wrap gap-1.5">{SCRIPT_TONES.map((item) => (<button key={item} type="button" onClick={() => onToneChange(item)} className={['rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors', tone === item ? 'border-accent/40 bg-accent-muted text-accent' : 'border-default text-muted hover:border-accent/30 hover:text-accent'].join(' ')}>{t(`scriptWriter.tone.${item}`)}</button>))}</div>
-        <div className="flex items-center gap-2"><span className="text-[11px] text-muted">{credits} {t('scriptWriter.credits')}</span><Button type="primary" size="small" icon={busy ? <Spin size="small" /> : <Sparkles size={13} />} onClick={onGenerate} disabled={busy || !topic.trim()}>{t('scriptWriter.generateScript')}</Button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-default bg-subtle/30 px-4 py-3">
+        <div className="flex flex-wrap gap-2">
+          {SCRIPT_TONES.map((item) => {
+            const active = tone === item
+            return (
+              <button
+                key={item}
+                type="button"
+                onClick={() => onToneChange(item)}
+                className={[
+                  'rounded-full px-3 py-1 text-[11px] font-medium transition-all duration-200 cursor-pointer shadow-sm',
+                  active
+                    ? 'bg-gradient-to-r from-accent to-accent/90 text-white font-semibold shadow-accent/20 scale-[1.03]'
+                    : 'bg-surface border border-default text-secondary hover:bg-subtle hover:border-accent/30',
+                ].join(' ')}
+              >
+                {t(`scriptWriter.tone.${item}`)}
+              </button>
+            )
+          })}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-medium text-muted">{credits} {t('scriptWriter.credits')}</span>
+          <Button type="primary" size="middle" icon={busy ? <Spin size="small" className="text-white" /> : <Sparkles size={13} />} onClick={onGenerate} disabled={busy || !topic.trim()} className="rounded-lg font-semibold hover:scale-[1.02] active:scale-[0.98] transition-transform">
+            {t('scriptWriter.generateScript')}
+          </Button>
+        </div>
       </div>
     </div>
   )
@@ -485,14 +669,50 @@ function VersionsPanel({ t, versions, onRestore }: { t: (key: string, params?: R
   )
 }
 
-function InsightsPanel({ t, hasScript, wordCount, duration, gradeLevel, clarityScore, quality, onExportTxt, onExportMd, onSendToTts, onUseInCreate, onAiAction }: {
-  t: (key: string) => string; hasScript: boolean; wordCount: number; duration: string; gradeLevel: number; clarityScore: number
+function InsightsPanel({ t, hasScript, wordCount, duration, gradeLevel, clarityScore, quality, onExportTxt, onExportMd, onSendToTts, onUseInCreate, onAiAction, length }: {
+  t: (key: string, params?: Record<string, string | number>) => string; hasScript: boolean; wordCount: number; duration: string; gradeLevel: number; clarityScore: number
   quality: ReturnType<typeof computeQualityScores>; onExportTxt: () => void; onExportMd: () => void; onSendToTts: () => void; onUseInCreate: () => void; onAiAction: (action: string) => void
+  length: ScriptLength
 }) {
+  const target = WORD_COUNT_TARGETS[length] || { min: 300, max: 600 }
+  const percent = Math.min(100, Math.round((wordCount / target.max) * 100))
+  const isTooShort = wordCount < target.min
+  const isTooLong = wordCount > target.max
+  const onTarget = wordCount >= target.min && wordCount <= target.max
+
+  const progressColor = onTarget 
+    ? 'bg-emerald-500 shadow-emerald-500/20' 
+    : isTooLong 
+      ? 'bg-amber-500 shadow-amber-500/20' 
+      : 'bg-accent shadow-accent/20'
+
   return (
     <aside className="hidden w-[204px] shrink-0 flex-col border-l border-default bg-surface xl:flex">
       <div className="border-b border-default px-3.5 py-3"><h3 className="text-xs font-semibold text-secondary">{t('scriptWriter.insights')}</h3></div>
       <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="border-b border-default px-3.5 py-2.5 bg-subtle/10">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted">{t('scriptWriter.wordCountGoal')}</p>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-secondary">
+              <span>{t('scriptWriter.currentProgress')}</span>
+              <span className="font-semibold text-primary">{wordCount} / {target.max} w</span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-subtle overflow-hidden relative shadow-inner">
+              <div 
+                className={`h-full rounded-full transition-all duration-300 shadow-sm ${progressColor}`}
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+            <div className="flex justify-between items-center text-[9px] text-muted font-medium">
+              <span>{t('scriptWriter.targetRange', { min: target.min, max: target.max })}</span>
+              {hasScript && (
+                <span className={onTarget ? 'text-emerald-500 font-bold' : 'text-accent font-bold'}>
+                  {onTarget ? 'On Target' : isTooShort ? 'Too Short' : 'Too Long'}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
         <div className="border-b border-default px-3.5 py-2.5">
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted">{t('scriptWriter.stats')}</p>
           <div className="grid grid-cols-2 gap-1.5"><StatBox value={hasScript ? String(wordCount) : '—'} label={t('scriptWriter.words')} /><StatBox value={hasScript ? duration : '—'} label={t('scriptWriter.estDuration')} /><StatBox value={hasScript ? String(gradeLevel) : '—'} label={t('scriptWriter.gradeLevel')} /><StatBox value={hasScript ? String(clarityScore) : '—'} label={t('scriptWriter.clarityScore')} /></div>

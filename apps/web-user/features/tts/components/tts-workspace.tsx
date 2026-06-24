@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Alert, Button, Input, Select } from 'antd'
+import { Alert, Button, Input, Select, Slider } from 'antd'
 import Link from 'next/link'
 import {
   BarChart3,
@@ -549,25 +549,23 @@ function ParamSlider({
   disabled?: boolean
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-medium uppercase tracking-wide text-muted">{label}</label>
-      <div className="flex items-center gap-2">
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          disabled={disabled}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="h-1 flex-1 accent-accent disabled:opacity-40"
-        />
-        <span className="min-w-[44px] text-right text-[13px] font-medium text-primary">
-          {format(value)}
-        </span>
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold uppercase tracking-wider text-muted">{label}</label>
+        <span className="text-[11px] font-bold text-secondary font-mono bg-subtle px-1.5 py-0.5 rounded">{format(value)}</span>
       </div>
+      <Slider
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        disabled={disabled}
+        onChange={onChange}
+        tooltip={{ formatter: (v) => format(v ?? value) }}
+        className="my-1.5"
+      />
       {disabled && (
-        <span className="text-[10px] text-muted">Coming soon</span>
+        <span className="text-[9px] text-muted -mt-1.5 block">Coming soon</span>
       )}
     </div>
   )

@@ -6,6 +6,8 @@ import { useMemo } from 'react'
 import { useLocale } from '@vokcg/i18n'
 import { CREATE_FLOW_STEPS, createFlowStepIndex, type CreateFlowStepId } from '@vokcg/constants'
 import { useCreateStudioStore } from '@/store'
+import { useCreateConfig } from '../hooks/use-create-config'
+import { validateCreateFlowStep } from '../lib/create-config'
 
 type Props = {
   compact?: boolean
@@ -19,6 +21,17 @@ export function CreateStepNav({ interactive = true, variant = 'default' }: Props
   const activeStep = useCreateStudioStore((s) => s.activeStep)
   const setActiveStep = useCreateStudioStore((s) => s.setActiveStep)
   const activeIndex = createFlowStepIndex(activeStep)
+  const { config } = useCreateConfig()
+
+  const isStepSelectable = (stepId: string) => {
+    const targetIndex = createFlowStepIndex(stepId as CreateFlowStepId)
+    for (let i = 0; i < targetIndex; i++) {
+      const step = CREATE_FLOW_STEPS[i]!
+      const res = validateCreateFlowStep(step.id as CreateFlowStepId, config)
+      if (!res.valid) return false
+    }
+    return true
+  }
 
   const steps = useMemo(
     () =>
@@ -41,6 +54,7 @@ export function CreateStepNav({ interactive = true, variant = 'default' }: Props
           const isActive   = step.id === activeStep
           const isComplete = index < activeIndex
           const isLast     = index === steps.length - 1
+          const selectable = isStepSelectable(step.id)
 
           return (
             <div key={step.id} className="flex flex-1 items-center" style={{ minWidth: 0 }}>
@@ -50,12 +64,12 @@ export function CreateStepNav({ interactive = true, variant = 'default' }: Props
                 style={{ position: 'relative' }}
               >
                 {/* Circle */}
-                {interactive ? (
+                {interactive && selectable ? (
                   <button
                     type="button"
                     onClick={() => setActiveStep(step.id as CreateFlowStepId)}
                     aria-current={isActive ? 'step' : undefined}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200 hover:scale-105 active:scale-95"
                     style={{
                       background: isActive
                         ? 'var(--color-primary)'
@@ -71,6 +85,7 @@ export function CreateStepNav({ interactive = true, variant = 'default' }: Props
                         ? '0 2px 12px color-mix(in srgb, var(--color-primary) 40%, transparent)'
                         : 'none',
                       color: isActive ? '#fff' : isComplete ? 'var(--color-primary)' : 'var(--text-muted)',
+                      cursor: 'pointer',
                     }}
                   >
                     {isComplete ? (
@@ -84,27 +99,15 @@ export function CreateStepNav({ interactive = true, variant = 'default' }: Props
                     aria-current={isActive ? 'step' : undefined}
                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200"
                     style={{
-                      background: isActive
-                        ? 'var(--color-primary)'
-                        : isComplete
-                          ? 'color-mix(in srgb, var(--color-primary) 15%, transparent)'
-                          : 'color-mix(in srgb, var(--text-muted) 10%, transparent)',
-                      border: isActive
-                        ? 'none'
-                        : isComplete
-                          ? '1.5px solid color-mix(in srgb, var(--color-primary) 40%, transparent)'
-                          : '1.5px solid var(--border-default)',
-                      boxShadow: isActive
-                        ? '0 2px 12px color-mix(in srgb, var(--color-primary) 40%, transparent)'
-                        : 'none',
-                      color: isActive ? '#fff' : isComplete ? 'var(--color-primary)' : 'var(--text-muted)',
+                      background: 'color-mix(in srgb, var(--text-muted) 5%, transparent)',
+                      border: '1.5px solid var(--border-default)',
+                      color: 'var(--text-muted)',
+                      opacity: 0.4,
+                      cursor: 'not-allowed',
                     }}
+                    title={t('create.lockedHint')}
                   >
-                    {isComplete ? (
-                      <Check size={14} strokeWidth={2.5} />
-                    ) : (
-                      <Icon size={14} strokeWidth={isActive ? 2.2 : 1.8} />
-                    )}
+                    <Icon size={14} strokeWidth={1.8} />
                   </div>
                 )}
 
@@ -117,6 +120,7 @@ export function CreateStepNav({ interactive = true, variant = 'default' }: Props
                       : isComplete
                         ? 'var(--text-secondary)'
                         : 'var(--text-muted)',
+                    opacity: selectable ? 1 : 0.5,
                     letterSpacing: '0.01em',
                   }}
                 >
@@ -153,18 +157,20 @@ export function CreateStepNav({ interactive = true, variant = 'default' }: Props
         const Icon = step.icon
         const isActive   = step.id === activeStep
         const isComplete = index < activeIndex
+        const selectable = isStepSelectable(step.id)
 
         return (
           <button
             key={step.id}
             type="button"
-            onClick={() => interactive && setActiveStep(step.id as CreateFlowStepId)}
+            onClick={() => interactive && selectable && setActiveStep(step.id as CreateFlowStepId)}
             aria-current={isActive ? 'step' : undefined}
             className="group flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 transition-colors"
             style={{
               background: isActive ? 'color-mix(in srgb, var(--color-primary) 10%, transparent)' : 'transparent',
               color: isActive ? 'var(--color-primary)' : 'var(--text-muted)',
-              cursor: interactive ? 'pointer' : 'default',
+              cursor: interactive && selectable ? 'pointer' : 'not-allowed',
+              opacity: selectable ? 1 : 0.5,
             }}
           >
             <span

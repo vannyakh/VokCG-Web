@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
 
@@ -10,19 +11,21 @@ type Props = {
 
 export function NavCollapsedTile({ icon: Icon, active = false }: Props) {
   return (
-    <span
+    <motion.span
       className="flex items-center justify-center transition-colors duration-150"
       style={{
         ...navCollapsedTileStyle(active),
         borderRadius: NAV_MENU.collapsedTileRadius,
       }}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
     >
       <Icon
         size={NAV_MENU.collapsedIconSize}
         strokeWidth={active ? NAV_MENU.collapsedIconStrokeActive : NAV_MENU.collapsedIconStroke}
         className="shrink-0"
       />
-    </span>
+    </motion.span>
   )
 }
 

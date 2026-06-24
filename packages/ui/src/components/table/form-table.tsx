@@ -17,14 +17,14 @@ function renderField(field: FormFieldSchema) {
         allowClear
         placeholder={field.placeholder}
         options={field.options}
-        className="w-full"
+        className="w-full form-table-select"
         {...field.componentProps}
       />
     )
   }
 
   return (
-    <Input allowClear placeholder={field.placeholder} {...field.componentProps} />
+    <Input allowClear placeholder={field.placeholder} className="form-table-input" {...field.componentProps} />
   )
 }
 
@@ -102,8 +102,8 @@ export function FormTableUI<
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
-                <Button onClick={handleReset}>Reset</Button>
-                <Button type="primary" htmlType="submit" loading={config.loading}>
+                <Button onClick={handleReset} className="rounded-full">Reset</Button>
+                <Button type="primary" htmlType="submit" loading={config.loading} className="rounded-full">
                   Search
                 </Button>
               </div>
@@ -157,7 +157,7 @@ export function FormTableUI<
         >
           <Spin spinning={Boolean(config.loading)}>
             <table className="form-table-grid w-full min-w-full border-collapse text-[13px]">
-              <thead className="sticky top-0 z-10 bg-subtle">
+              <thead className="sticky top-0 z-10 bg-subtle/85 backdrop-blur-sm">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
@@ -203,7 +203,7 @@ export function FormTableUI<
           </Spin>
         </div>
 
-        <div className="form-table-pagination shrink-0 border-t border-default px-3 py-2">
+        <div className="form-table-pagination shrink-0 border-t border-default px-4 py-3 bg-subtle/30">
           <Pagination
             size="small"
             current={pageIndex + 1}

@@ -15,6 +15,8 @@ type Props = {
   scroll?: boolean
   width?: PageWidth
   headerBorder?: boolean
+  /** Stick the page sub-header to top on scroll */
+  stickyHeader?: boolean
   children: ReactNode
 }
 
@@ -28,6 +30,7 @@ export function StudioListShell({
   scroll = true,
   width = 'full',
   headerBorder = true,
+  stickyHeader = false,
   children,
 }: Props) {
   return (
@@ -41,8 +44,10 @@ export function StudioListShell({
       scroll={scroll}
       spacing={spacing}
       headerBorder={headerBorder}
+      stickyHeader={stickyHeader}
     >
       {children}
     </Page>
   )
 }
+

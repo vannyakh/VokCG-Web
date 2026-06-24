@@ -5,8 +5,12 @@ node_modules
 .pnp
 .pnp.js
 
-# Local env files
-.env
+# Env files — layered system (vben-admin style)
+# Committed (safe — no secrets):
+#   .env                  shared base, all apps, all envs
+#   .env.development      dev overrides per app
+#   .env.production       prod overrides per app
+# Gitignored (may contain secrets / machine-local values):
 .env.local
 .env.development.local
 .env.test.local

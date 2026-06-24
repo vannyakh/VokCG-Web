@@ -81,8 +81,8 @@ export type StudioPageWidth = keyof typeof STUDIO_PAGE.width
 
 /** Shared studio chrome — keep header + sidebar brand row aligned */
 export const STUDIO_SHELL = {
-  headerHeight: 56,
-  headerHeightClass: 'h-14',
+  headerHeight: 64,
+  headerHeightClass: 'h-16',
   navItemHeight: 36,
 } as const
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { motion } from 'framer-motion'
 import { Tooltip } from '../tooltip'
 import { useMenuContext, useMenuLevel } from './menu-context'
 import { NavBadge } from './nav-badge'
@@ -47,13 +48,19 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
   const btn = (
     <div className="relative">
       {showActiveSurface && (
-        <span
+        <motion.span
+          layoutId="active-nav-bg"
           className="absolute inset-0"
           style={{
             borderRadius: rowRadius,
             background: isNested ? navSurface.nestedActive : navSurface.active,
           }}
           aria-hidden
+          transition={{
+            type: 'spring',
+            stiffness: 380,
+            damping: 30,
+          }}
         />
       )}
 

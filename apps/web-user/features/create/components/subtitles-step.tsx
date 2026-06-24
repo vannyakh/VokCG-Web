@@ -35,10 +35,7 @@ export function SubtitlesStep() {
             <div className="flex flex-col gap-4">
               <FieldMenuSelect label={t('create.steps.subtitles.position')} options={subtitlePositionOptions} value={subtitles.position} onChange={(position) => patch({ position })} />
               {subtitles.position === 'custom' && (
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-bold text-primary">{t('create.steps.subtitles.customPosition')}</label>
-                  <InputNumber min={0} max={100} value={subtitles.customPosition} onChange={(value) => patch({ customPosition: value ?? 0 })} className="w-full max-w-[160px]" suffix="%" />
-                </div>
+                <RangeField label={t('create.steps.subtitles.customPosition')} value={subtitles.customPosition} min={0} max={100} step={1} onChange={(v) => patch({ customPosition: v })} />
               )}
             </div>
           </CreateCard>

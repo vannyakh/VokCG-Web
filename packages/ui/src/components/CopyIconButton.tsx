@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Check, Copy } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Tooltip } from './tooltip'
 
 type CopyIconButtonProps = {
@@ -35,20 +36,36 @@ export function CopyIconButton({
 
   return (
     <Tooltip content={copied ? copiedLabel : label}>
-      <button
+      <motion.button
         type="button"
         aria-label={copied ? copiedLabel : label}
         onClick={(e) => void handleCopy(e)}
+        whileTap={{ scale: 0.88 }}
         className={[
-          'flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-all',
+          'flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-all duration-300',
           copied
-            ? 'border-accent/35 bg-accent-muted text-accent'
+            ? 'border-[var(--color-primary)]/35 bg-[var(--bg-active)] text-[var(--color-primary)] shadow-[0_0_8px_rgba(59,130,246,0.15)]'
             : 'border-transparent text-muted hover:border-default hover:bg-subtle hover:text-primary',
           className,
         ].join(' ')}
       >
-        {copied ? <Check size={size} strokeWidth={2.5} /> : <Copy size={size} strokeWidth={2} />}
-      </button>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={copied ? 'check' : 'copy'}
+            initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.6, rotate: 45 }}
+            transition={{ duration: 0.14, ease: 'easeOut' }}
+            className="flex items-center justify-center"
+          >
+            {copied ? (
+              <Check size={size} strokeWidth={2.5} />
+            ) : (
+              <Copy size={size} strokeWidth={2} />
+            )}
+          </motion.span>
+        </AnimatePresence>
+      </motion.button>
     </Tooltip>
   )
 }
