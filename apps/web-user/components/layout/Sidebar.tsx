@@ -1,39 +1,39 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
-import { ChevronsLeft } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useCallback, useRef, useState } from 'react'
+import { motion } from "framer-motion";
+import { ChevronsLeft, X } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useRef, useState } from "react";
 
-import { useWorkspace } from '@/api'
-import { STUDIO_SHELL, STUDIO_SIDEBAR } from '@vokcg/config'
-import { studioNavItemSections, USER_ROUTES } from '@vokcg/constants'
-import type { NavItem } from '@vokcg/constants'
-import { useLocale } from '@vokcg/i18n'
-import { useSidebarStore } from '@/store'
+import { useWorkspace } from "@/api";
+import { STUDIO_SHELL, STUDIO_SIDEBAR } from "@vokcg/config";
+import { studioNavItemSections, USER_ROUTES } from "@vokcg/constants";
+import type { NavItem } from "@vokcg/constants";
+import { useLocale } from "@vokcg/i18n";
+import { useSidebarStore } from "@/store";
 import {
   mobileDrawerSpring,
   NavMenu,
   sidebarPanelSpring,
   sidebarShellSpring,
   Tooltip,
-} from '@vokcg/ui'
+} from "@vokcg/ui";
 
-import { SidebarWorkspaceCard } from './SidebarWorkspaceCard'
+import { SidebarWorkspaceCard } from "./SidebarWorkspaceCard";
 
-const MINI_W = STUDIO_SIDEBAR.miniWidth
-const NAV_ITEM_HEIGHT = STUDIO_SHELL.navItemHeight
+const MINI_W = STUDIO_SIDEBAR.miniWidth;
+const NAV_ITEM_HEIGHT = STUDIO_SHELL.navItemHeight;
 
 type SidebarProps = {
-  activePath: string
-  isMobile?: boolean
-  mobileOpen?: boolean
-  onMobileClose?: () => void
-}
+  activePath: string;
+  isMobile?: boolean;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+};
 
 function BrannamLogo({ expanded }: { expanded: boolean }) {
-  const boxSize = expanded ? 38 : 34
+  const boxSize = expanded ? 38 : 34;
 
   return (
     <Link
@@ -70,30 +70,48 @@ function BrannamLogo({ expanded }: { expanded: boolean }) {
       {expanded && (
         <span
           className="min-w-0 font-extrabold text-[24px] tracking-[-0.02em] leading-none"
-          style={{ color: 'var(--text-primary)' }}
+          style={{ color: "var(--text-primary)" }}
         >
           VokCG
         </span>
       )}
     </Link>
-  )
+  );
 }
 
-function SidebarBrand({ expanded }: { expanded: boolean }) {
+function SidebarBrand({
+  expanded,
+  isMobile,
+  onClose,
+}: {
+  expanded: boolean;
+  isMobile?: boolean;
+  onClose?: () => void;
+}) {
   return (
     <div
       className={[
-        `flex ${STUDIO_SHELL.headerHeightClass} shrink-0 items-center`,
-        expanded ? 'px-3' : 'justify-center',
-      ].join(' ')}
+        `flex ${STUDIO_SHELL.headerHeightClass} shrink-0 items-center justify-between`,
+        expanded ? "px-3.5" : "justify-center",
+      ].join(" ")}
       style={{
-        borderBottom: '1px solid var(--border-default)',
+        borderBottom: "1px solid var(--border-default)",
         paddingInline: expanded ? undefined : 10,
       }}
     >
       <BrannamLogo expanded={expanded} />
+      {isMobile && onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-active)] hover:text-[var(--text-primary)]"
+          aria-label="Close menu"
+        >
+          <X size={18} />
+        </button>
+      )}
     </div>
-  )
+  );
 }
 
 export function Sidebar({
@@ -102,62 +120,76 @@ export function Sidebar({
   mobileOpen = false,
   onMobileClose,
 }: SidebarProps) {
-  const router = useRouter()
-  const { workspace, isDemo } = useWorkspace()
-  const { collapsed, hidden, sidebarWidth, sidebarMiniMode, toggle, setSidebarWidth } =
-    useSidebarStore()
+  const router = useRouter();
+  const { workspace, isDemo } = useWorkspace();
+  const {
+    collapsed,
+    hidden,
+    sidebarWidth,
+    sidebarMiniMode,
+    toggle,
+    setSidebarWidth,
+  } = useSidebarStore();
 
-  const [navScrolled, setNavScrolled] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const navRef = useRef<HTMLElement>(null)
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
 
-  const { t } = useLocale()
-  const navSections = studioNavItemSections(false, workspace, t)
-  const isCollapsed = !isMobile && (sidebarMiniMode || collapsed)
-  const expanded = isMobile || !isCollapsed
-  const shellWidth = hidden ? 0 : isCollapsed ? MINI_W : sidebarWidth
-  const panelWidth = isCollapsed ? MINI_W : sidebarWidth
+  const { t } = useLocale();
+  const navSections = studioNavItemSections(false, workspace, t);
+  const isCollapsed = !isMobile && (sidebarMiniMode || collapsed);
+  const expanded = isMobile || !isCollapsed;
+  const shellWidth = hidden ? 0 : isCollapsed ? MINI_W : sidebarWidth;
+  const panelWidth = isCollapsed ? MINI_W : sidebarWidth;
 
   const onDragStart = useCallback(
     (e: React.MouseEvent) => {
-      e.preventDefault()
-      setIsDragging(true)
-      const startX = e.clientX
-      const startW = sidebarWidth
-      const onMove = (ev: MouseEvent) => setSidebarWidth(startW + ev.clientX - startX)
+      e.preventDefault();
+      setIsDragging(true);
+      const startX = e.clientX;
+      const startW = sidebarWidth;
+      const onMove = (ev: MouseEvent) =>
+        setSidebarWidth(startW + ev.clientX - startX);
       const onUp = () => {
-        setIsDragging(false)
-        document.removeEventListener('mousemove', onMove)
-        document.removeEventListener('mouseup', onUp)
-      }
-      document.addEventListener('mousemove', onMove)
-      document.addEventListener('mouseup', onUp)
+        setIsDragging(false);
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      };
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
     },
     [sidebarWidth, setSidebarWidth],
-  )
+  );
 
   const onNavScroll = useCallback(() => {
-    setNavScrolled((navRef.current?.scrollTop ?? 0) > 4)
-  }, [])
+    setNavScrolled((navRef.current?.scrollTop ?? 0) > 4);
+  }, []);
 
   const handleSelect = useCallback(
     (item: NavItem) => {
-      if (!item.path || item.disabled || item.comingSoon) return
-      router.push(item.path)
-      if (isMobile) onMobileClose?.()
+      if (!item.path || item.disabled || item.comingSoon) return;
+      router.push(item.path);
+      if (isMobile) onMobileClose?.();
     },
     [isMobile, onMobileClose, router],
-  )
+  );
 
   const panel = (
     <>
-      <SidebarBrand expanded={expanded} />
+      <SidebarBrand
+        expanded={expanded}
+        isMobile={isMobile}
+        onClose={onMobileClose}
+      />
 
       <div className="relative flex flex-1 flex-col overflow-hidden">
         {navScrolled && (
           <div
             className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8"
-            style={{ background: 'linear-gradient(to bottom, var(--bg-sidebar), transparent)' }}
+            style={{
+              background:
+                "linear-gradient(to bottom, var(--bg-sidebar), transparent)",
+            }}
           />
         )}
 
@@ -179,34 +211,39 @@ export function Sidebar({
 
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8"
-          style={{ background: 'linear-gradient(to top, var(--bg-sidebar), transparent)' }}
+          style={{
+            background:
+              "linear-gradient(to top, var(--bg-sidebar), transparent)",
+          }}
         />
       </div>
 
-      {expanded && <SidebarWorkspaceCard workspace={workspace} isDemo={isDemo} />}
+      {expanded && (
+        <SidebarWorkspaceCard workspace={workspace} isDemo={isDemo} />
+      )}
 
       {!isMobile && (
         <div
           className="flex shrink-0 items-center py-1.5"
           style={{
-            borderTop: '1px solid var(--border-default)',
+            borderTop: "1px solid var(--border-default)",
             paddingInline: isCollapsed ? 10 : 8,
           }}
         >
           {isCollapsed ? (
-            <Tooltip content={t('sidebar.expand')} placement="right">
+            <Tooltip content={t("sidebar.expand")} placement="right">
               <button
                 type="button"
                 onClick={toggle}
                 className="flex h-9 w-full items-center justify-center rounded-[11px] transition-colors"
-                style={{ color: 'var(--text-muted)' }}
+                style={{ color: "var(--text-muted)" }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--bg-active)'
-                  e.currentTarget.style.color = 'var(--color-primary)'
+                  e.currentTarget.style.background = "var(--bg-active)";
+                  e.currentTarget.style.color = "var(--color-primary)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--text-muted)'
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--text-muted)";
                 }}
               >
                 <ChevronsLeft size={17} className="rotate-180" />
@@ -217,25 +254,25 @@ export function Sidebar({
               type="button"
               onClick={toggle}
               className="group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 transition-colors"
-              style={{ color: 'var(--text-muted)' }}
+              style={{ color: "var(--text-muted)" }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--bg-active)'
-                e.currentTarget.style.color = 'var(--text-primary)'
+                e.currentTarget.style.background = "var(--bg-active)";
+                e.currentTarget.style.color = "var(--text-primary)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent'
-                e.currentTarget.style.color = 'var(--text-muted)'
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "var(--text-muted)";
               }}
             >
               <ChevronsLeft size={14} className="shrink-0" />
               <span className="min-w-0 flex-1 truncate text-left text-[13px] font-medium">
-                {t('sidebar.collapse')}
+                {t("sidebar.collapse")}
               </span>
               <kbd
                 className="hidden rounded-md px-1.5 py-0.5 font-mono text-[10px] leading-none group-hover:inline-flex"
                 style={{
-                  background: 'var(--border-default)',
-                  color: 'var(--text-muted)',
+                  background: "var(--border-default)",
+                  color: "var(--text-muted)",
                 }}
               >
                 [
@@ -248,31 +285,34 @@ export function Sidebar({
       {!isMobile && !sidebarMiniMode && !isCollapsed && (
         <div
           onMouseDown={onDragStart}
-          className={`absolute inset-y-0 right-0 z-40 w-1 cursor-col-resize transition-all duration-150 ${isDragging ? 'bg-accent/80 shadow-[0_0_8px_var(--color-primary)]' : 'bg-transparent hover:bg-accent/25'
-            }`}
+          className={`absolute inset-y-0 right-0 z-40 w-1 cursor-col-resize transition-all duration-150 ${
+            isDragging
+              ? "bg-accent/80 shadow-[0_0_8px_var(--color-primary)]"
+              : "bg-transparent hover:bg-accent/25"
+          }`}
           aria-hidden
         />
       )}
     </>
-  )
+  );
 
   if (isMobile) {
     return (
       <motion.aside
         initial={false}
-        animate={{ x: mobileOpen ? 0 : '-100%' }}
+        animate={{ x: mobileOpen ? 0 : "-100%" }}
         transition={mobileDrawerSpring}
         aria-label="Studio navigation"
         aria-hidden={!mobileOpen}
         className="fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-r border-divider bg-sidebar shadow-2xl will-change-transform"
         style={{
           width: STUDIO_SIDEBAR.mobileDrawerWidth,
-          pointerEvents: mobileOpen ? 'auto' : 'none',
+          pointerEvents: mobileOpen ? "auto" : "none",
         }}
       >
         {panel}
       </motion.aside>
-    )
+    );
   }
 
   return (
@@ -282,7 +322,7 @@ export function Sidebar({
       initial={false}
       animate={{ width: shellWidth }}
       transition={sidebarShellSpring}
-      style={{ pointerEvents: hidden ? 'none' : 'auto' }}
+      style={{ pointerEvents: hidden ? "none" : "auto" }}
       aria-hidden={hidden}
     >
       <motion.aside
@@ -299,5 +339,5 @@ export function Sidebar({
         {panel}
       </motion.aside>
     </motion.div>
-  )
+  );
 }

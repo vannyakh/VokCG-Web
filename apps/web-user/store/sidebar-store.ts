@@ -1,22 +1,22 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-import { STORAGE_KEYS, STUDIO_SIDEBAR } from '@vokcg/config'
+import { STORAGE_KEYS, STUDIO_SIDEBAR } from "@vokcg/config";
 
 type SidebarState = {
-  collapsed: boolean
-  hidden: boolean
-  sidebarWidth: number
-  sidebarHoverExpand: boolean
-  sidebarMiniMode: boolean
-  toggle: () => void
-  toggleHidden: () => void
-  setCollapsed: (v: boolean) => void
-  setHidden: (v: boolean) => void
-  setSidebarWidth: (w: number) => void
-  setSidebarHoverExpand: (v: boolean) => void
-  setSidebarMiniMode: (v: boolean) => void
-}
+  collapsed: boolean;
+  hidden: boolean;
+  sidebarWidth: number;
+  sidebarHoverExpand: boolean;
+  sidebarMiniMode: boolean;
+  toggle: () => void;
+  toggleHidden: () => void;
+  setCollapsed: (v: boolean) => void;
+  setHidden: (v: boolean) => void;
+  setSidebarWidth: (w: number) => void;
+  setSidebarHoverExpand: (v: boolean) => void;
+  setSidebarMiniMode: (v: boolean) => void;
+};
 
 export const useSidebarStore = create<SidebarState>()(
   persist(
@@ -42,4 +42,4 @@ export const useSidebarStore = create<SidebarState>()(
     }),
     { name: STORAGE_KEYS.sidebar },
   ),
-)
+);

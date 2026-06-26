@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { TtsPage } from '@/features/tts'
+import { TtsPage } from "@/features/tts";
 
 export default function Page() {
-  return <TtsPage />
+  return <TtsPage />;
 }

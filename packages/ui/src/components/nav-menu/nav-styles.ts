@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties } from "react";
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 export const NAV_MENU = {
@@ -17,7 +17,7 @@ export const NAV_MENU = {
   itemGap: 1,
   treeBranchWidth: 12,
   treeGuideOffset: 7,
-} as const
+} as const;
 
 /** Collapsed sidebar flyout panel */
 export const NAV_FLYOUT = {
@@ -28,30 +28,30 @@ export const NAV_FLYOUT = {
   itemHeight: 34,
   headerPaddingX: 12,
   headerPaddingY: 9,
-} as const
+} as const;
 
 // ─── Surface colours ──────────────────────────────────────────────────────────
 export const navSurface = {
-  active:          'color-mix(in srgb, var(--color-primary) 12%, transparent)',
-  nestedActive:    'color-mix(in srgb, var(--color-primary) 9%, transparent)',
-  hover:           'color-mix(in srgb, var(--text-muted) 7%, transparent)',
-  flyoutHover:     'color-mix(in srgb, var(--text-muted) 8%, transparent)',
-  flyoutBg:        'var(--bg-surface)',
-  flyoutBorder:    'var(--border-divider)',
-  sectionLabel:    'var(--text-muted)',
-} as const
+  active: "color-mix(in srgb, var(--color-primary) 12%, transparent)",
+  nestedActive: "color-mix(in srgb, var(--color-primary) 9%, transparent)",
+  hover: "color-mix(in srgb, var(--text-muted) 7%, transparent)",
+  flyoutHover: "color-mix(in srgb, var(--text-muted) 8%, transparent)",
+  flyoutBg: "var(--bg-surface)",
+  flyoutBorder: "var(--border-divider)",
+  sectionLabel: "var(--text-muted)",
+} as const;
 
 // ─── Style helpers ────────────────────────────────────────────────────────────
 export function navRowRadius(nested: boolean, inPopup: boolean) {
-  if (inPopup) return NAV_FLYOUT.radius - 2
-  return 9999
+  if (inPopup) return NAV_FLYOUT.radius - 2;
+  return 9999;
 }
 
 export function navIconColor(active: boolean): CSSProperties {
   return {
-    color: active ? 'var(--color-primary)' : 'var(--text-nav-inactive)',
-    transition: 'color 0.15s ease',
-  }
+    color: active ? "var(--color-primary)" : "var(--text-nav-inactive)",
+    transition: "color 0.15s ease",
+  };
 }
 
 export function navCollapsedTileStyle(active: boolean): CSSProperties {
@@ -59,23 +59,23 @@ export function navCollapsedTileStyle(active: boolean): CSSProperties {
     width: 40,
     height: 34,
     background: active
-      ? 'color-mix(in srgb, var(--color-primary) 13%, transparent)'
-      : 'transparent',
-    color: active ? 'var(--color-primary)' : 'var(--text-nav-inactive)',
-    transition: 'background 0.15s ease, color 0.15s ease',
-  }
+      ? "color-mix(in srgb, var(--color-primary) 13%, transparent)"
+      : "transparent",
+    color: active ? "var(--color-primary)" : "var(--text-nav-inactive)",
+    transition: "background 0.15s ease, color 0.15s ease",
+  };
 }
 
 export function navTreeLineColor(active: boolean): string {
   return active
-    ? 'color-mix(in srgb, var(--color-primary) 40%, transparent)'
-    : 'color-mix(in srgb, var(--text-muted) 15%, transparent)'
+    ? "color-mix(in srgb, var(--color-primary) 40%, transparent)"
+    : "color-mix(in srgb, var(--text-muted) 15%, transparent)";
 }
 
 export function navTreeDotColor(active: boolean): string {
   return active
-    ? 'var(--color-primary)'
-    : 'color-mix(in srgb, var(--text-muted) 28%, transparent)'
+    ? "var(--color-primary)"
+    : "color-mix(in srgb, var(--text-muted) 28%, transparent)";
 }
 
 /** Full-width button className in expanded mode */
@@ -86,24 +86,24 @@ export function navItemButtonClass({
   disabled,
   nested,
 }: {
-  collapse: boolean
-  inPopup: boolean
-  isActive: boolean
-  disabled: boolean
-  nested?: boolean
+  collapse: boolean;
+  inPopup: boolean;
+  isActive: boolean;
+  disabled: boolean;
+  nested?: boolean;
 }) {
   if (collapse && !inPopup) {
-    return 'group flex w-full select-none items-center justify-center'
+    return "group flex w-full select-none items-center justify-center";
   }
 
   return [
-    'group relative flex w-full select-none items-center text-left outline-none',
-    'transition-colors duration-150',
-    inPopup ? 'gap-2 rounded-lg' : nested ? 'gap-2' : 'gap-2.5',
+    "group relative flex w-full select-none items-center text-left outline-none",
+    "transition-colors duration-150",
+    inPopup ? "gap-2 rounded-lg" : nested ? "gap-2" : "gap-2.5",
     isActive
-      ? 'text-accent'
+      ? "text-accent"
       : disabled
-        ? 'cursor-not-allowed text-muted opacity-40'
-        : 'text-nav-inactive hover:text-nav-active focus-visible:text-nav-active',
-  ].join(' ')
+        ? "cursor-not-allowed text-muted opacity-40"
+        : "text-nav-inactive hover:text-nav-active focus-visible:text-nav-active",
+  ].join(" ");
 }

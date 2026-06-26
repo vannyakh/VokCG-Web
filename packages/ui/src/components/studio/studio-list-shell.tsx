@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react";
 
-import type { PageSpacing, PageWidth } from '../layout/page'
-import { Page } from '../layout/page'
+import type { PageSpacing, PageWidth } from "../layout/page";
+import { Page } from "../layout/page";
 
 type Props = {
   /** Shown under the global Header title — do not repeat the page title here */
-  description?: ReactNode
-  badge?: string
-  extra?: ReactNode
-  footer?: ReactNode
-  spacing?: PageSpacing
-  scroll?: boolean
-  width?: PageWidth
-  headerBorder?: boolean
+  description?: ReactNode;
+  badge?: string;
+  extra?: ReactNode;
+  footer?: ReactNode;
+  spacing?: PageSpacing;
+  scroll?: boolean;
+  width?: PageWidth;
+  headerBorder?: boolean;
   /** Stick the page sub-header to top on scroll */
-  stickyHeader?: boolean
-  children: ReactNode
-}
+  stickyHeader?: boolean;
+  children: ReactNode;
+};
 
 /** Standard list / management tool page — title lives in the studio Header */
 export function StudioListShell({
@@ -26,9 +26,9 @@ export function StudioListShell({
   badge,
   extra,
   footer,
-  spacing = 'comfortable',
+  spacing = "comfortable",
   scroll = true,
-  width = 'full',
+  width = "full",
   headerBorder = true,
   stickyHeader = false,
   children,
@@ -48,6 +48,5 @@ export function StudioListShell({
     >
       {children}
     </Page>
-  )
+  );
 }
-

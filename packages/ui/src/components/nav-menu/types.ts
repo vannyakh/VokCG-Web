@@ -1,59 +1,59 @@
-import type { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from "lucide-react";
 
-export type NavBadgeVariant = 'soon' | 'beta' | 'new' | 'custom'
+export type NavBadgeVariant = "soon" | "beta" | "new" | "custom";
 
 export type NavItem = {
-  id: string
-  label: string
-  icon: LucideIcon
+  id: string;
+  label: string;
+  icon: LucideIcon;
   /** Leaf item — provides the route path */
-  path?: string
+  path?: string;
   /** Sub-menu children — when present this item becomes a group/dropdown */
-  children?: NavItem[]
-  disabled?: boolean
+  children?: NavItem[];
+  disabled?: boolean;
   /** Small badge shown at the end of the row */
-  badge?: string
+  badge?: string;
   /** Badge colour variant. Defaults to 'soon' amber style */
-  badgeVariant?: NavBadgeVariant
+  badgeVariant?: NavBadgeVariant;
   /** Shorthand: disabled + badge "Soon" */
-  comingSoon?: boolean
+  comingSoon?: boolean;
   /** Render a thin divider line above this item (expanded sidebar only) */
-  divider?: boolean
+  divider?: boolean;
   /** Override the tooltip shown in collapsed mode (defaults to label) */
-  tooltip?: string
-}
+  tooltip?: string;
+};
 
 /** Grouped nav items with optional section divider label (expanded mode only) */
 export type NavMenuSection = {
-  id: string
+  id: string;
   /** Optional label above the divider line */
-  label?: string
-  items: NavItem[]
-}
+  label?: string;
+  items: NavItem[];
+};
 
 export type MenuProps = {
   /** Active route path */
-  activePath: string
+  activePath: string;
   /** Sidebar collapsed (icon-only mode) */
-  collapse: boolean
+  collapse: boolean;
   /** Only one sub-menu open at a time (default true) */
-  accordion?: boolean
+  accordion?: boolean;
   /** Rounded item style */
-  rounded?: boolean
+  rounded?: boolean;
   /** Item height in px */
-  itemHeight?: number
+  itemHeight?: number;
   /** Called when a leaf item is clicked */
-  onSelect: (item: NavItem) => void
-}
+  onSelect: (item: NavItem) => void;
+};
 
 export type MenuContext = MenuProps & {
   /** Unique ID per NavMenu instance — used for framer-motion layoutId */
-  menuId: string
+  menuId: string;
   /** Currently hovered item id — drives the fluid hover pill animation */
-  hoveredId: string | null
-  setHoveredId: (id: string | null) => void
-  openedMenus: Set<string>
-  openMenu:  (id: string, parentIds: string[]) => void
-  closeMenu: (id: string) => void
-  toggleMenu: (id: string, parentIds: string[]) => void
-}
+  hoveredId: string | null;
+  setHoveredId: (id: string | null) => void;
+  openedMenus: Set<string>;
+  openMenu: (id: string, parentIds: string[]) => void;
+  closeMenu: (id: string) => void;
+  toggleMenu: (id: string, parentIds: string[]) => void;
+};

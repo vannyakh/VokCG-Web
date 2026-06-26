@@ -1,470 +1,426 @@
-'use client'
+"use client";
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { Button, Checkbox, Drawer, Input, Popconfirm, Select, Table } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
-import { Download, LayoutGrid, List, ListVideo, RefreshCw, Search, Trash2 } from 'lucide-react'
-import Link from 'next/link'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useLocale } from '@vokcg/i18n'
-import { useTasks, useDeleteTask, useTask } from '@/api'
-import { STORAGE_KEYS } from '@vokcg/config'
-import { USER_ROUTES } from '@vokcg/constants'
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  DotGridLoader,
+  Button,
+  Checkbox,
+  ConfigProvider,
+  Drawer,
+  Dropdown,
+  Input,
+  Popconfirm,
+  Select,
+} from "antd";
+import {
+  Download,
+  Filter,
+  LayoutGrid,
+  List,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocale } from "@vokcg/i18n";
+import { useTasks, useDeleteTask, useTask } from "@/api";
+import { STORAGE_KEYS } from "@vokcg/config";
+import {
   Tooltip,
-  TaskVideoPoster,
-  TaskDeleteButton,
   TaskPreviewPanel,
   StudioListShell,
-  StudioEmptyState,
-  fadeUpItem,
   panelSlide,
   staggerContainer,
   viewSwitch,
-  getRenderStatus,
-  getTaskStateMeta,
-  isTaskActive,
-  isTaskFailed,
   filterTasks,
-  formatTaskId,
-  getTaskContentSummary,
-  getTaskFinalVideo,
   downloadTaskVideo,
   useAppMessage,
   useMediaQuery,
-} from '@vokcg/ui'
-import type { Task, TaskViewMode } from '@vokcg/types'
-import type { TaskStatusFilter } from '@vokcg/ui'
+} from "@vokcg/ui";
+import type { Task, TaskViewMode } from "@vokcg/types";
+import type { TaskStatusFilter } from "@vokcg/ui";
 
-const VIEW_MODE_KEY = STORAGE_KEYS.tasksViewMode
-const XL_MEDIA_QUERY = '(min-width: 80em)'
-const GRID_THUMB_ASPECT = '16 / 9' as const
-const LIST_THUMB = { width: 128, height: 72 } as const
+import {
+  TaskGridCard,
+  TaskRow,
+  GridSkeleton,
+  ListSkeleton,
+  TasksEmptyState,
+} from "./components";
 
-const STATUS_DOT_COLOR: Record<string, string> = {
-  blue: 'bg-blue-500',
-  green: 'bg-emerald-500',
-  red: 'bg-red-500',
-  gray: 'bg-slate-300 dark:bg-slate-600',
-}
+const VIEW_MODE_KEY = STORAGE_KEYS.tasksViewMode;
+const XL_MEDIA_QUERY = "(min-width: 80em)";
 
-function formatSourceLabel(source: string) {
-  if (!source || source === '—') return '—'
-  return source.charAt(0).toUpperCase() + source.slice(1)
-}
+const floatBarVariants = {
+  initial: { y: 100, x: "-50%", opacity: 0 },
+  animate: {
+    y: 0,
+    x: "-50%",
+    opacity: 1,
+    transition: { type: "spring", stiffness: 260, damping: 20 },
+  },
+  exit: { y: 100, x: "-50%", opacity: 0, transition: { duration: 0.2 } },
+} as const;
 
 function useViewMode() {
   const [viewMode, setViewMode] = useState<TaskViewMode>(() => {
-    if (typeof window === 'undefined') return 'grid'
-    const saved = localStorage.getItem(VIEW_MODE_KEY)
-    return saved === 'list' ? 'list' : 'grid'
-  })
-  useEffect(() => { localStorage.setItem(VIEW_MODE_KEY, viewMode) }, [viewMode])
-  return [viewMode, setViewMode] as const
-}
-
-function TaskGridThumb({ task, selected }: { task: Task; selected: boolean }) {
-  const finalVideo = getTaskFinalVideo(task)
-  const active = isTaskActive(task.state)
-  const failed = isTaskFailed(task.state)
-  const renderStatus = getRenderStatus(task)
-  const progress = task.progress ?? 0
-
-  return (
-    <div className="relative w-full overflow-hidden bg-black" style={{ aspectRatio: GRID_THUMB_ASPECT }}>
-      {finalVideo && !active && <TaskVideoPoster src={finalVideo} objectFit="cover" />}
-      {active && (
-        <div className="absolute inset-0">
-          <DotGridLoader fill compact progress={progress} jobId={formatTaskId(task.id, 8)} status={renderStatus} />
-        </div>
-      )}
-      {failed && !finalVideo && (
-        <div className="flex h-full items-center justify-center" style={{ background: 'rgba(127,29,29,0.45)' }}>
-          <span className="text-xs font-bold text-red-200">Failed</span>
-        </div>
-      )}
-      {!finalVideo && !active && !failed && (
-        <div className="flex h-full items-center justify-center bg-subtle">
-          <ListVideo size={28} className="text-slate-400 dark:text-slate-500" />
-        </div>
-      )}
-      {selected && <div className="pointer-events-none absolute inset-0 border-2 border-accent" />}
-    </div>
-  )
-}
-
-function TaskPreviewCell({ task, selected }: { task: Task; selected: boolean }) {
-  const finalVideo = getTaskFinalVideo(task)
-  const active = isTaskActive(task.state)
-  const failed = isTaskFailed(task.state)
-  const renderStatus = getRenderStatus(task)
-
-  return (
-    <div
-      className={['tasks-thumb relative shrink-0', selected ? 'tasks-thumb--selected' : ''].filter(Boolean).join(' ')}
-      style={{ width: LIST_THUMB.width, height: LIST_THUMB.height }}
-    >
-      {active ? (
-        <DotGridLoader fill compact progress={task.progress ?? 0} jobId={formatTaskId(task.id, 8)} status={renderStatus} />
-      ) : finalVideo ? (
-        <TaskVideoPoster src={finalVideo} objectFit="contain" />
-      ) : failed ? (
-        <div className="flex h-full items-center justify-center bg-red-50 dark:bg-red-950/40">
-          <span className="text-[11px] font-medium text-red-500">Failed</span>
-        </div>
-      ) : (
-        <div className="flex h-full items-center justify-center bg-subtle">
-          <ListVideo size={18} className="text-muted" />
-        </div>
-      )}
-    </div>
-  )
-}
-
-function TaskTopicCell({ task }: { task: Task }) {
-  const summary = getTaskContentSummary(task)
-  return (
-    <div className="min-w-0 py-0.5">
-      <p className="line-clamp-2 font-medium text-[13px] leading-snug text-primary" title={summary.topic}>{summary.topic}</p>
-      {summary.scriptPreview && summary.scriptPreview !== summary.topic && (
-        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted" title={task.script}>{summary.scriptPreview}</p>
-      )}
-    </div>
-  )
-}
-
-function TaskKeywordsCell({ task }: { task: Task }) {
-  const keywords = getTaskContentSummary(task).keywords
-  if (keywords.length === 0) return <span className="text-[13px] text-muted">—</span>
-  return <p className="line-clamp-2 text-[13px] leading-relaxed text-secondary" title={keywords.join(', ')}>{keywords.join(', ')}</p>
-}
-
-function TaskStatusCell({ task }: { task: Task }) {
-  const meta = getTaskStateMeta(task.state)
-  const active = isTaskActive(task.state)
-  const renderStatus = getRenderStatus(task)
-  const progress = task.progress ?? 0
-  return (
-    <div className="flex min-w-[96px] flex-col gap-1">
-      <div className="flex items-center gap-2">
-        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT_COLOR[meta.palette] ?? STATUS_DOT_COLOR['gray']}`} />
-        <span className="text-[13px] font-medium text-primary">{meta.label}</span>
-      </div>
-      {active && (
-        <span className="pl-3.5 text-xs tabular-nums text-muted">{renderStatus.title} · {progress}%</span>
-      )}
-    </div>
-  )
-}
-
-function TaskGridCard({
-  task, selected, checked, onSelect, onToggleCheck, onDelete,
-}: {
-  task: Task; selected: boolean; checked: boolean
-  onSelect: () => void; onToggleCheck: () => void; onDelete: (id: string) => void
-}) {
-  const summary = getTaskContentSummary(task)
-  const meta    = getTaskStateMeta(task.state)
-  const active  = isTaskActive(task.state)
-
-  return (
-    <motion.div variants={fadeUpItem}>
-      <div
-        role="button"
-        tabIndex={0}
-        title={summary.topic}
-        className={[
-          'w-full overflow-hidden rounded-xl border bg-surface cursor-pointer transition-all duration-150',
-          selected ? 'border-accent border-2 shadow-md shadow-accent/10' : checked ? 'border-accent/50' : 'border-default',
-        ].join(' ')}
-        onClick={onSelect}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect() } }}
-      >
-      {/* Thumbnail */}
-      <div className="relative">
-        <TaskGridThumb task={task} selected={selected} />
-
-        <div className="absolute left-2 top-2" onClick={(e) => e.stopPropagation()}>
-          <Checkbox checked={checked} onChange={onToggleCheck} />
-        </div>
-
-        <div className="absolute right-2 top-2">
-          <TaskDeleteButton task={task} onDelete={onDelete} variant="overlay" />
-        </div>
-
-        {/* Active progress badge */}
-        {active && (
-          <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400" />
-            <span className="text-[10px] font-medium text-white">{task.progress ?? 0}%</span>
-          </div>
-        )}
-      </div>
-
-      {/* Card body */}
-      <div className="px-3 py-2.5">
-        <p className="line-clamp-1 text-[13px] font-medium leading-snug text-primary" title={summary.topic}>
-          {summary.topic}
-        </p>
-
-        <div className="mt-1.5 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT_COLOR[meta.palette] ?? STATUS_DOT_COLOR['gray']}`} />
-            <span className="truncate text-[11px] text-secondary">{meta.label}</span>
-          </div>
-
-          {task.created_at && (
-            <span className="shrink-0 text-[11px] tabular-nums text-muted">
-              {new Date(task.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-            </span>
-          )}
-        </div>
-
-        {summary.aspect && summary.aspect !== '—' && (
-          <p className="mt-1 text-[11px] text-muted">{summary.aspect}</p>
-        )}
-      </div>
-      </div>
-    </motion.div>
-  )
-}
-
-function Bone({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
-  return <div className={`skeleton-shimmer rounded-lg bg-default/20 ${className}`} style={style} />
-}
-
-function GridCardSkeleton({ delay }: { delay: number }) {
-  return (
-    <div className="overflow-hidden rounded-xl border border-default/30 bg-surface" style={{ animationDelay: `${delay}s` }}>
-      <Bone className="w-full rounded-none" style={{ aspectRatio: '16/9' }} />
-    </div>
-  )
-}
-
-function GridSkeleton({ cols = 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' }: { cols?: string }) {
-  return (
-    <div className={`grid ${cols} gap-4`}>
-      {Array.from({ length: 8 }).map((_, i) => <GridCardSkeleton key={i} delay={i * 0.06} />)}
-    </div>
-  )
-}
-
-function ListRowSkeleton({ delay }: { delay: number }) {
-  return (
-    <div className="flex items-center gap-3 border-b border-subtle px-4 py-3.5 last:border-b-0" style={{ animationDelay: `${delay}s` }}>
-      <Bone className="shrink-0 rounded-lg" style={{ width: LIST_THUMB.width, height: LIST_THUMB.height }} />
-      <div className="flex min-w-0 flex-[1.4] flex-col gap-1.5">
-        <Bone className="h-3.5 w-2/3 rounded-md" />
-        <Bone className="h-2.5 w-1/3 rounded-md" />
-      </div>
-      {/* keywords */}
-      <Bone className="hidden h-3 w-28 shrink-0 rounded-md md:block" />
-      {/* source */}
-      <Bone className="hidden h-3 w-16 shrink-0 rounded-md sm:block" />
-      {/* aspect */}
-      <Bone className="hidden h-3 w-12 shrink-0 rounded-md lg:block" />
-      {/* materials */}
-      <Bone className="hidden h-3 w-10 shrink-0 rounded-md lg:block" />
-      {/* status */}
-      <div className="flex shrink-0 flex-col gap-1">
-        <Bone className="h-3 w-20 rounded-md" />
-        <Bone className="h-2.5 w-14 rounded-md" />
-      </div>
-      {/* actions */}
-      <Bone className="h-6 w-6 shrink-0 rounded-md" />
-    </div>
-  )
-}
-
-function ListSkeleton() {
-  return (
-    <div className="tasks-table-shell overflow-hidden rounded-xl border border-default bg-surface">
-      {Array.from({ length: 6 }).map((_, i) => <ListRowSkeleton key={i} delay={i * 0.06} />)}
-    </div>
-  )
-}
-
-function TasksEmptyState({ t, variant, onClearFilters }: { t: (key: string) => string; variant: 'none' | 'filtered'; onClearFilters?: () => void }) {
-  return (
-    <StudioEmptyState
-      icon={ListVideo}
-      title={variant === 'filtered' ? t('tasks.noMatches') : t('tasks.noTasks')}
-      description={variant === 'filtered' ? t('tasks.noMatchesHint') : t('tasks.noTasksHint')}
-      action={
-        variant === 'filtered' ? (
-          <Button size="small" onClick={onClearFilters} className="rounded-lg">{t('tasks.clearFilters')}</Button>
-        ) : (
-          <Link href={USER_ROUTES.create}>
-            <Button type="primary" size="small" className="rounded-lg font-bold">{t('tasks.createVideo')}</Button>
-          </Link>
-        )
-      }
-    />
-  )
+    if (typeof window === "undefined") return "grid";
+    const saved = localStorage.getItem(VIEW_MODE_KEY);
+    return saved === "list" ? "list" : "grid";
+  });
+  useEffect(() => {
+    localStorage.setItem(VIEW_MODE_KEY, viewMode);
+  }, [viewMode]);
+  return [viewMode, setViewMode] as const;
 }
 
 export function TasksPage() {
-  const { t } = useLocale()
-  const message = useAppMessage()
-  const [page, setPage] = useState(1)
-  const [viewMode, setViewMode] = useViewMode()
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
-  const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<TaskStatusFilter>('all')
-  const isXlUp = useMediaQuery(XL_MEDIA_QUERY)
-  const pageSize = 12
-  const filtersActive = searchQuery.trim().length > 0 || statusFilter !== 'all'
-  const fetchPage = filtersActive ? 1 : page
-  const fetchPageSize = filtersActive ? 100 : pageSize
+  const { t } = useLocale();
+  const message = useAppMessage();
+  const searchInputRef = useRef<any>(null);
+  const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useViewMode();
 
-  const { data, isLoading, isFetching, refetch } = useTasks(fetchPage, fetchPageSize)
-  const deleteMutation = useDeleteTask()
-  const { data: selectedTask, isLoading: isSelectedTaskLoading } = useTask(selectedTaskId ?? '')
-  const totalPages = data ? Math.ceil(data.total / (filtersActive ? fetchPageSize : pageSize)) : 1
-  const hasServerTasks = (data?.tasks.length ?? 0) > 0
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === "/" &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA"
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<TaskStatusFilter>("all");
+  const isXlUp = useMediaQuery(XL_MEDIA_QUERY);
+  const pageSize = 12;
+  const filtersActive = searchQuery.trim().length > 0 || statusFilter !== "all";
+  const fetchPage = filtersActive ? 1 : page;
+  const fetchPageSize = filtersActive ? 100 : pageSize;
+
+  const { data, isLoading, isFetching, refetch } = useTasks(
+    fetchPage,
+    fetchPageSize,
+  );
+  const hasActiveSelected = useMemo(() => {
+    const selectedTasks = (data?.tasks ?? []).filter((task) =>
+      selectedTaskIds.includes(task.id),
+    );
+    return selectedTasks.some(
+      (task) => task.state === "processing" || task.state === "pending",
+    );
+  }, [data?.tasks, selectedTaskIds]);
+
+  const deleteMutation = useDeleteTask();
+  const { data: selectedTask, isLoading: isSelectedTaskLoading } = useTask(
+    selectedTaskId ?? "",
+  );
+  const totalPages = data
+    ? Math.ceil(data.total / (filtersActive ? fetchPageSize : pageSize))
+    : 1;
+  const hasServerTasks = (data?.tasks.length ?? 0) > 0;
 
   const visibleTasks = useMemo(
     () => filterTasks(data?.tasks ?? [], searchQuery, statusFilter),
     [data?.tasks, searchQuery, statusFilter],
-  )
+  );
 
   const handleDelete = useCallback(
     (id: string) => {
-      deleteMutation.mutate(id)
-      if (selectedTaskId === id) setSelectedTaskId(null)
-      setSelectedTaskIds((prev) => prev.filter((taskId) => taskId !== id))
+      deleteMutation.mutate(id);
+      if (selectedTaskId === id) setSelectedTaskId(null);
+      setSelectedTaskIds((prev) => prev.filter((taskId) => taskId !== id));
     },
     [deleteMutation, selectedTaskId],
-  )
+  );
 
   const toggleTaskChecked = (taskId: string) => {
-    setSelectedTaskIds((prev) => prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId])
-  }
+    setSelectedTaskIds((prev) =>
+      prev.includes(taskId)
+        ? prev.filter((id) => id !== taskId)
+        : [...prev, taskId],
+    );
+  };
 
-  const clearFilters = () => { setSearchQuery(''); setStatusFilter('all'); setPage(1) }
+  const handleToggleAll = () => {
+    const allChecked =
+      visibleTasks.length > 0 &&
+      visibleTasks.every((task) => selectedTaskIds.includes(task.id));
+    if (allChecked) {
+      setSelectedTaskIds((prev) =>
+        prev.filter((id) => !visibleTasks.some((vt) => vt.id === id)),
+      );
+    } else {
+      setSelectedTaskIds((prev) =>
+        Array.from(new Set([...prev, ...visibleTasks.map((t) => t.id)])),
+      );
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setPage(1);
+  };
 
   const handleBulkDelete = async () => {
-    const ids = [...selectedTaskIds]
-    await Promise.all(ids.map((id) => deleteMutation.mutateAsync(id)))
-    if (selectedTaskId && ids.includes(selectedTaskId)) setSelectedTaskId(null)
-    setSelectedTaskIds([])
-    message.success(t('tasks.bulkDeleted', { count: ids.length }))
-  }
+    const ids = [...selectedTaskIds];
+    await Promise.all(ids.map((id) => deleteMutation.mutateAsync(id)));
+    if (selectedTaskId && ids.includes(selectedTaskId)) setSelectedTaskId(null);
+    setSelectedTaskIds([]);
+    message.success(t("tasks.bulkDeleted", { count: ids.length }));
+  };
 
   const handleBulkDownload = () => {
-    const tasks = visibleTasks.filter((task) => selectedTaskIds.includes(task.id))
-    let downloaded = 0; let skipped = 0
+    const tasks = visibleTasks.filter((task) =>
+      selectedTaskIds.includes(task.id),
+    );
+    let downloaded = 0;
+    let skipped = 0;
     for (const task of tasks) {
-      if (downloadTaskVideo(task)) downloaded += 1; else skipped += 1
+      if (downloadTaskVideo(task)) downloaded += 1;
+      else skipped += 1;
     }
-    if (downloaded > 0) message.success(t('tasks.bulkDownloaded', { count: downloaded }))
-    if (skipped > 0) message.info(t('tasks.bulkDownloadSkipped', { count: skipped }))
-  }
+    if (downloaded > 0)
+      message.success(t("tasks.bulkDownloaded", { count: downloaded }));
+    if (skipped > 0)
+      message.info(t("tasks.bulkDownloadSkipped", { count: skipped }));
+  };
 
   useEffect(() => {
-    setSelectedTaskIds((prev) => prev.filter((id) => visibleTasks.some((task) => task.id === id)))
-  }, [visibleTasks])
+    setSelectedTaskIds((prev) =>
+      prev.filter((id) => visibleTasks.some((task) => task.id === id)),
+    );
+  }, [visibleTasks]);
 
-  const gridCols = selectedTaskId ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
-
-  const listColumns: ColumnsType<Task> = useMemo(
-    () => [
-      { title: t('tasks.preview'), key: 'preview', width: 152, render: (_, task) => <TaskPreviewCell task={task} selected={selectedTaskId === task.id} /> },
-      { title: t('tasks.topic'), key: 'topic', ellipsis: true, minWidth: 200, render: (_, task) => <TaskTopicCell task={task} /> },
-      { title: t('tasks.keywords'), key: 'keywords', width: 180, responsive: ['md'], render: (_, task) => <TaskKeywordsCell task={task} /> },
-      { title: t('tasks.source'), key: 'source', width: 100, responsive: ['sm'], render: (_, task) => <span className="text-[13px] text-secondary">{formatSourceLabel(getTaskContentSummary(task).source)}</span> },
-      { title: t('tasks.aspect'), key: 'aspect', width: 72, responsive: ['lg'], render: (_, task) => <span className="text-[13px] tabular-nums text-secondary">{getTaskContentSummary(task).aspect}</span> },
-      {
-        title: (
-          <Tooltip content={t('tasks.materialsHint')}>
-            <span className="cursor-help border-b border-dotted border-muted">{t('tasks.materials')}</span>
-          </Tooltip>
-        ),
-        key: 'materials', width: 96, align: 'center', responsive: ['lg'],
-        render: (_, task) => {
-          const count = getTaskContentSummary(task).materialCount
-          if (count <= 0) return <span className="text-[13px] text-muted">—</span>
-          return (
-            <Tooltip content={t('tasks.materialsHint')}>
-              <span className="text-[13px] tabular-nums text-secondary">{t('tasks.materialsCount', { count })}</span>
-            </Tooltip>
-          )
-        },
-      },
-      { title: t('tasks.status'), key: 'status', width: 128, render: (_, task) => <TaskStatusCell task={task} /> },
-      { title: '', key: 'actions', width: 48, align: 'center', render: (_, task) => <TaskDeleteButton task={task} onDelete={handleDelete} variant="table" /> },
-    ],
-    [t, selectedTaskId, handleDelete],
-  )
+  const gridCols = selectedTaskId
+    ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3"
+    : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4";
 
   const rowSelection = useMemo(
-    () => ({ selectedRowKeys: selectedTaskIds, onChange: (keys: React.Key[]) => setSelectedTaskIds(keys.map(String)), preserveSelectedRowKeys: true }),
+    () => ({
+      selectedRowKeys: selectedTaskIds,
+      onChange: (keys: React.Key[]) => setSelectedTaskIds(keys.map(String)),
+      preserveSelectedRowKeys: true,
+    }),
     [selectedTaskIds],
-  )
+  );
 
   const statusOptions = useMemo(
     () => [
-      { value: 'all', label: t('tasks.statusAll') },
-      { value: 'processing', label: t('tasks.statusProcessing') },
-      { value: 'completed', label: t('tasks.statusCompleted') },
-      { value: 'failed', label: t('tasks.statusFailed') },
+      { value: "all", label: t("tasks.statusAll") },
+      { value: "processing", label: t("tasks.statusProcessing") },
+      { value: "completed", label: t("tasks.statusCompleted") },
+      { value: "failed", label: t("tasks.statusFailed") },
     ],
     [t],
-  )
+  );
 
   return (
     <>
       <StudioListShell
-        description={t('tasks.description')}
+        description={
+          <span className="hidden sm:inline">{t("tasks.description")}</span>
+        }
         extra={
-          <div className="flex items-center gap-2">
-            {isFetching && !isLoading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />}
-            <Input allowClear size="small" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setPage(1) }} placeholder={t('tasks.searchPlaceholder')} prefix={<Search size={14} className="text-muted" />} className="w-[220px] rounded-lg sm:w-[260px]" />
-            <Select size="small" value={statusFilter} onChange={(value: TaskStatusFilter) => { setStatusFilter(value); setPage(1) }} options={statusOptions} className="min-w-[140px]" />
-            <div className="flex gap-0 rounded-lg border border-default bg-subtle p-[3px]">
-              <Tooltip content={t('tasks.gridView')}>
-                <Button type={viewMode === 'grid' ? 'primary' : 'text'} size="small" icon={<LayoutGrid size={16} />} onClick={() => setViewMode('grid')} style={{ borderRadius: 8 }} />
-              </Tooltip>
-              <Tooltip content={t('tasks.listView')}>
-                <Button type={viewMode === 'list' ? 'primary' : 'text'} size="small" icon={<List size={16} />} onClick={() => setViewMode('list')} style={{ borderRadius: 8 }} />
-              </Tooltip>
+          <ConfigProvider
+            theme={{
+              token: {
+                controlHeight: 36,
+                borderRadius: 12,
+              },
+            }}
+          >
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Input
+                ref={searchInputRef}
+                allowClear
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                placeholder={t("tasks.searchPlaceholder")}
+                prefix={<Search size={14} className="text-muted" />}
+                suffix={
+                  !searchQuery && (
+                    <span className="hidden md:inline-flex items-center justify-center text-[10px] text-muted border border-default bg-subtle w-4 h-4 rounded select-none font-sans font-medium">
+                      /
+                    </span>
+                  )
+                }
+                className="flex-1 sm:flex-initial sm:w-[180px] md:w-[240px] rounded-xl !bg-[var(--bg-subtle)] border border-default hover:border-accent/40 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/10 transition-all duration-200 shadow-sm"
+              />
+
+              {/* Mobile Dropdown status filter (icon trigger) */}
+              <div className="sm:hidden shrink-0">
+                <Dropdown
+                  menu={{
+                    items: statusOptions.map((opt) => ({
+                      key: opt.value,
+                      label: opt.label,
+                      onClick: () => {
+                        setStatusFilter(opt.value as TaskStatusFilter);
+                        setPage(1);
+                      },
+                    })),
+                  }}
+                  trigger={["click"]}
+                >
+                  <Button
+                    icon={<Filter size={16} />}
+                    className={`rounded-xl flex items-center justify-center ${
+                      statusFilter !== "all"
+                        ? "border-accent text-accent bg-accent/5"
+                        : "border-default text-secondary bg-surface"
+                    }`}
+                  />
+                </Dropdown>
+              </div>
+
+              {/* Desktop Select status filter */}
+              <div className="hidden sm:block shrink-0">
+                <Select
+                  value={statusFilter}
+                  onChange={(value: TaskStatusFilter) => {
+                    setStatusFilter(value);
+                    setPage(1);
+                  }}
+                  options={statusOptions}
+                  className="min-w-[140px]"
+                  classNames={{
+                    popup: {
+                      root: "rounded-xl bg-surface shadow-lg",
+                    },
+                  }}
+                />
+              </div>
+
+              <div className="flex gap-0 rounded-xl border border-default bg-subtle p-[3px] shrink-0 h-9 box-border items-center">
+                <ConfigProvider
+                  theme={{
+                    token: {
+                      controlHeight: 30,
+                      borderRadius: 9,
+                    },
+                  }}
+                >
+                  <Button
+                    type={viewMode === "grid" ? "primary" : "text"}
+                    icon={<LayoutGrid size={16} />}
+                    onClick={() => setViewMode("grid")}
+                    className="flex items-center justify-center w-[30px] p-0"
+                  />
+                  <Button
+                    type={viewMode === "list" ? "primary" : "text"}
+                    icon={<List size={16} />}
+                    onClick={() => setViewMode("list")}
+                    className="flex items-center justify-center w-[30px] p-0"
+                  />
+                </ConfigProvider>
+              </div>
             </div>
-            <Tooltip content={t('tasks.refresh')}>
-              <motion.div whileTap={{ rotate: 180 }} transition={{ duration: 0.35 }}>
-                <Button size="small" icon={<RefreshCw size={16} />} onClick={() => refetch()} className="rounded-lg" />
-              </motion.div>
-            </Tooltip>
-          </div>
+          </ConfigProvider>
         }
       >
-        {selectedTaskIds.length > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-default bg-surface px-3 py-2">
-            <span className="text-sm font-medium text-secondary">{t('tasks.selectedCount', { count: selectedTaskIds.length })}</span>
-            <Button size="small" icon={<Download size={14} />} onClick={handleBulkDownload} className="rounded-lg">{t('tasks.bulkDownload')}</Button>
-            <Popconfirm title={t('tasks.bulkDeleteConfirmTitle', { count: selectedTaskIds.length })} description={t('tasks.bulkDeleteConfirmDescription')} okText={t('tasks.deleteConfirmOk')} cancelText={t('tasks.deleteConfirmCancel')} okButtonProps={{ danger: true }} onConfirm={() => void handleBulkDelete()}>
-              <Button size="small" danger icon={<Trash2 size={14} />} className="rounded-lg">{t('tasks.bulkDelete')}</Button>
-            </Popconfirm>
-            <Button type="text" size="small" onClick={() => setSelectedTaskIds([])} className="ml-auto rounded-lg">{t('common.cancel')}</Button>
-          </div>
-        )}
-
-        {filtersActive && hasServerTasks && <p className="mb-3 text-xs text-muted">{t('tasks.searchHint')}</p>}
-
+        <AnimatePresence>
+          {selectedTaskIds.length > 0 && (
+            <motion.div
+              variants={floatBarVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="fixed bottom-6 left-1/2 z-50 flex items-center gap-3 rounded-2xl border border-default bg-surface/95 backdrop-blur-md px-4 py-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.25)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5)] border-primary/20"
+            >
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
+                {t("tasks.selectedCount", { count: selectedTaskIds.length })}
+              </span>
+              <div className="h-4 w-[1px] bg-default shrink-0" />
+              <Button
+                size="middle"
+                type="text"
+                icon={<Download size={15} />}
+                onClick={handleBulkDownload}
+                disabled={hasActiveSelected}
+                className={`rounded-xl flex items-center gap-1.5 transition-colors duration-150 ${hasActiveSelected ? "text-muted opacity-50 cursor-not-allowed" : "hover:bg-subtle text-secondary"}`}
+              >
+                <span className="hidden sm:inline text-xs font-medium">
+                  {t("tasks.bulkDownload")}
+                </span>
+              </Button>
+              <Popconfirm
+                disabled={hasActiveSelected}
+                title={t("tasks.bulkDeleteConfirmTitle", {
+                  count: selectedTaskIds.length,
+                })}
+                description={t("tasks.bulkDeleteConfirmDescription")}
+                okText={t("tasks.deleteConfirmOk")}
+                cancelText={t("tasks.deleteConfirmCancel")}
+                okButtonProps={{ danger: true }}
+                onConfirm={() => void handleBulkDelete()}
+              >
+                <Button
+                  size="middle"
+                  type="text"
+                  danger
+                  icon={<Trash2 size={15} />}
+                  disabled={hasActiveSelected}
+                  className={`rounded-xl flex items-center gap-1.5 transition-colors duration-150 ${hasActiveSelected ? "text-muted opacity-50 cursor-not-allowed" : "hover:bg-red-500/10 text-red-500"}`}
+                >
+                  <span className="hidden sm:inline text-xs font-medium">
+                    {t("tasks.bulkDelete")}
+                  </span>
+                </Button>
+              </Popconfirm>
+              <div className="h-4 w-[1px] bg-default shrink-0" />
+              <Button
+                type="text"
+                size="middle"
+                onClick={() => setSelectedTaskIds([])}
+                className="rounded-xl hover:bg-subtle text-muted text-xs font-medium"
+              >
+                {t("common.cancel")}
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div className="flex w-full flex-col gap-5 xl:flex-row xl:items-start">
           <div className="min-w-0 flex-1">
             {!isLoading && !hasServerTasks ? (
               <TasksEmptyState t={t} variant="none" />
             ) : !isLoading && visibleTasks.length === 0 ? (
-              <TasksEmptyState t={t} variant="filtered" onClearFilters={clearFilters} />
+              <TasksEmptyState
+                t={t}
+                variant="filtered"
+                onClearFilters={clearFilters}
+              />
             ) : isLoading ? (
-              viewMode === 'grid' ? <GridSkeleton cols={gridCols} /> : <ListSkeleton />
+              viewMode === "grid" ? (
+                <GridSkeleton cols={gridCols} />
+              ) : (
+                <ListSkeleton />
+              )
             ) : (
               <AnimatePresence mode="wait">
-                <motion.div key={viewMode} variants={viewSwitch} initial="initial" animate="animate" exit="exit">
-                  {viewMode === 'grid' ? (
-                    <motion.div variants={staggerContainer} initial="initial" animate="animate" className={`grid ${gridCols} gap-4`}>
+                <motion.div
+                  key={viewMode}
+                  variants={viewSwitch}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  {viewMode === "grid" ? (
+                    <motion.div
+                      variants={staggerContainer}
+                      initial="initial"
+                      animate="animate"
+                      className={`grid ${gridCols} gap-4`}
+                    >
                       {visibleTasks.map((task) => (
                         <TaskGridCard
                           key={task.id}
@@ -478,19 +434,69 @@ export function TasksPage() {
                       ))}
                     </motion.div>
                   ) : (
-                    <div className="tasks-table-shell overflow-hidden rounded-2xl">
-                      <Table
-                        className="tasks-table"
-                        dataSource={visibleTasks}
-                        columns={listColumns}
-                        rowKey="id"
-                        size="middle"
-                        pagination={false}
-                        tableLayout="fixed"
-                        rowSelection={rowSelection}
-                        rowClassName={(task) => selectedTaskId === task.id ? 'tasks-row-selected cursor-pointer' : 'cursor-pointer'}
-                        onRow={(task) => ({ onClick: () => setSelectedTaskId(task.id) })}
-                      />
+                    <div className="flex flex-col bg-transparent border-none md:rounded-2xl md:shadow-sm overflow-visible md:overflow-hidden md:divide-y md:divide-default">
+                      {/* Header Row */}
+                      <div className="hidden md:flex items-center border-b border-default bg-surface/40 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted select-none">
+                        <div className="w-12 shrink-0 flex items-center justify-center">
+                          <Checkbox
+                            checked={
+                              visibleTasks.length > 0 &&
+                              visibleTasks.every((task) =>
+                                selectedTaskIds.includes(task.id),
+                              )
+                            }
+                            indeterminate={
+                              selectedTaskIds.length > 0 &&
+                              !visibleTasks.every((task) =>
+                                selectedTaskIds.includes(task.id),
+                              )
+                            }
+                            onChange={handleToggleAll}
+                          />
+                        </div>
+                        <div className="w-40 shrink-0 pl-1">
+                          {t("tasks.preview")}
+                        </div>
+                        <div className="flex-1 min-w-0 pr-4">
+                          {t("tasks.topic")}
+                        </div>
+                        <div className="w-[180px] shrink-0 hidden xl:block pr-4">
+                          {t("tasks.keywords")}
+                        </div>
+                        <div className="w-24 shrink-0 hidden md:block pr-4">
+                          {t("tasks.source")}
+                        </div>
+                        <div className="w-20 shrink-0 hidden lg:block pr-4">
+                          {t("tasks.aspect")}
+                        </div>
+                        <div className="w-24 shrink-0 hidden lg:block pr-4 text-center">
+                          <Tooltip content={t("tasks.materialsHint")}>
+                            <span className="cursor-help border-b border-dotted border-muted">
+                              {t("tasks.materials")}
+                            </span>
+                          </Tooltip>
+                        </div>
+                        <div className="w-32 shrink-0 pr-4">
+                          {t("tasks.status")}
+                        </div>
+                        <div className="w-12 shrink-0 text-center"></div>
+                      </div>
+
+                      {/* List Rows */}
+                      <div className="flex flex-col divide-y divide-default md:divide-y">
+                        {visibleTasks.map((task) => (
+                          <TaskRow
+                            key={task.id}
+                            task={task}
+                            selected={selectedTaskId === task.id}
+                            checked={selectedTaskIds.includes(task.id)}
+                            onSelect={() => setSelectedTaskId(task.id)}
+                            onToggleCheck={() => toggleTaskChecked(task.id)}
+                            onDelete={handleDelete}
+                            t={t}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </motion.div>
@@ -499,16 +505,39 @@ export function TasksPage() {
 
             {totalPages > 1 && !filtersActive && (
               <div className="mt-5 flex items-center justify-end gap-2">
-                <span className="text-sm font-semibold text-secondary">{t('tasks.page', { current: page, total: totalPages })}</span>
-                <Button size="small" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="rounded-lg">‹</Button>
-                <Button size="small" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="rounded-lg">›</Button>
+                <span className="text-sm font-semibold text-secondary">
+                  {t("tasks.page", { current: page, total: totalPages })}
+                </span>
+                <Button
+                  size="small"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="rounded-lg"
+                >
+                  ‹
+                </Button>
+                <Button
+                  size="small"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  className="rounded-lg"
+                >
+                  ›
+                </Button>
               </div>
             )}
           </div>
 
           <AnimatePresence>
             {selectedTaskId && isXlUp && (
-              <motion.div key="preview-panel" className="tasks-preview-panel hidden shrink-0 xl:block" variants={panelSlide} initial="initial" animate="animate" exit="exit">
+              <motion.div
+                key="preview-panel"
+                className="tasks-preview-panel hidden shrink-0 xl:block"
+                variants={panelSlide}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
                 <TaskPreviewPanel
                   task={selectedTask}
                   isLoading={isSelectedTaskLoading}
@@ -526,7 +555,15 @@ export function TasksPage() {
         placement="bottom"
         onClose={() => setSelectedTaskId(null)}
         size="88vh"
-        styles={{ body: { padding: 0, height: '100%', overflow: 'hidden' }, header: { display: 'none' }, wrapper: { borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' } }}
+        styles={{
+          body: { padding: 0, height: "100%", overflow: "hidden" },
+          header: { display: "none" },
+          wrapper: {
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+            overflow: "hidden",
+          },
+        }}
         className="bg-canvas"
       >
         {selectedTaskId && (
@@ -539,5 +576,5 @@ export function TasksPage() {
         )}
       </Drawer>
     </>
-  )
+  );
 }

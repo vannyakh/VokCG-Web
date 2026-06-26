@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { PublishPage } from '@/features/explore'
+import { PublishPage } from "@/features/explore";
 
 export default function Page() {
-  return <PublishPage />
+  return <PublishPage />;
 }

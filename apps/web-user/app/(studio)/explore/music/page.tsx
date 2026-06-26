@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { MusicPage } from '@/features/explore'
+import { MusicPage } from "@/features/explore";
 
 export default function Page() {
-  return <MusicPage />
+  return <MusicPage />;
 }

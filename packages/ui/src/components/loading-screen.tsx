@@ -1,14 +1,14 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
+import { motion } from "framer-motion";
 
-const CHARS = 'VokCGStudio'.split('')
+const CHARS = "VokCGStudio".split("");
 
 export function LoadingScreen() {
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: 'var(--bg-canvas)' }}
+      style={{ background: "var(--bg-canvas)" }}
     >
       {/* Ambient glow blobs */}
       <div
@@ -17,9 +17,10 @@ export function LoadingScreen() {
         style={{
           width: 520,
           height: 320,
-          borderRadius: '50%',
-          background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.12) 0%, transparent 70%)',
-          filter: 'blur(40px)',
+          borderRadius: "50%",
+          background:
+            "radial-gradient(ellipse at center, rgba(59,130,246,0.12) 0%, transparent 70%)",
+          filter: "blur(40px)",
         }}
       />
       <div
@@ -28,9 +29,10 @@ export function LoadingScreen() {
         style={{
           width: 360,
           height: 240,
-          borderRadius: '50%',
-          background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.07) 0%, transparent 70%)',
-          filter: 'blur(48px)',
+          borderRadius: "50%",
+          background:
+            "radial-gradient(ellipse at center, rgba(139,92,246,0.07) 0%, transparent 70%)",
+          filter: "blur(48px)",
         }}
       />
 
@@ -39,24 +41,25 @@ export function LoadingScreen() {
         <motion.div
           initial={{ opacity: 0, scale: 0.6, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+          transition={{ type: "spring", stiffness: 260, damping: 22 }}
           className="relative flex h-20 w-20 items-center justify-center"
         >
           {/* Rotating conic ring */}
           <motion.div
             className="absolute inset-0"
             style={{
-              background: 'conic-gradient(from 0deg, #3b82f6 0%, #8b5cf6 40%, transparent 70%)',
+              background:
+                "conic-gradient(from 0deg, #3b82f6 0%, #8b5cf6 40%, transparent 70%)",
               borderRadius: 22,
             }}
             animate={{ rotate: 360 }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
 
           {/* Inner card */}
           <div
             className="absolute inset-[3px] flex items-center justify-center"
-            style={{ background: 'var(--bg-surface)', borderRadius: 18 }}
+            style={{ background: "var(--bg-surface)", borderRadius: 18 }}
           >
             <svg
               width="36"
@@ -69,7 +72,13 @@ export function LoadingScreen() {
               strokeLinejoin="round"
             >
               <defs>
-                <linearGradient id="loading-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient
+                  id="loading-grad"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
                   <stop offset="0%" stopColor="#3b82f6" />
                   <stop offset="100%" stopColor="#8b5cf6" />
                 </linearGradient>
@@ -84,9 +93,17 @@ export function LoadingScreen() {
             <motion.div
               key={i}
               className="absolute inset-0"
-              style={{ border: '1.5px solid rgba(59,130,246,0.5)', borderRadius: 22 }}
+              style={{
+                border: "1.5px solid rgba(59,130,246,0.5)",
+                borderRadius: 22,
+              }}
               animate={{ scale: [1, 1.55], opacity: [0.6, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut', delay: i * 0.7 }}
+              transition={{
+                duration: 1.8,
+                repeat: Infinity,
+                ease: "easeOut",
+                delay: i * 0.7,
+              }}
             />
           ))}
         </motion.div>
@@ -98,15 +115,20 @@ export function LoadingScreen() {
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.18 + i * 0.045, type: 'spring', stiffness: 320, damping: 20 }}
+              transition={{
+                delay: 0.18 + i * 0.045,
+                type: "spring",
+                stiffness: 320,
+                damping: 20,
+              }}
               style={{
                 fontSize: 22,
                 fontWeight: 800,
-                letterSpacing: '-0.02em',
+                letterSpacing: "-0.02em",
                 color:
                   ch === ch.toUpperCase() && ch !== ch.toLowerCase()
-                    ? 'var(--text-primary)'
-                    : 'var(--text-secondary)',
+                    ? "var(--text-primary)"
+                    : "var(--text-secondary)",
               }}
             >
               {ch}
@@ -120,16 +142,21 @@ export function LoadingScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.3 }}
           className="relative h-[3px] w-48 overflow-hidden rounded-full"
-          style={{ background: 'var(--border-default)' }}
+          style={{ background: "var(--border-default)" }}
         >
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full"
-            style={{ background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)' }}
-            animate={{ x: ['-100%', '100%'] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: [0.4, 0, 0.6, 1], repeatDelay: 0.2 }}
+            style={{ background: "linear-gradient(90deg, #3b82f6, #8b5cf6)" }}
+            animate={{ x: ["-100%", "100%"] }}
+            transition={{
+              duration: 1.4,
+              repeat: Infinity,
+              ease: [0.4, 0, 0.6, 1],
+              repeatDelay: 0.2,
+            }}
           />
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { AvatarPage } from '@/features/explore'
+import { AvatarPage } from "@/features/explore";
 
 export default function Page() {
-  return <AvatarPage />
+  return <AvatarPage />;
 }

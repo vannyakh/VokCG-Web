@@ -1,38 +1,38 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Check, Copy } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { Tooltip } from './tooltip'
+import { useState } from "react";
+import { Check, Copy } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Tooltip } from "./tooltip";
 
 type CopyIconButtonProps = {
-  text: string
-  label?: string
-  copiedLabel?: string
-  className?: string
-  size?: number
-}
+  text: string;
+  label?: string;
+  copiedLabel?: string;
+  className?: string;
+  size?: number;
+};
 
 export function CopyIconButton({
   text,
-  label = 'Copy',
-  copiedLabel = 'Copied!',
-  className = '',
+  label = "Copy",
+  copiedLabel = "Copied!",
+  className = "",
   size = 14,
 }: CopyIconButtonProps) {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (!text) return
+    e.stopPropagation();
+    if (!text) return;
     try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
     } catch {
       // ignore clipboard errors
     }
-  }
+  };
 
   return (
     <Tooltip content={copied ? copiedLabel : label}>
@@ -42,20 +42,20 @@ export function CopyIconButton({
         onClick={(e) => void handleCopy(e)}
         whileTap={{ scale: 0.88 }}
         className={[
-          'flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-all duration-300',
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-all duration-300",
           copied
-            ? 'border-[var(--color-primary)]/35 bg-[var(--bg-active)] text-[var(--color-primary)] shadow-[0_0_8px_rgba(59,130,246,0.15)]'
-            : 'border-transparent text-muted hover:border-default hover:bg-subtle hover:text-primary',
+            ? "border-[var(--color-primary)]/35 bg-[var(--bg-active)] text-[var(--color-primary)] shadow-[0_0_8px_rgba(59,130,246,0.15)]"
+            : "border-transparent text-muted hover:border-default hover:bg-subtle hover:text-primary",
           className,
-        ].join(' ')}
+        ].join(" ")}
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
-            key={copied ? 'check' : 'copy'}
+            key={copied ? "check" : "copy"}
             initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             exit={{ opacity: 0, scale: 0.6, rotate: 45 }}
-            transition={{ duration: 0.14, ease: 'easeOut' }}
+            transition={{ duration: 0.14, ease: "easeOut" }}
             className="flex items-center justify-center"
           >
             {copied ? (
@@ -67,5 +67,5 @@ export function CopyIconButton({
         </AnimatePresence>
       </motion.button>
     </Tooltip>
-  )
+  );
 }

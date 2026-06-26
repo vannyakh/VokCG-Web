@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import type { ReactNode } from 'react'
-import type { StatGridItem } from './stat-grid'
-import { StatGrid } from './stat-grid'
-import { Page, type PageProps } from '@vokcg/ui'
+import type { ReactNode } from "react";
+import type { StatGridItem } from "./stat-grid";
+import { StatGrid } from "./stat-grid";
+import { Page, type PageProps } from "@vokcg/ui";
 
 type FormTablePageProps = PageProps & {
-  stats?: StatGridItem[]
-  statsColumns?: 2 | 3 | 4 | 6
-  statsLoading?: boolean
-  statsExtra?: ReactNode
-  children: ReactNode
-}
+  stats?: StatGridItem[];
+  statsColumns?: 2 | 3 | 4 | 6;
+  statsLoading?: boolean;
+  statsExtra?: ReactNode;
+  children: ReactNode;
+};
 
 /**
  * Standard admin list page — Page header + optional StatGrid + form-table stack.
@@ -24,11 +24,11 @@ export function FormTablePage({
   statsExtra,
   children,
   autoContentHeight = true,
-  contentClass = '',
-  width = 'full',
+  contentClass = "",
+  width = "full",
   ...pageProps
 }: FormTablePageProps) {
-  const hasStats = Boolean(stats?.length || statsExtra)
+  const hasStats = Boolean(stats?.length || statsExtra);
 
   return (
     <Page
@@ -37,11 +37,19 @@ export function FormTablePage({
       width={width}
       {...pageProps}
     >
-      <div className={hasStats ? 'form-table-stack' : 'flex min-h-0 flex-1 flex-col'}>
+      <div
+        className={
+          hasStats ? "form-table-stack" : "flex min-h-0 flex-1 flex-col"
+        }
+      >
         {(stats?.length || statsExtra) && (
           <div className="flex flex-col gap-3">
             {stats?.length ? (
-              <StatGrid columns={statsColumns} loading={statsLoading} items={stats} />
+              <StatGrid
+                columns={statsColumns}
+                loading={statsLoading}
+                items={stats}
+              />
             ) : null}
             {statsExtra}
           </div>
@@ -49,5 +57,5 @@ export function FormTablePage({
         {children}
       </div>
     </Page>
-  )
+  );
 }

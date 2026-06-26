@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import * as echarts from 'echarts/core'
-import { BarChart, GaugeChart, LineChart, PieChart } from 'echarts/charts'
+import * as echarts from "echarts/core";
+import { BarChart, GaugeChart, LineChart, PieChart } from "echarts/charts";
 import {
   GridComponent,
   LegendComponent,
   TitleComponent,
   TooltipComponent,
-} from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import type { EChartsCoreOption } from 'echarts/core'
-import { useEffect, useRef } from 'react'
-import { useColorMode } from '../color-mode'
+} from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
+import type { EChartsCoreOption } from "echarts/core";
+import { useEffect, useRef } from "react";
+import { useColorMode } from "../color-mode";
 
 echarts.use([
   BarChart,
@@ -23,55 +23,64 @@ echarts.use([
   LegendComponent,
   TitleComponent,
   CanvasRenderer,
-])
+]);
 
 type EChartProps = {
-  option: EChartsCoreOption
-  className?: string
-  height?: number | string
-  loading?: boolean
-}
+  option: EChartsCoreOption;
+  className?: string;
+  height?: number | string;
+  loading?: boolean;
+};
 
-export function EChart({ option, className, height = 280, loading }: EChartProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const chartRef = useRef<echarts.ECharts | null>(null)
-  const { colorMode } = useColorMode()
-  const isDark = colorMode === 'dark'
+export function EChart({
+  option,
+  className,
+  height = 280,
+  loading,
+}: EChartProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<echarts.ECharts | null>(null);
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === "dark";
 
   useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
+    const el = containerRef.current;
+    if (!el) return;
 
-    chartRef.current = echarts.init(el, isDark ? 'dark' : undefined)
-    const chart = chartRef.current
+    chartRef.current = echarts.init(el, isDark ? "dark" : undefined);
+    const chart = chartRef.current;
 
-    const ro = new ResizeObserver(() => chart.resize())
-    ro.observe(el)
+    const ro = new ResizeObserver(() => chart.resize());
+    ro.observe(el);
 
     return () => {
-      ro.disconnect()
-      chart.dispose()
-      chartRef.current = null
+      ro.disconnect();
+      chart.dispose();
+      chartRef.current = null;
+    };
+  }, [isDark]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    chart.setOption(option, { notMerge: true });
+  }, [option]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    if (loading) {
+      chart.showLoading("default", { text: "" });
+    } else {
+      chart.hideLoading();
     }
-  }, [isDark])
-
-  useEffect(() => {
-    const chart = chartRef.current
-    if (!chart) return
-    chart.setOption(option, { notMerge: true })
-  }, [option])
-
-  useEffect(() => {
-    const chart = chartRef.current
-    if (!chart) return
-    if (loading) { chart.showLoading('default', { text: '' }) } else { chart.hideLoading() }
-  }, [loading])
+  }, [loading]);
 
   return (
     <div
       ref={containerRef}
       className={className}
-      style={{ width: '100%', height }}
+      style={{ width: "100%", height }}
     />
-  )
+  );
 }

@@ -1,67 +1,79 @@
-"use client"
+"use client";
 
-import { Tag } from 'antd'
-import { createColumnHelper } from '@tanstack/react-table'
-import { Page } from '@vokcg/ui'
-import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminRoles } from '@/api'
+import { Tag } from "antd";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Page } from "@vokcg/ui";
+import { FormTableUI, useFormTable } from "@vokcg/ui/table";
+import { useAdminRoles } from "@/api";
 
-type Permission = { id: string; code: string }
+type Permission = { id: string; code: string };
 type Role = {
-  id: string
-  name: string
-  slug: string
-  description?: string | null
-  permissions: Permission[]
-}
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  permissions: Permission[];
+};
 
 type RoleFilters = {
-  name?: string
-  slug?: string
-}
+  name?: string;
+  slug?: string;
+};
 
-const columnHelper = createColumnHelper<Role>()
+const columnHelper = createColumnHelper<Role>();
 
 export function RolesPage() {
-  const { data, isLoading, refetch } = useAdminRoles()
-  const roles = (data?.data ?? []) as Role[]
+  const { data, isLoading, refetch } = useAdminRoles();
+  const roles = (data?.data ?? []) as Role[];
 
   const formTable = useFormTable<Role, RoleFilters>({
     data: roles,
     getRowId: (row) => row.id,
     loading: isLoading,
-    emptyText: 'No roles found.',
+    emptyText: "No roles found.",
     onRefresh: () => refetch(),
     formSchema: [
-      { name: 'name', label: 'Name', placeholder: 'Search role name' },
-      { name: 'slug', label: 'Slug', placeholder: 'Search slug' },
+      { name: "name", label: "Name", placeholder: "Search role name" },
+      { name: "slug", label: "Slug", placeholder: "Search slug" },
     ],
     filterFn: (filter, row) => {
-      if (filter.name && !row.name.toLowerCase().includes(filter.name.toLowerCase())) return false
-      if (filter.slug && !row.slug.toLowerCase().includes(filter.slug.toLowerCase())) return false
-      return true
+      if (
+        filter.name &&
+        !row.name.toLowerCase().includes(filter.name.toLowerCase())
+      )
+        return false;
+      if (
+        filter.slug &&
+        !row.slug.toLowerCase().includes(filter.slug.toLowerCase())
+      )
+        return false;
+      return true;
     },
     columns: [
       columnHelper.display({
-        id: 'role',
-        header: 'Role',
+        id: "role",
+        header: "Role",
         size: 180,
         cell: ({ row }) => (
           <div className="flex flex-col gap-0">
-            <span className="text-sm font-semibold text-primary">{row.original.name}</span>
+            <span className="text-sm font-semibold text-primary">
+              {row.original.name}
+            </span>
             <Tag color="blue" className="mt-1 w-fit font-mono text-xs">
               {row.original.slug}
             </Tag>
           </div>
         ),
       }),
-      columnHelper.accessor('description', {
-        header: 'Description',
-        cell: (info) => <span className="text-sm text-muted">{info.getValue() ?? '—'}</span>,
+      columnHelper.accessor("description", {
+        header: "Description",
+        cell: (info) => (
+          <span className="text-sm text-muted">{info.getValue() ?? "—"}</span>
+        ),
       }),
       columnHelper.display({
-        id: 'permissions',
-        header: 'Permissions',
+        id: "permissions",
+        header: "Permissions",
         cell: ({ row }) =>
           row.original.permissions.length > 0 ? (
             <div className="flex flex-wrap gap-1">
@@ -76,19 +88,25 @@ export function RolesPage() {
           ),
       }),
       columnHelper.display({
-        id: 'count',
-        header: 'Count',
+        id: "count",
+        header: "Count",
         size: 80,
         cell: ({ row }) => (
-          <span className="text-sm font-medium text-secondary">{row.original.permissions.length}</span>
+          <span className="text-sm font-medium text-secondary">
+            {row.original.permissions.length}
+          </span>
         ),
       }),
     ],
-  })
+  });
 
   return (
-    <Page autoContentHeight title="Roles" description="Role definitions and assigned permission codes.">
+    <Page
+      autoContentHeight
+      title="Roles"
+      description="Role definitions and assigned permission codes."
+    >
       <FormTableUI {...formTable} />
     </Page>
-  )
+  );
 }

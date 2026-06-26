@@ -1,2 +1,2 @@
-export { ScriptPage } from './ScriptPage'
-export { ScriptWriterWorkspace } from './components/script-writer-workspace'
+export { ScriptPage } from "./ScriptPage";
+export { ScriptWriterWorkspace } from "./components/script-writer-workspace";

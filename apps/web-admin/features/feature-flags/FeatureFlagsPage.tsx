@@ -1,83 +1,97 @@
-"use client"
+"use client";
 
-import { Button, Progress, Switch, Tag } from 'antd'
-import { createColumnHelper } from '@tanstack/react-table'
-import { Page } from '@vokcg/ui'
-import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminFeatureFlags, useUpdateFeatureFlag } from '@/api'
-import { useAppMessage } from '@vokcg/ui'
-import type { FeatureFlag } from '@/types/platform'
+import { Button, Progress, Switch, Tag } from "antd";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Page } from "@vokcg/ui";
+import { FormTableUI, useFormTable } from "@vokcg/ui/table";
+import { useAdminFeatureFlags, useUpdateFeatureFlag } from "@/api";
+import { useAppMessage } from "@vokcg/ui";
+import type { FeatureFlag } from "@/types/platform";
 
 type FeatureFlagFilters = {
-  key?: string
-  enabled?: boolean
-}
+  key?: string;
+  enabled?: boolean;
+};
 
-const columnHelper = createColumnHelper<FeatureFlag>()
+const columnHelper = createColumnHelper<FeatureFlag>();
 
 export function FeatureFlagsPage() {
-  const message = useAppMessage()
-  const { data, isLoading, refetch } = useAdminFeatureFlags()
-  const updateFlag = useUpdateFeatureFlag()
-  const flags = data?.data ?? []
+  const message = useAppMessage();
+  const { data, isLoading, refetch } = useAdminFeatureFlags();
+  const updateFlag = useUpdateFeatureFlag();
+  const flags = data?.data ?? [];
 
   const toggleEnabled = async (flag: FeatureFlag, enabled: boolean) => {
     try {
-      await updateFlag.mutateAsync({ id: flag.id, body: { enabled } })
+      await updateFlag.mutateAsync({ id: flag.id, body: { enabled } });
     } catch {
-      message.error('Failed to update feature flag')
+      message.error("Failed to update feature flag");
     }
-  }
+  };
 
   const formTable = useFormTable<FeatureFlag, FeatureFlagFilters>({
     data: flags,
     getRowId: (row) => row.id,
     loading: isLoading,
-    emptyText: 'No feature flags yet.',
+    emptyText: "No feature flags yet.",
     onRefresh: () => refetch(),
     formSchema: [
-      { name: 'key', label: 'Key', placeholder: 'Search flag key' },
+      { name: "key", label: "Key", placeholder: "Search flag key" },
       {
-        name: 'enabled',
-        label: 'Status',
-        type: 'select',
-        placeholder: 'All statuses',
+        name: "enabled",
+        label: "Status",
+        type: "select",
+        placeholder: "All statuses",
         options: [
-          { value: true, label: 'Enabled' },
-          { value: false, label: 'Disabled' },
+          { value: true, label: "Enabled" },
+          { value: false, label: "Disabled" },
         ],
       },
     ],
     filterFn: (filter, row) => {
-      if (filter.key && !row.key.toLowerCase().includes(filter.key.toLowerCase())) return false
-      if (filter.enabled !== undefined && row.enabled !== filter.enabled) return false
-      return true
+      if (
+        filter.key &&
+        !row.key.toLowerCase().includes(filter.key.toLowerCase())
+      )
+        return false;
+      if (filter.enabled !== undefined && row.enabled !== filter.enabled)
+        return false;
+      return true;
     },
     columns: [
-      columnHelper.accessor('key', {
-        header: 'Key',
+      columnHelper.accessor("key", {
+        header: "Key",
         size: 200,
         cell: (info) => <code className="text-xs">{info.getValue()}</code>,
       }),
-      columnHelper.accessor('description', {
-        header: 'Description',
-        cell: (info) => <span className="text-sm text-secondary">{info.getValue() ?? '—'}</span>,
+      columnHelper.accessor("description", {
+        header: "Description",
+        cell: (info) => (
+          <span className="text-sm text-secondary">
+            {info.getValue() ?? "—"}
+          </span>
+        ),
       }),
-      columnHelper.accessor('rollout', {
-        header: 'Rollout',
+      columnHelper.accessor("rollout", {
+        header: "Rollout",
         size: 160,
         cell: (info) => {
-          const v = info.getValue()
+          const v = info.getValue();
           return (
             <div className="flex items-center gap-2">
-              <Progress percent={v} size="small" style={{ width: 80, margin: 0 }} showInfo={false} />
+              <Progress
+                percent={v}
+                size="small"
+                style={{ width: 80, margin: 0 }}
+                showInfo={false}
+              />
               <Tag>{v}%</Tag>
             </div>
-          )
+          );
         },
       }),
-      columnHelper.accessor('enabled', {
-        header: 'Enabled',
+      columnHelper.accessor("enabled", {
+        header: "Enabled",
         size: 90,
         cell: (info) => (
           <Switch
@@ -88,7 +102,7 @@ export function FeatureFlagsPage() {
         ),
       }),
     ],
-  })
+  });
 
   return (
     <Page
@@ -103,5 +117,5 @@ export function FeatureFlagsPage() {
     >
       <FormTableUI {...formTable} />
     </Page>
-  )
+  );
 }

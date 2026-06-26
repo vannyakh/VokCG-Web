@@ -1,3 +1,5 @@
-'use client'
-import { OverviewPage } from '@/features/overview'
-export default function Page() { return <OverviewPage /> }
+"use client";
+import { OverviewPage } from "@/features/overview";
+export default function Page() {
+  return <OverviewPage />;
+}

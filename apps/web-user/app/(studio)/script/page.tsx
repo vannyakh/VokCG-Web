@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { ScriptPage } from '@/features/script'
+import { ScriptPage } from "@/features/script";
 
 export default function Page() {
-  return <ScriptPage />
+  return <ScriptPage />;
 }

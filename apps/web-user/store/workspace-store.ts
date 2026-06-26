@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { STORAGE_KEYS } from '@vokcg/config'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { STORAGE_KEYS } from "@vokcg/config";
 
 type WorkspaceState = {
-  selectedTenantId: string | null
-  setSelectedTenantId: (id: string | null) => void
-}
+  selectedTenantId: string | null;
+  setSelectedTenantId: (id: string | null) => void;
+};
 
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
@@ -17,4 +17,4 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     }),
     { name: STORAGE_KEYS.workspace },
   ),
-)
+);

@@ -1,1 +1,1 @@
-export { FeatureFlagsPage } from './FeatureFlagsPage'
+export { FeatureFlagsPage } from "./FeatureFlagsPage";

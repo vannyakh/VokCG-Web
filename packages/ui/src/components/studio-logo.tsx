@@ -1,45 +1,47 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
+import Link from "next/link";
 
-import { USER_ROUTES } from '@vokcg/constants'
+import { USER_ROUTES } from "@vokcg/constants";
 
 type StudioLogoProps = {
-  size?: 'sm' | 'md' | 'lg' | 'xl'
-  showWordmark?: boolean
-  className?: string
-  link?: boolean
-  textSize?: string
-}
+  size?: "sm" | "md" | "lg" | "xl";
+  showWordmark?: boolean;
+  className?: string;
+  link?: boolean;
+  textSize?: string;
+};
 
-const SIZE_BOX = { sm: 28, md: 34, lg: 38, xl: 48 } as const
+const SIZE_BOX = { sm: 28, md: 34, lg: 38, xl: 48 } as const;
 
 const SIZE_TEXT: Record<keyof typeof SIZE_BOX, string> = {
-  sm: 'text-[17.5px]',
-  md: 'text-[21px]',
-  lg: 'text-[24px]',
-  xl: 'text-[30px]',
-}
+  sm: "text-[17.5px]",
+  md: "text-[21px]",
+  lg: "text-[24px]",
+  xl: "text-[30px]",
+};
 
 const SIZE_GAP: Record<keyof typeof SIZE_BOX, string> = {
-  sm: 'gap-1.5',
-  md: 'gap-2',
-  lg: 'gap-2',
-  xl: 'gap-2.5',
-}
+  sm: "gap-1.5",
+  md: "gap-2",
+  lg: "gap-2",
+  xl: "gap-2.5",
+};
 
 export function StudioLogo({
-  size = 'md',
+  size = "md",
   showWordmark = false,
-  className = '',
+  className = "",
   link = true,
   textSize,
 }: StudioLogoProps) {
-  const boxSize = SIZE_BOX[size]
+  const boxSize = SIZE_BOX[size];
 
   const content = (
     <div
-      className={['flex min-w-0 items-center', SIZE_GAP[size], className].filter(Boolean).join(' ')}
+      className={["flex min-w-0 items-center", SIZE_GAP[size], className]
+        .filter(Boolean)
+        .join(" ")}
     >
       <div
         className="relative flex shrink-0 items-center justify-center overflow-hidden"
@@ -78,9 +80,9 @@ export function StudioLogo({
         </div>
       )}
     </div>
-  )
+  );
 
-  if (!link) return content
+  if (!link) return content;
 
   return (
     <Link
@@ -89,5 +91,5 @@ export function StudioLogo({
     >
       {content}
     </Link>
-  )
+  );
 }

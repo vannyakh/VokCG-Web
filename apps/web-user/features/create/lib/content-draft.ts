@@ -1,1 +1,1 @@
-export * from '@/lib/content-draft'
+export * from "@/lib/content-draft";

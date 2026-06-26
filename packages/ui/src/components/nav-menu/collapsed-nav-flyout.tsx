@@ -1,75 +1,75 @@
-"use client"
+"use client";
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
+import { AnimatePresence, motion } from "framer-motion";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
-import { NAV_FLYOUT } from './nav-styles'
+import { NAV_FLYOUT } from "./nav-styles";
 
 // ─── Hover state machine ──────────────────────────────────────────────────────
 function useFlyoutHover(openDelay = 60, closeDelay = 100) {
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [open, setOpen] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [open, setOpen] = useState(false);
 
   const clear = () => {
-    if (timer.current) clearTimeout(timer.current)
-  }
+    if (timer.current) clearTimeout(timer.current);
+  };
   const enter = () => {
-    clear()
-    timer.current = setTimeout(() => setOpen(true), openDelay)
-  }
+    clear();
+    timer.current = setTimeout(() => setOpen(true), openDelay);
+  };
   const leave = () => {
-    clear()
-    timer.current = setTimeout(() => setOpen(false), closeDelay)
-  }
+    clear();
+    timer.current = setTimeout(() => setOpen(false), closeDelay);
+  };
   const pin = () => {
-    clear()
-    setOpen(true)
-  }
+    clear();
+    setOpen(true);
+  };
 
-  return { open, enter, leave, pin }
+  return { open, enter, leave, pin };
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 type CollapsedNavFlyoutProps = {
-  trigger: ReactNode
-  children: ReactNode
-  title?: string
-  align?: 'center' | 'start'
-}
+  trigger: ReactNode;
+  children: ReactNode;
+  title?: string;
+  align?: "center" | "start";
+};
 
 export function CollapsedNavFlyout({
   trigger,
   children,
   title,
-  align = 'center',
+  align = "center",
 }: CollapsedNavFlyoutProps) {
-  const { open, enter, leave, pin } = useFlyoutHover()
-  const triggerRef = useRef<HTMLDivElement>(null)
-  const [coords, setCoords] = useState({ top: 0, left: 0 })
+  const { open, enter, leave, pin } = useFlyoutHover();
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
 
   useLayoutEffect(() => {
-    if (!open) return
+    if (!open) return;
     const update = () => {
-      const el = triggerRef.current
-      if (!el) return
-      const rect = el.getBoundingClientRect()
+      const el = triggerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
       setCoords({
         left: rect.right + NAV_FLYOUT.offsetX,
-        top: align === 'start' ? rect.top : rect.top + rect.height / 2,
-      })
-    }
-    update()
-    window.addEventListener('scroll', update, { passive: true, capture: true })
-    window.addEventListener('resize', update, { passive: true })
+        top: align === "start" ? rect.top : rect.top + rect.height / 2,
+      });
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true, capture: true });
+    window.addEventListener("resize", update, { passive: true });
     return () => {
-      window.removeEventListener('scroll', update, true)
-      window.removeEventListener('resize', update)
-    }
-  }, [open, align])
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open, align]);
 
   const flyout =
-    typeof document !== 'undefined'
+    typeof document !== "undefined"
       ? createPortal(
           <AnimatePresence>
             {open && (
@@ -81,7 +81,7 @@ export function CollapsedNavFlyout({
                 style={{
                   left: coords.left,
                   top: coords.top,
-                  translateY: align === 'center' ? '-50%' : 0,
+                  translateY: align === "center" ? "-50%" : 0,
                 }}
                 initial={{ opacity: 0, x: -8, scale: 0.97 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -94,19 +94,19 @@ export function CollapsedNavFlyout({
                 <span
                   aria-hidden
                   style={{
-                    position: 'absolute',
+                    position: "absolute",
                     left: -5,
-                    top: align === 'start' ? 14 : '50%',
-                    transform: align === 'start' ? 'none' : 'translateY(-50%)',
+                    top: align === "start" ? 14 : "50%",
+                    transform: align === "start" ? "none" : "translateY(-50%)",
                     width: 8,
                     height: 8,
-                    background: 'var(--bg-surface)',
-                    border: '1px solid var(--border-divider)',
-                    borderRight: 'none',
-                    borderBottom: 'none',
+                    background: "var(--bg-surface)",
+                    border: "1px solid var(--border-divider)",
+                    borderRight: "none",
+                    borderBottom: "none",
                     borderTopLeftRadius: 2,
-                    rotate: '-45deg',
-                    boxShadow: '-1px -1px 2px rgba(0,0,0,0.04)',
+                    rotate: "-45deg",
+                    boxShadow: "-1px -1px 2px rgba(0,0,0,0.04)",
                   }}
                 />
 
@@ -116,16 +116,16 @@ export function CollapsedNavFlyout({
                   style={{
                     minWidth: NAV_FLYOUT.minWidth,
                     borderRadius: NAV_FLYOUT.radius,
-                    background: 'var(--bg-surface)',
-                    border: '1px solid var(--border-divider)',
-                    boxShadow: 'var(--shadow-md)',
+                    background: "var(--bg-surface)",
+                    border: "1px solid var(--border-divider)",
+                    boxShadow: "var(--shadow-md)",
                   }}
                 >
                   {title && (
                     <div
                       style={{
                         padding: `${NAV_FLYOUT.headerPaddingY}px ${NAV_FLYOUT.headerPaddingX}px`,
-                        borderBottom: '1px solid var(--border-divider)',
+                        borderBottom: "1px solid var(--border-divider)",
                       }}
                     >
                       <p className="truncate text-[12px] font-semibold uppercase tracking-wide text-muted">
@@ -140,7 +140,7 @@ export function CollapsedNavFlyout({
           </AnimatePresence>,
           document.body,
         )
-      : null
+      : null;
 
   return (
     <div
@@ -152,5 +152,5 @@ export function CollapsedNavFlyout({
       {trigger}
       {flyout}
     </div>
-  )
+  );
 }

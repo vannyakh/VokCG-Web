@@ -1,129 +1,132 @@
-"use client"
+"use client";
 
-import { Button, Dropdown, Popconfirm, Tag } from 'antd'
-import type { MenuProps } from 'antd'
-import { createColumnHelper } from '@tanstack/react-table'
-import { Page } from '@vokcg/ui'
-import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminBackups, useDeleteBackup, useRunBackup } from '@/api'
-import { useAppMessage } from '@vokcg/ui'
-import type { Backup, BackupStatus, BackupType } from '@/types/platform'
+import { Button, Dropdown, Popconfirm, Tag } from "antd";
+import type { MenuProps } from "antd";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Page } from "@vokcg/ui";
+import { FormTableUI, useFormTable } from "@vokcg/ui/table";
+import { useAdminBackups, useDeleteBackup, useRunBackup } from "@/api";
+import { useAppMessage } from "@vokcg/ui";
+import type { Backup, BackupStatus, BackupType } from "@/types/platform";
 
 type BackupFilters = {
-  type?: BackupType
-  status?: BackupStatus
-}
+  type?: BackupType;
+  status?: BackupStatus;
+};
 
 const STATUS_COLOR: Record<BackupStatus, string> = {
-  completed: 'green',
-  running: 'blue',
-  failed: 'red',
-}
+  completed: "green",
+  running: "blue",
+  failed: "red",
+};
 
-const columnHelper = createColumnHelper<Backup>()
+const columnHelper = createColumnHelper<Backup>();
 
 export function BackupsPage() {
-  const message = useAppMessage()
-  const { data, isLoading, refetch } = useAdminBackups()
-  const runBackup = useRunBackup()
-  const deleteBackup = useDeleteBackup()
-  const backups = data?.data ?? []
+  const message = useAppMessage();
+  const { data, isLoading, refetch } = useAdminBackups();
+  const runBackup = useRunBackup();
+  const deleteBackup = useDeleteBackup();
+  const backups = data?.data ?? [];
 
-  const runMenu: MenuProps['items'] = [
-    { key: 'full', label: 'Full backup' },
-    { key: 'incremental', label: 'Incremental backup' },
-  ]
+  const runMenu: MenuProps["items"] = [
+    { key: "full", label: "Full backup" },
+    { key: "incremental", label: "Incremental backup" },
+  ];
 
   const handleRun = async (type: BackupType) => {
     try {
-      await runBackup.mutateAsync(type)
-      message.success(`${type} backup started`)
+      await runBackup.mutateAsync(type);
+      message.success(`${type} backup started`);
     } catch {
-      message.error('Failed to run backup')
+      message.error("Failed to run backup");
     }
-  }
+  };
 
   const formTable = useFormTable<Backup, BackupFilters>({
     data: backups,
     getRowId: (row) => row.id,
     loading: isLoading,
-    emptyText: 'No backups yet.',
+    emptyText: "No backups yet.",
     onRefresh: () => refetch(),
     formSchema: [
       {
-        name: 'type',
-        label: 'Type',
-        type: 'select',
-        placeholder: 'All types',
+        name: "type",
+        label: "Type",
+        type: "select",
+        placeholder: "All types",
         options: [
-          { value: 'full', label: 'Full' },
-          { value: 'incremental', label: 'Incremental' },
+          { value: "full", label: "Full" },
+          { value: "incremental", label: "Incremental" },
         ],
       },
       {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        placeholder: 'All statuses',
+        name: "status",
+        label: "Status",
+        type: "select",
+        placeholder: "All statuses",
         options: [
-          { value: 'completed', label: 'Completed' },
-          { value: 'running', label: 'Running' },
-          { value: 'failed', label: 'Failed' },
+          { value: "completed", label: "Completed" },
+          { value: "running", label: "Running" },
+          { value: "failed", label: "Failed" },
         ],
       },
     ],
     filterFn: (filter, row) => {
-      if (filter.type && row.type !== filter.type) return false
-      if (filter.status && row.status !== filter.status) return false
-      return true
+      if (filter.type && row.type !== filter.type) return false;
+      if (filter.status && row.status !== filter.status) return false;
+      return true;
     },
     columns: [
-      columnHelper.accessor('type', {
-        header: 'Type',
+      columnHelper.accessor("type", {
+        header: "Type",
         size: 120,
         cell: (info) => {
-          const v = info.getValue()
+          const v = info.getValue();
           return (
-            <Tag color={v === 'full' ? 'purple' : 'cyan'} className="capitalize">
+            <Tag
+              color={v === "full" ? "purple" : "cyan"}
+              className="capitalize"
+            >
               {v}
             </Tag>
-          )
+          );
         },
       }),
-      columnHelper.accessor('status', {
-        header: 'Status',
+      columnHelper.accessor("status", {
+        header: "Status",
         size: 120,
         cell: (info) => {
-          const v = info.getValue() as BackupStatus
+          const v = info.getValue() as BackupStatus;
           return (
             <Tag color={STATUS_COLOR[v]} className="capitalize">
               {v}
             </Tag>
-          )
+          );
         },
       }),
-      columnHelper.accessor('size_mb', {
-        header: 'Size (MB)',
+      columnHelper.accessor("size_mb", {
+        header: "Size (MB)",
         size: 120,
         cell: (info) => info.getValue().toLocaleString(),
       }),
-      columnHelper.accessor('created_at', {
-        header: 'Created',
+      columnHelper.accessor("created_at", {
+        header: "Created",
         cell: (info) => new Date(info.getValue()).toLocaleString(),
       }),
       columnHelper.display({
-        id: 'actions',
-        header: '',
+        id: "actions",
+        header: "",
         size: 80,
         cell: ({ row }) => (
           <Popconfirm
             title="Delete this backup record?"
             onConfirm={async () => {
               try {
-                await deleteBackup.mutateAsync(row.original.id)
-                message.success('Backup deleted')
+                await deleteBackup.mutateAsync(row.original.id);
+                message.success("Backup deleted");
               } catch {
-                message.error('Failed to delete backup')
+                message.error("Failed to delete backup");
               }
             }}
           >
@@ -134,7 +137,7 @@ export function BackupsPage() {
         ),
       }),
     ],
-  })
+  });
 
   return (
     <Page
@@ -142,7 +145,12 @@ export function BackupsPage() {
       title="Backups"
       description="Database and asset backup history."
       extra={
-        <Dropdown menu={{ items: runMenu, onClick: ({ key }) => handleRun(key as BackupType) }}>
+        <Dropdown
+          menu={{
+            items: runMenu,
+            onClick: ({ key }) => handleRun(key as BackupType),
+          }}
+        >
           <Button type="primary" size="small" loading={runBackup.isPending}>
             Run backup
           </Button>
@@ -151,5 +159,5 @@ export function BackupsPage() {
     >
       <FormTableUI {...formTable} />
     </Page>
-  )
+  );
 }

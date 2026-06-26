@@ -1,13 +1,13 @@
-import { motion } from 'framer-motion'
-import type { LucideIcon } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
+import type { CSSProperties } from "react";
 
-import { NAV_MENU, navCollapsedTileStyle } from './nav-styles'
+import { NAV_MENU, navCollapsedTileStyle } from "./nav-styles";
 
 type Props = {
-  icon: LucideIcon
-  active?: boolean
-}
+  icon: LucideIcon;
+  active?: boolean;
+};
 
 export function NavCollapsedTile({ icon: Icon, active = false }: Props) {
   return (
@@ -19,16 +19,20 @@ export function NavCollapsedTile({ icon: Icon, active = false }: Props) {
     >
       <Icon
         size={NAV_MENU.collapsedIconSize}
-        strokeWidth={active ? NAV_MENU.collapsedIconStrokeActive : NAV_MENU.collapsedIconStroke}
+        strokeWidth={
+          active
+            ? NAV_MENU.collapsedIconStrokeActive
+            : NAV_MENU.collapsedIconStroke
+        }
         className="shrink-0"
       />
     </motion.span>
-  )
+  );
 }
 
 export function navCollapsedRowStyle(): CSSProperties {
   return {
     height: NAV_MENU.collapsedItemHeight,
     paddingInline: 0,
-  }
+  };
 }

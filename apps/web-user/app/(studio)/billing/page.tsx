@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { BillingPage } from '@/features/billing'
+import { BillingPage } from "@/features/billing";
 
 export default function Page() {
-  return <BillingPage />
+  return <BillingPage />;
 }

@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
-import type { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from "lucide-react";
 
 export type SettingsNavItem = {
-  id: string
-  label: string
-  icon: LucideIcon
-  badge?: string
-}
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  badge?: string;
+};
 
 export type SettingsNavSection = {
-  title: string
-  items: SettingsNavItem[]
-}
+  title: string;
+  items: SettingsNavItem[];
+};
 
 type SettingsNavProps = {
-  sections: SettingsNavSection[]
-  active: string
-  onChange: (id: string) => void
-}
+  sections: SettingsNavSection[];
+  active: string;
+  onChange: (id: string) => void;
+};
 
 export function SettingsNav({ sections, active, onChange }: SettingsNavProps) {
   return (
@@ -28,25 +28,27 @@ export function SettingsNav({ sections, active, onChange }: SettingsNavProps) {
     >
       {sections.map((section, index) => (
         <div key={section.title}>
-          {index > 0 && <div className="mx-4 my-2 border-t border-default md:mx-5" />}
+          {index > 0 && (
+            <div className="mx-4 my-2 border-t border-default md:mx-5" />
+          )}
           <p className="px-4 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wide text-muted md:px-5">
             {section.title}
           </p>
           {section.items.map((item) => {
-            const Icon = item.icon
-            const isActive = item.id === active
+            const Icon = item.icon;
+            const isActive = item.id === active;
             return (
               <button
                 key={item.id}
                 type="button"
                 className={[
-                  'flex w-full items-center gap-2.5 border-l-2 px-4 py-2.5 text-left text-[15px] md:px-5',
+                  "flex w-full items-center gap-2.5 border-l-2 px-4 py-2.5 text-left text-[15px] md:px-5",
                   isActive
-                    ? 'border-accent bg-subtle/70 font-semibold text-accent'
-                    : 'border-transparent text-secondary',
-                ].join(' ')}
+                    ? "border-accent bg-subtle/70 font-semibold text-accent"
+                    : "border-transparent text-secondary",
+                ].join(" ")}
                 onClick={() => onChange(item.id)}
-                aria-current={isActive ? 'page' : undefined}
+                aria-current={isActive ? "page" : undefined}
               >
                 <Icon size={17} strokeWidth={1.8} className="shrink-0" />
                 <span className="min-w-0 flex-1 truncate">{item.label}</span>
@@ -56,10 +58,10 @@ export function SettingsNav({ sections, active, onChange }: SettingsNavProps) {
                   </span>
                 )}
               </button>
-            )
+            );
           })}
         </div>
       ))}
     </nav>
-  )
+  );
 }

@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { Tooltip } from 'antd'
-import { motion } from 'framer-motion'
-import { useMenuContext, useMenuLevel } from './menu-context'
-import { NavBadge } from './nav-badge'
-import { NavCollapsedTile, navCollapsedRowStyle } from './nav-collapsed-tile'
+import { Tooltip } from "antd";
+import { motion } from "framer-motion";
+import { useMenuContext, useMenuLevel } from "./menu-context";
+import { NavBadge } from "./nav-badge";
+import { NavCollapsedTile, navCollapsedRowStyle } from "./nav-collapsed-tile";
 import {
   NAV_FLYOUT,
   NAV_MENU,
@@ -12,18 +12,19 @@ import {
   navItemButtonClass,
   navRowRadius,
   navSurface,
-} from './nav-styles'
-import type { NavItem } from './types'
+} from "./nav-styles";
+import type { NavItem } from "./types";
 
-type Props = { item: NavItem; inPopup?: boolean }
+type Props = { item: NavItem; inPopup?: boolean };
 
 function resolveItem(item: NavItem) {
-  const comingSoon = item.comingSoon === true
+  const comingSoon = item.comingSoon === true;
   return {
     disabled: item.disabled || comingSoon,
-    badge: item.badge ?? (comingSoon ? 'Soon' : undefined),
-    badgeVariant: item.badgeVariant ?? (comingSoon ? 'soon' as const : undefined),
-  }
+    badge: item.badge ?? (comingSoon ? "Soon" : undefined),
+    badgeVariant:
+      item.badgeVariant ?? (comingSoon ? ("soon" as const) : undefined),
+  };
 }
 
 export function NavMenuItem({ item, inPopup = false }: Props) {
@@ -35,16 +36,16 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
     menuId,
     hoveredId,
     setHoveredId,
-  } = useMenuContext()
-  const level = useMenuLevel()
-  const { disabled, badge, badgeVariant } = resolveItem(item)
+  } = useMenuContext();
+  const level = useMenuLevel();
+  const { disabled, badge, badgeVariant } = resolveItem(item);
 
-  const isActive = !!item.path && item.path === activePath && !disabled
-  const isLeaf = !item.children?.length
-  const isNested = level > 0
-  const isCollapsed = collapse && !inPopup
-  const isHovered = hoveredId === item.id
-  const rowRadius = navRowRadius(isNested, inPopup)
+  const isActive = !!item.path && item.path === activePath && !disabled;
+  const isLeaf = !item.children?.length;
+  const isNested = level > 0;
+  const isCollapsed = collapse && !inPopup;
+  const isHovered = hoveredId === item.id;
+  const rowRadius = navRowRadius(isNested, inPopup);
 
   const rowHeight = isCollapsed
     ? NAV_MENU.collapsedItemHeight
@@ -52,14 +53,15 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
       ? NAV_FLYOUT.itemHeight
       : isNested && !inPopup
         ? itemHeight - NAV_MENU.nestedItemHeightOffset
-        : itemHeight
+        : itemHeight;
 
-  const showActivePill = isActive && !isCollapsed
-  const showHoverPill  = isHovered && !isCollapsed && !isActive && !disabled
+  const showActivePill = isActive && !isCollapsed;
+  const showHoverPill = isHovered && !isCollapsed && !isActive && !disabled;
 
   // ── Collapsed mode: Ant Design Tooltip with just the label ────────────────
   if (isCollapsed) {
-    const tip = item.tooltip ?? (badge ? `${item.label} · ${badge}` : item.label)
+    const tip =
+      item.tooltip ?? (badge ? `${item.label} · ${badge}` : item.label);
     return (
       <Tooltip
         title={tip}
@@ -74,13 +76,13 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
           onClick={() => isLeaf && !disabled && onSelect(item)}
           className="group flex w-full select-none items-center justify-center"
           style={navCollapsedRowStyle()}
-          aria-current={isActive ? 'page' : undefined}
+          aria-current={isActive ? "page" : undefined}
           aria-disabled={disabled}
         >
           <NavCollapsedTile icon={item.icon} active={isActive} />
         </button>
       </Tooltip>
-    )
+    );
   }
 
   // ── Expanded / in-popup mode ───────────────────────────────────────────────
@@ -99,7 +101,7 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
             background: isNested ? navSurface.nestedActive : navSurface.active,
           }}
           aria-hidden
-          transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+          transition={{ type: "spring", stiffness: 400, damping: 32 }}
         />
       )}
       {showHoverPill && (
@@ -120,20 +122,26 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
         disabled={disabled}
         onClick={() => isLeaf && !disabled && onSelect(item)}
         onKeyDown={(e) => {
-          if ((e.key === 'Enter' || e.key === ' ') && isLeaf && !disabled) {
-            e.preventDefault()
-            onSelect(item)
+          if ((e.key === "Enter" || e.key === " ") && isLeaf && !disabled) {
+            e.preventDefault();
+            onSelect(item);
           }
         }}
-        aria-current={isActive ? 'page' : undefined}
+        aria-current={isActive ? "page" : undefined}
         aria-disabled={disabled}
-        className={navItemButtonClass({ collapse, inPopup, isActive, disabled, nested: isNested })}
+        className={navItemButtonClass({
+          collapse,
+          inPopup,
+          isActive,
+          disabled,
+          nested: isNested,
+        })}
         style={{
           height: rowHeight,
           borderRadius: rowRadius,
-          paddingLeft:  inPopup ? 10 : isNested ? 8 : 10,
+          paddingLeft: inPopup ? 10 : isNested ? 8 : 10,
           paddingRight: inPopup ? 10 : 8,
-          position: 'relative',
+          position: "relative",
           zIndex: 1,
         }}
       >
@@ -145,15 +153,17 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
         />
         <span
           className={[
-            'min-w-0 flex-1 truncate leading-none',
-            isNested && !inPopup ? 'text-[12.5px]' : 'text-[13px]',
-            isActive ? 'font-semibold' : 'font-medium',
-          ].join(' ')}
+            "min-w-0 flex-1 truncate leading-none",
+            isNested && !inPopup ? "text-[12.5px]" : "text-[13px]",
+            isActive ? "font-semibold" : "font-medium",
+          ].join(" ")}
         >
           {item.label}
         </span>
-        {badge && <NavBadge label={badge} variant={badgeVariant} compact={inPopup} />}
+        {badge && (
+          <NavBadge label={badge} variant={badgeVariant} compact={inPopup} />
+        )}
       </button>
     </div>
-  )
+  );
 }

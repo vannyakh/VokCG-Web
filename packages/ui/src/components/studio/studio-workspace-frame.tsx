@@ -1,19 +1,19 @@
-'use client'
+"use client";
 
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react";
 
 type Props = {
-  children: ReactNode
+  children: ReactNode;
   /** Full-bleed canvas without outer inset (Create flow) */
-  flush?: boolean
-}
+  flush?: boolean;
+};
 
 /** Workspace tools — Create, Script Writer, TTS Studio */
 export function StudioWorkspaceFrame({ children, flush = false }: Props) {
   if (flush) {
     return (
       <div className="flex h-full min-h-0 w-full flex-col">{children}</div>
-    )
+    );
   }
 
   return (
@@ -22,5 +22,5 @@ export function StudioWorkspaceFrame({ children, flush = false }: Props) {
         {children}
       </div>
     </div>
-  )
+  );
 }

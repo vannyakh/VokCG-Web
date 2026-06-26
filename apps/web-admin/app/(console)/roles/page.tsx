@@ -1,3 +1,5 @@
-'use client'
-import { RolesPage } from '@/features/roles'
-export default function Page() { return <RolesPage /> }
+"use client";
+import { RolesPage } from "@/features/roles";
+export default function Page() {
+  return <RolesPage />;
+}

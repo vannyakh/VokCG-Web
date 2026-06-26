@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { VoicePage } from '@/features/voice'
+import { VoicePage } from "@/features/voice";
 
 export default function Page() {
-  return <VoicePage />
+  return <VoicePage />;
 }

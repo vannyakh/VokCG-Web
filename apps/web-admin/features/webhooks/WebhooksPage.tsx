@@ -1,97 +1,100 @@
-"use client"
+"use client";
 
-import { Button, Popconfirm, Tag } from 'antd'
-import { createColumnHelper } from '@tanstack/react-table'
-import { Page } from '@vokcg/ui'
-import { FormTableUI, useFormTable } from '@vokcg/ui/table'
-import { useAdminWebhooks, useDeleteWebhook } from '@/api'
-import { useAppMessage } from '@vokcg/ui'
-import type { Webhook, WebhookStatus } from '@/types/platform'
+import { Button, Popconfirm, Tag } from "antd";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Page } from "@vokcg/ui";
+import { FormTableUI, useFormTable } from "@vokcg/ui/table";
+import { useAdminWebhooks, useDeleteWebhook } from "@/api";
+import { useAppMessage } from "@vokcg/ui";
+import type { Webhook, WebhookStatus } from "@/types/platform";
 
 type WebhookFilters = {
-  status?: WebhookStatus
-}
+  status?: WebhookStatus;
+};
 
 const STATUS_COLOR: Record<WebhookStatus, string> = {
-  active: 'green',
-  disabled: 'default',
-  failing: 'red',
-}
+  active: "green",
+  disabled: "default",
+  failing: "red",
+};
 
-const columnHelper = createColumnHelper<Webhook>()
+const columnHelper = createColumnHelper<Webhook>();
 
 export function WebhooksPage() {
-  const message = useAppMessage()
-  const { data, isLoading, refetch } = useAdminWebhooks()
-  const deleteWebhook = useDeleteWebhook()
-  const webhooks = data?.data ?? []
+  const message = useAppMessage();
+  const { data, isLoading, refetch } = useAdminWebhooks();
+  const deleteWebhook = useDeleteWebhook();
+  const webhooks = data?.data ?? [];
 
   const formTable = useFormTable<Webhook, WebhookFilters>({
     data: webhooks,
     getRowId: (row) => row.id,
     loading: isLoading,
-    emptyText: 'No webhooks configured.',
+    emptyText: "No webhooks configured.",
     onRefresh: () => refetch(),
     formSchema: [
       {
-        name: 'status',
-        label: 'Status',
-        type: 'select',
-        placeholder: 'All statuses',
+        name: "status",
+        label: "Status",
+        type: "select",
+        placeholder: "All statuses",
         options: [
-          { value: 'active', label: 'Active' },
-          { value: 'disabled', label: 'Disabled' },
-          { value: 'failing', label: 'Failing' },
+          { value: "active", label: "Active" },
+          { value: "disabled", label: "Disabled" },
+          { value: "failing", label: "Failing" },
         ],
       },
     ],
     filterFn: (filter, row) => {
-      if (filter.status && row.status !== filter.status) return false
-      return true
+      if (filter.status && row.status !== filter.status) return false;
+      return true;
     },
     columns: [
-      columnHelper.accessor('url', {
-        header: 'URL',
-        cell: (info) => <span className="truncate text-sm">{info.getValue()}</span>,
+      columnHelper.accessor("url", {
+        header: "URL",
+        cell: (info) => (
+          <span className="truncate text-sm">{info.getValue()}</span>
+        ),
       }),
-      columnHelper.accessor('events', {
-        header: 'Events',
+      columnHelper.accessor("events", {
+        header: "Events",
         size: 240,
-        cell: (info) => info.getValue().map((e: string) => <Tag key={e}>{e}</Tag>),
+        cell: (info) =>
+          info.getValue().map((e: string) => <Tag key={e}>{e}</Tag>),
       }),
-      columnHelper.accessor('status', {
-        header: 'Status',
+      columnHelper.accessor("status", {
+        header: "Status",
         size: 100,
         cell: (info) => {
-          const v = info.getValue() as WebhookStatus
+          const v = info.getValue() as WebhookStatus;
           return (
             <Tag color={STATUS_COLOR[v]} className="capitalize">
               {v}
             </Tag>
-          )
+          );
         },
       }),
-      columnHelper.accessor('last_delivery', {
-        header: 'Last delivery',
+      columnHelper.accessor("last_delivery", {
+        header: "Last delivery",
         size: 180,
         cell: (info) => {
-          const v = info.getValue()
-          return v ? new Date(v).toLocaleString() : '—'
+          const v = info.getValue();
+          return v ? new Date(v).toLocaleString() : "—";
         },
       }),
       columnHelper.display({
-        id: 'actions',
-        header: '',
+        id: "actions",
+        header: "",
         size: 90,
         cell: ({ row }) => (
           <Popconfirm
             title="Delete this webhook?"
             onConfirm={async () => {
               try {
-                await deleteWebhook.mutateAsync(row.original.id)
-                message.success('Webhook deleted')
+                await deleteWebhook.mutateAsync(row.original.id);
+                message.success("Webhook deleted");
               } catch {
-                message.error('Failed to delete webhook')
+                message.error("Failed to delete webhook");
               }
             }}
           >
@@ -102,7 +105,7 @@ export function WebhooksPage() {
         ),
       }),
     ],
-  })
+  });
 
   return (
     <Page
@@ -117,5 +120,5 @@ export function WebhooksPage() {
     >
       <FormTableUI {...formTable} />
     </Page>
-  )
+  );
 }

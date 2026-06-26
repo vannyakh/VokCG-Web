@@ -1,2 +1,2 @@
-export { VoicePage } from './VoicePage'
-export { VoiceClonePanel } from './components/voice-clone-panel'
+export { VoicePage } from "./VoicePage";
+export { VoiceClonePanel } from "./components/voice-clone-panel";

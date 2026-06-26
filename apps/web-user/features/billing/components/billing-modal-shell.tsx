@@ -1,35 +1,46 @@
-'use client'
+"use client";
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
-import { modalBackdrop, modalPanel } from '@vokcg/ui'
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { modalBackdrop, modalPanel } from "@vokcg/ui";
 
 type Props = {
-  open: boolean
-  onClose: () => void
-  dismissible?: boolean
-  ariaLabelledBy?: string
-  children: ReactNode
-  className?: string
-}
+  open: boolean;
+  onClose: () => void;
+  dismissible?: boolean;
+  ariaLabelledBy?: string;
+  children: ReactNode;
+  className?: string;
+};
 
-export function BillingModalShell({ open, onClose, dismissible = true, ariaLabelledBy, children, className = '' }: Props) {
+export function BillingModalShell({
+  open,
+  onClose,
+  dismissible = true,
+  ariaLabelledBy,
+  children,
+  className = "",
+}: Props) {
   useEffect(() => {
-    if (!open) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [open])
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   useEffect(() => {
-    if (!open || !dismissible) return
-    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [dismissible, onClose, open])
+    if (!open || !dismissible) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [dismissible, onClose, open]);
 
-  if (typeof document === 'undefined') return null
+  if (typeof document === "undefined") return null;
 
   return createPortal(
     <AnimatePresence>
@@ -53,7 +64,14 @@ export function BillingModalShell({ open, onClose, dismissible = true, ariaLabel
             initial="initial"
             animate="animate"
             exit="exit"
-            className={['relative z-10 w-full max-w-[420px] overflow-hidden rounded-[28px]', 'border border-white/[0.08] bg-[#12151f]', 'shadow-[0_24px_64px_rgba(0,0,0,0.5)]', className].filter(Boolean).join(' ')}
+            className={[
+              "relative z-10 w-full max-w-[420px] overflow-hidden rounded-[28px]",
+              "border border-white/[0.08] bg-[#12151f]",
+              "shadow-[0_24px_64px_rgba(0,0,0,0.5)]",
+              className,
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
             {children}
           </motion.div>
@@ -61,5 +79,5 @@ export function BillingModalShell({ open, onClose, dismissible = true, ariaLabel
       )}
     </AnimatePresence>,
     document.body,
-  )
+  );
 }

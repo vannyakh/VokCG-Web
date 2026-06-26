@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { TemplatesPage } from '@/features/explore'
+import { TemplatesPage } from "@/features/explore";
 
 export default function Page() {
-  return <TemplatesPage />
+  return <TemplatesPage />;
 }

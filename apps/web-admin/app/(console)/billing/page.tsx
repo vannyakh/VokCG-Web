@@ -1,3 +1,5 @@
-'use client'
-import { BillingPage } from '@/features/billing'
-export default function Page() { return <BillingPage /> }
+"use client";
+import { BillingPage } from "@/features/billing";
+export default function Page() {
+  return <BillingPage />;
+}

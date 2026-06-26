@@ -1,1 +1,1 @@
-export { WebhooksPage } from './WebhooksPage'
+export { WebhooksPage } from "./WebhooksPage";

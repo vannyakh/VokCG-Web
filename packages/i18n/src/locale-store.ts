@@ -1,14 +1,14 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-import { STORAGE_KEYS } from '@vokcg/config'
+import { STORAGE_KEYS } from "@vokcg/config";
 
-import { DEFAULT_UI_LOCALE, normalizeUiLocale, type UiLocale } from './meta'
+import { DEFAULT_UI_LOCALE, normalizeUiLocale, type UiLocale } from "./meta";
 
 type LocaleState = {
-  uiLocale: UiLocale
-  setUiLocale: (locale: UiLocale) => void
-}
+  uiLocale: UiLocale;
+  setUiLocale: (locale: UiLocale) => void;
+};
 
 export const useLocaleStore = create<LocaleState>()(
   persist(
@@ -27,4 +27,4 @@ export const useLocaleStore = create<LocaleState>()(
       }),
     },
   ),
-)
+);

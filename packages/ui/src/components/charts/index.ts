@@ -1,1 +1,1 @@
-export { EChart } from './echart'
+export { EChart } from "./echart";

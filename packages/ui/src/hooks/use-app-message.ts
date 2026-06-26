@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { App } from 'antd'
+import { App } from "antd";
 
 export function useAppMessage() {
-  const { message } = App.useApp()
-  return message
+  const { message } = App.useApp();
+  return message;
 }

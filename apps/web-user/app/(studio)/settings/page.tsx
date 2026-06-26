@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { SettingsPage } from '@/features/settings'
+import { SettingsPage } from "@/features/settings";
 
 export default function Page() {
-  return <SettingsPage />
+  return <SettingsPage />;
 }

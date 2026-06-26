@@ -1,15 +1,21 @@
-import { create } from 'zustand'
+import { create } from "zustand";
 
 type PreviewOutputState = {
-  ready: boolean
-  taskId: string | null
-  videos: string[]
-  activeIndex: number
-  activeUrl: string | null
-  setSnapshot: (snapshot: { ready: boolean; taskId: string | null; videos: string[]; activeIndex: number; activeUrl: string | null }) => void
-  setActiveIndex: (index: number) => void
-  reset: () => void
-}
+  ready: boolean;
+  taskId: string | null;
+  videos: string[];
+  activeIndex: number;
+  activeUrl: string | null;
+  setSnapshot: (snapshot: {
+    ready: boolean;
+    taskId: string | null;
+    videos: string[];
+    activeIndex: number;
+    activeUrl: string | null;
+  }) => void;
+  setActiveIndex: (index: number) => void;
+  reset: () => void;
+};
 
 const empty = {
   ready: false,
@@ -17,7 +23,7 @@ const empty = {
   videos: [] as string[],
   activeIndex: 0,
   activeUrl: null,
-}
+};
 
 export const usePreviewOutputStore = create<PreviewOutputState>((set) => ({
   ...empty,
@@ -28,4 +34,4 @@ export const usePreviewOutputStore = create<PreviewOutputState>((set) => ({
       activeUrl: s.videos[activeIndex] ?? s.activeUrl,
     })),
   reset: () => set(empty),
-}))
+}));

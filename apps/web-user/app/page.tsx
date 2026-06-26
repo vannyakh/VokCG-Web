@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation'
+import { redirect } from "next/navigation";
 
-import { USER_ROUTES } from '@vokcg/constants'
+import { USER_ROUTES } from "@vokcg/constants";
 
 export default function HomePage() {
-  redirect(USER_ROUTES.create)
+  redirect(USER_ROUTES.create);
 }

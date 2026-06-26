@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   transpilePackages: [
     '@vokcg/ui',
     '@vokcg/api',
@@ -9,7 +10,9 @@ const nextConfig = {
     '@vokcg/constants',
     '@vokcg/i18n',
   ],
+  // Dev-only proxy rewrites — in production the browser calls the API directly
   async rewrites() {
+    if (process.env.NODE_ENV === 'production') return []
     return [
       {
         source: '/api/:path*',

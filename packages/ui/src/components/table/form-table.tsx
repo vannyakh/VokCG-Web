@@ -1,17 +1,20 @@
-"use client"
+"use client";
 
-import { flexRender } from '@tanstack/react-table'
-import { Button, Form, Input, Pagination, Select, Spin, Tooltip } from 'antd'
-import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { flexRender } from "@tanstack/react-table";
+import { Button, Form, Input, Pagination, Select, Spin, Tooltip } from "antd";
+import { ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { useLayoutEffect, useRef, useState } from "react";
 
-import type { FormFieldSchema, FormTableConfig } from '../table/form-table.types'
-import { useFormTable, type UseFormTableReturn } from '../table/use-form-table'
+import type {
+  FormFieldSchema,
+  FormTableConfig,
+} from "../table/form-table.types";
+import { useFormTable, type UseFormTableReturn } from "../table/use-form-table";
 
-const FORM_COLS = 4
+const FORM_COLS = 4;
 
 function renderField(field: FormFieldSchema) {
-  if (field.type === 'select') {
+  if (field.type === "select") {
     return (
       <Select
         allowClear
@@ -20,18 +23,23 @@ function renderField(field: FormFieldSchema) {
         className="w-full form-table-select"
         {...field.componentProps}
       />
-    )
+    );
   }
 
   return (
-    <Input allowClear placeholder={field.placeholder} className="form-table-input" {...field.componentProps} />
-  )
+    <Input
+      allowClear
+      placeholder={field.placeholder}
+      className="form-table-input"
+      {...field.componentProps}
+    />
+  );
 }
 
 type FormTableProps<
   TData extends Record<string, unknown>,
   TFilter extends Record<string, unknown>,
-> = UseFormTableReturn<TData, TFilter>
+> = UseFormTableReturn<TData, TFilter>;
 
 export function FormTableUI<
   TData extends Record<string, unknown>,
@@ -46,35 +54,40 @@ export function FormTableUI<
   handleReset,
   config,
 }: FormTableProps<TData, TFilter>) {
-  const bodyRef = useRef<HTMLDivElement>(null)
-  const [bodyHeight, setBodyHeight] = useState(320)
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [bodyHeight, setBodyHeight] = useState(320);
 
-  const schema = config.formSchema ?? []
-  const collapsedRows = config.collapsedRows ?? 1
-  const maxCollapsedFields = collapsedRows * FORM_COLS
+  const schema = config.formSchema ?? [];
+  const collapsedRows = config.collapsedRows ?? 1;
+  const maxCollapsedFields = collapsedRows * FORM_COLS;
   const visibleSchema =
-    collapsed && schema.length > maxCollapsedFields ? schema.slice(0, maxCollapsedFields) : schema
-  const hiddenCount = schema.length - visibleSchema.length
-  const showToolbar = Boolean(config.toolbar || config.onRefresh)
+    collapsed && schema.length > maxCollapsedFields
+      ? schema.slice(0, maxCollapsedFields)
+      : schema;
+  const hiddenCount = schema.length - visibleSchema.length;
+  const showToolbar = Boolean(config.toolbar || config.onRefresh);
 
   useLayoutEffect(() => {
-    const panel = bodyRef.current?.parentElement
-    if (!panel) return
+    const panel = bodyRef.current?.parentElement;
+    if (!panel) return;
 
     const update = () => {
-      const paginationH = 48
+      const paginationH = 48;
       const toolbarH =
-        panel.querySelector('.form-table-toolbar')?.getBoundingClientRect().height ?? 0
-      setBodyHeight(Math.max(panel.clientHeight - paginationH - toolbarH - 2, 160))
-    }
+        panel.querySelector(".form-table-toolbar")?.getBoundingClientRect()
+          .height ?? 0;
+      setBodyHeight(
+        Math.max(panel.clientHeight - paginationH - toolbarH - 2, 160),
+      );
+    };
 
-    update()
-    const observer = new ResizeObserver(update)
-    observer.observe(panel)
-    return () => observer.disconnect()
-  }, [config.loading, filteredCount, collapsed, schema.length, showToolbar])
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(panel);
+    return () => observer.disconnect();
+  }, [config.loading, filteredCount, collapsed, schema.length, showToolbar]);
 
-  const { pageIndex, pageSize } = table.getState().pagination
+  const { pageIndex, pageSize } = table.getState().pagination;
 
   return (
     <div className="form-table-page flex min-h-0 flex-1 flex-col gap-3">
@@ -102,8 +115,15 @@ export function FormTableUI<
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
-                <Button onClick={handleReset} className="rounded-full">Reset</Button>
-                <Button type="primary" htmlType="submit" loading={config.loading} className="rounded-full">
+                <Button onClick={handleReset} className="rounded-full">
+                  Reset
+                </Button>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={config.loading}
+                  className="rounded-full"
+                >
                   Search
                 </Button>
               </div>
@@ -119,7 +139,9 @@ export function FormTableUI<
                   <>
                     <ChevronDown size={14} />
                     Expand
-                    {hiddenCount > 0 && <span className="text-muted">({hiddenCount} more)</span>}
+                    {hiddenCount > 0 && (
+                      <span className="text-muted">({hiddenCount} more)</span>
+                    )}
                   </>
                 ) : (
                   <>
@@ -164,11 +186,19 @@ export function FormTableUI<
                       <th
                         key={header.id}
                         className="whitespace-nowrap border-b border-default px-3 py-2.5 text-left text-[13px] font-semibold text-secondary"
-                        style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
+                        style={{
+                          width:
+                            header.getSize() !== 150
+                              ? header.getSize()
+                              : undefined,
+                        }}
                       >
                         {header.isPlaceholder
                           ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
                       </th>
                     ))}
                   </tr>
@@ -181,7 +211,7 @@ export function FormTableUI<
                       colSpan={table.getAllColumns().length}
                       className="py-14 text-center text-sm text-muted"
                     >
-                      {config.emptyText ?? 'No data found.'}
+                      {config.emptyText ?? "No data found."}
                     </td>
                   </tr>
                 ) : (
@@ -191,8 +221,14 @@ export function FormTableUI<
                       className="border-b border-subtle transition-colors hover:bg-subtle/60"
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-3 py-2.5 align-middle text-primary">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        <td
+                          key={cell.id}
+                          className="px-3 py-2.5 align-middle text-primary"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -211,23 +247,23 @@ export function FormTableUI<
             total={filteredCount}
             showSizeChanger
             showQuickJumper
-            pageSizeOptions={['10', '20', '50', '100']}
+            pageSizeOptions={["10", "20", "50", "100"]}
             showTotal={(total) => `Total ${total} records`}
             onChange={(page, size) => {
-              table.setPageIndex(page - 1)
-              if (size !== pageSize) table.setPageSize(size)
+              table.setPageIndex(page - 1);
+              if (size !== pageSize) table.setPageSize(size);
             }}
           />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function FormTable<
   TData extends Record<string, unknown>,
   TFilter extends Record<string, unknown> = Record<string, unknown>,
 >(config: FormTableConfig<TData, TFilter>) {
-  const state = useFormTable(config)
-  return <FormTableUI {...state} />
+  const state = useFormTable(config);
+  return <FormTableUI {...state} />;
 }
