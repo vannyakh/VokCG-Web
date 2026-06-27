@@ -34,9 +34,6 @@ export type AdminUiPreferences = {
   sidebarMiniMode: boolean;
   sidebarHoverExpand: boolean;
   contentCompact: boolean;
-  transitionProgressBar: boolean;
-  transitionLoading: boolean;
-  transitionAnimation: boolean;
   tabBarVisible: boolean;
   tabBarDraggable: boolean;
   tabBarWheelScroll: boolean;
@@ -49,9 +46,6 @@ export const DEFAULT_ADMIN_UI_PREFERENCES: AdminUiPreferences = {
   sidebarMiniMode: false,
   sidebarHoverExpand: true,
   contentCompact: false,
-  transitionProgressBar: true,
-  transitionLoading: true,
-  transitionAnimation: true,
   tabBarVisible: true,
   tabBarDraggable: true,
   tabBarWheelScroll: true,

@@ -13,6 +13,7 @@ import {
 } from "@vokcg/ui";
 import { taskDetailRoute } from "@vokcg/constants";
 import type { Task } from "@vokcg/types";
+import type { TranslateParams } from "@vokcg/i18n";
 import {
   STATUS_DOT_COLOR,
   formatSourceLabel,
@@ -26,7 +27,7 @@ interface TaskRowProps {
   checked: boolean;
   onToggleCheck: () => void;
   onDelete: (id: string) => void;
-  t: (key: string, options?: Record<string, unknown>) => string;
+  t: (key: string, params?: TranslateParams) => string;
 }
 
 export function TaskRow({

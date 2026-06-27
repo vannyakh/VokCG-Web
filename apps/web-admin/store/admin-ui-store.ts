@@ -27,9 +27,6 @@ type AdminUiPersisted = {
   sidebarMiniMode: boolean;
   sidebarHoverExpand: boolean;
   contentCompact: boolean;
-  transitionProgressBar: boolean;
-  transitionLoading: boolean;
-  transitionAnimation: boolean;
   tabBarVisible: boolean;
   tabBarDraggable: boolean;
   tabBarWheelScroll: boolean;
@@ -55,12 +52,6 @@ export type AdminUiState = {
   setSidebarHoverExpand: (v: boolean) => void;
   contentCompact: boolean;
   setContentCompact: (v: boolean) => void;
-  transitionProgressBar: boolean;
-  setTransitionProgressBar: (v: boolean) => void;
-  transitionLoading: boolean;
-  setTransitionLoading: (v: boolean) => void;
-  transitionAnimation: boolean;
-  setTransitionAnimation: (v: boolean) => void;
   tabBarVisible: boolean;
   setTabBarVisible: (v: boolean) => void;
   tabBarDraggable: boolean;
@@ -96,15 +87,6 @@ export const useAdminUiStore = create<AdminUiState>()(
 
       contentCompact: DEFAULT_ADMIN_UI_PREFERENCES.contentCompact,
       setContentCompact: (contentCompact) => set({ contentCompact }),
-
-      transitionProgressBar: DEFAULT_ADMIN_UI_PREFERENCES.transitionProgressBar,
-      setTransitionProgressBar: (transitionProgressBar) =>
-        set({ transitionProgressBar }),
-      transitionLoading: DEFAULT_ADMIN_UI_PREFERENCES.transitionLoading,
-      setTransitionLoading: (transitionLoading) => set({ transitionLoading }),
-      transitionAnimation: DEFAULT_ADMIN_UI_PREFERENCES.transitionAnimation,
-      setTransitionAnimation: (transitionAnimation) =>
-        set({ transitionAnimation }),
 
       tabBarVisible: DEFAULT_ADMIN_UI_PREFERENCES.tabBarVisible,
       setTabBarVisible: (tabBarVisible) => set({ tabBarVisible }),
@@ -199,9 +181,6 @@ export const useAdminUiStore = create<AdminUiState>()(
         sidebarMiniMode: state.sidebarMiniMode,
         sidebarHoverExpand: state.sidebarHoverExpand,
         contentCompact: state.contentCompact,
-        transitionProgressBar: state.transitionProgressBar,
-        transitionLoading: state.transitionLoading,
-        transitionAnimation: state.transitionAnimation,
         tabBarVisible: state.tabBarVisible,
         tabBarDraggable: state.tabBarDraggable,
         tabBarWheelScroll: state.tabBarWheelScroll,

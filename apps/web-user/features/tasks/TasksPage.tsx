@@ -19,6 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { InputRef } from "antd";
 import { useLocale } from "@vokcg/i18n";
 import { useTasks, useDeleteTask } from "@/api";
 import { STORAGE_KEYS } from "@vokcg/config";
@@ -70,7 +71,7 @@ function useViewMode() {
 export function TasksPage() {
   const { t } = useLocale();
   const message = useAppMessage();
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<InputRef>(null);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useViewMode();
 

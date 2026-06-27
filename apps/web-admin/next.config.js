@@ -1,4 +1,4 @@
-import { createDevProxyRewrites } from '../../packages/config/dev-proxy-rewrites.js'
+import { createDevProxyRewrites } from '../../packages/config/dev-proxy-rewrites.mjs'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
