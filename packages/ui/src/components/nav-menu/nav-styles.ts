@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 export const NAV_MENU = {
-  marginX: 4,
+  marginX: 8,
   itemRadius: 9999,
   collapsedPaddingX: 8,
   collapsedTileSize: 42,
@@ -17,6 +17,15 @@ export const NAV_MENU = {
   itemGap: 1,
   treeBranchWidth: 12,
   treeGuideOffset: 7,
+} as const;
+
+export const NAV_ROW = {
+  iconSize: 15,
+  nestedIconSize: 14,
+  flyoutIconSize: 14,
+  iconColumnWidth: 18,
+  chevronColumnWidth: 18,
+  labelClass: "min-w-0 flex-1 truncate text-left leading-none",
 } as const;
 
 /** Collapsed sidebar flyout panel */
@@ -97,9 +106,9 @@ export function navItemButtonClass({
   }
 
   return [
-    "group relative flex w-full select-none items-center text-left outline-none",
+    "group relative flex w-full select-none items-center gap-2.5 text-left outline-none",
     "transition-colors duration-150",
-    inPopup ? "gap-2 rounded-lg" : nested ? "gap-2" : "gap-2.5",
+    inPopup ? "rounded-lg" : "",
     isActive
       ? "text-accent"
       : disabled

@@ -8,6 +8,7 @@ import { NavCollapsedTile, navCollapsedRowStyle } from "./nav-collapsed-tile";
 import {
   NAV_FLYOUT,
   NAV_MENU,
+  NAV_ROW,
   navIconColor,
   navItemButtonClass,
   navRowRadius,
@@ -86,9 +87,16 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
   }
 
   // ── Expanded / in-popup mode ───────────────────────────────────────────────
+  const iconSize = inPopup
+    ? NAV_ROW.flyoutIconSize
+    : isNested && !inPopup
+      ? NAV_ROW.nestedIconSize
+      : NAV_ROW.iconSize;
+
   return (
     <div
       className="relative"
+      style={!inPopup ? { marginInline: NAV_MENU.marginX } : undefined}
       onMouseEnter={() => !disabled && setHoveredId(item.id)}
       onMouseLeave={() => setHoveredId(null)}
     >
@@ -140,20 +148,25 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
           height: rowHeight,
           borderRadius: rowRadius,
           paddingLeft: inPopup ? 10 : isNested ? 8 : 10,
-          paddingRight: inPopup ? 10 : 8,
+          paddingRight: inPopup ? 10 : 10,
           position: "relative",
           zIndex: 1,
         }}
       >
-        <item.icon
-          size={inPopup ? 14 : isNested && !inPopup ? 14 : 15}
-          strokeWidth={isActive ? 2.2 : 1.75}
-          className="shrink-0"
-          style={navIconColor(isActive)}
-        />
+        <span
+          className="flex shrink-0 items-center justify-center"
+          style={{ width: NAV_ROW.iconColumnWidth }}
+        >
+          <item.icon
+            size={iconSize}
+            strokeWidth={isActive ? 2.2 : 1.75}
+            className="shrink-0"
+            style={navIconColor(isActive)}
+          />
+        </span>
         <span
           className={[
-            "min-w-0 flex-1 truncate leading-none",
+            NAV_ROW.labelClass,
             isNested && !inPopup ? "text-[12.5px]" : "text-[13px]",
             isActive ? "font-semibold" : "font-medium",
           ].join(" ")}
@@ -162,6 +175,13 @@ export function NavMenuItem({ item, inPopup = false }: Props) {
         </span>
         {badge && (
           <NavBadge label={badge} variant={badgeVariant} compact={inPopup} />
+        )}
+        {level === 0 && !inPopup && !badge && (
+          <span
+            className="shrink-0"
+            style={{ width: NAV_ROW.chevronColumnWidth }}
+            aria-hidden
+          />
         )}
       </button>
     </div>

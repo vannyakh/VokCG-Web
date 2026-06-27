@@ -146,7 +146,7 @@ export function NotificationsPage() {
         cell: (info) => {
           const channel = info.getValue() as NotificationChannel;
           return (
-            <Tag bordered={false} color={CHANNEL_COLOR[channel]}>
+            <Tag variant="filled" color={CHANNEL_COLOR[channel]}>
               {channel.replace("_", "-")}
             </Tag>
           );
@@ -217,7 +217,6 @@ export function NotificationsPage() {
         open={open}
         onCancel={() => setOpen(false)}
         onOk={handleSubmit}
-        destroyOnClose
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Form.Item name="name" label="Name" rules={[{ required: true }]}>

@@ -52,6 +52,8 @@ export function AntdProvider({
         // Render Ant Design's static (tooltip, message, notification) portals
         // inside the document body for correct z-index stacking.
         getPopupContainer={(trigger) => trigger?.parentElement ?? document.body}
+        // Global Modal default: always reset internal state when a modal closes.
+        modal={{ destroyOnHidden: true }}
       >
         <App
           message={{ maxCount: 3, top: 56 }}

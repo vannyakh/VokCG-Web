@@ -288,7 +288,6 @@ export function TenantsPage() {
         onCancel={() => setOpen(false)}
         onOk={handleSubmit}
         confirmLoading={createTenant.isPending || updateTenant.isPending}
-        destroyOnClose
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Form.Item

@@ -249,7 +249,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
       },
       {
         id: "billing",
-        label: "Stripe Billing",
+        label: "Billing",
         icon: CreditCard,
         path: ADMIN_ROUTES.billing,
       },

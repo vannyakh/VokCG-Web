@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { API_BASE_URL } from "@vokcg/config";
 
 type UserAvatarProps = {
@@ -17,6 +18,32 @@ const SIZE_CLASS = {
   xl: "h-20 w-20 text-lg",
 } as const;
 
+function UserInitials({
+  initials,
+  sizeClass,
+  className,
+}: {
+  initials: string;
+  sizeClass: string;
+  className: string;
+}) {
+  return (
+    <div
+      className={[
+        "flex shrink-0 items-center justify-center rounded-full font-bold text-white",
+        sizeClass,
+        className,
+      ].join(" ")}
+      style={{
+        background:
+          "linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 70%, #818cf8), var(--color-primary))",
+      }}
+    >
+      {initials}
+    </div>
+  );
+}
+
 export function UserAvatar({
   username,
   avatarUrl,
@@ -24,10 +51,11 @@ export function UserAvatar({
   size = "sm",
   className = "",
 }: UserAvatarProps) {
+  const [imgError, setImgError] = useState(false);
   const sizeClass = SIZE_CLASS[size];
   const initials = username.slice(0, 2).toUpperCase();
 
-  if (avatarUrl) {
+  if (avatarUrl && !imgError) {
     const src =
       revision != null
         ? `${API_BASE_URL}${avatarUrl}?v=${revision}`
@@ -36,21 +64,14 @@ export function UserAvatar({
       <img
         src={src}
         alt={username}
+        onError={() => setImgError(true)}
         className={`shrink-0 rounded-full object-cover ${sizeClass} ${className}`.trim()}
       />
     );
   }
 
   return (
-    <div
-      className={[
-        "flex shrink-0 items-center justify-center rounded-full bg-accent font-bold text-white",
-        sizeClass,
-        className,
-      ].join(" ")}
-    >
-      {initials}
-    </div>
+    <UserInitials initials={initials} sizeClass={sizeClass} className={className} />
   );
 }
 

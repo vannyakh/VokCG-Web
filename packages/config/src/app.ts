@@ -1,16 +1,4 @@
-/**
- * Resolve the backend API origin used by axios.
- *
- * Priority:
- *  1. NEXT_PUBLIC_API_BASE_URL (set in .env.production or .env.local)
- *  2. Empty string '' — axios calls go through the Next.js /api proxy rewrite
- *     (see next.config.js), which rewrites to API_PROXY_URL at build time.
- *
- * Environment matrix:
- *  - dev  + local proxy  → '' (default in .env.development)
- *  - dev  + Railway      → set NEXT_PUBLIC_API_BASE_URL in .env.local
- *  - prod + Railway      → set in .env.production (committed)
- */
+
 export function resolveApiBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (configured !== undefined) {

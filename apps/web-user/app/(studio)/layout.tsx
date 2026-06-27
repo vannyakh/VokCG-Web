@@ -1,16 +1,12 @@
-"use client";
+import { studioMetadata } from "../metadata";
+import { StudioLayoutClient } from "./studio-layout-client";
 
-import { AuthGuard } from "../../components/auth-guard";
-import { StudioShell } from "../../components/layout";
+export const metadata = studioMetadata;
 
 export default function StudioLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AuthGuard>
-      <StudioShell>{children}</StudioShell>
-    </AuthGuard>
-  );
+  return <StudioLayoutClient>{children}</StudioLayoutClient>;
 }

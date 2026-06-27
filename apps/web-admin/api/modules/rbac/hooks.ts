@@ -64,6 +64,28 @@ export function useUpdateAdminUser() {
   });
 }
 
+export function useDeleteAdminUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      deleteApi<ApiResponse<{ ok: boolean }>>(`/api/v1/admin/users/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "overview"] });
+    },
+  });
+}
+
+export function useResetUserPassword() {
+  return useMutation({
+    mutationFn: ({ id, password }: { id: string; password: string }) =>
+      postApi<ApiResponse<{ ok: boolean }>>(
+        `/api/v1/admin/users/${id}/reset-password`,
+        { new_password: password },
+      ),
+  });
+}
+
 export function useAdminRoles() {
   return useQuery({
     queryKey: ["admin", "roles"],

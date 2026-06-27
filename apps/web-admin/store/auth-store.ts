@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { STORAGE_KEYS } from "@vokcg/config";
+import { STORAGE_KEYS, SESSION_COOKIES, setSessionCookie, clearSessionCookie } from "@vokcg/config";
 
 import type { AdminUser } from "@/types/auth";
 
@@ -27,12 +27,19 @@ export const useAdminAuthStore = create<AdminAuthState>()(
       accessToken: "",
       refreshToken: "",
       admin: null,
-      setSession: (accessToken, refreshToken, admin) =>
-        set({ accessToken, refreshToken, admin }),
+      setSession: (accessToken, refreshToken, admin) => {
+        setSessionCookie(SESSION_COOKIES.admin);
+        set({ accessToken, refreshToken, admin });
+      },
       setAdmin: (admin) => set({ admin }),
-      setAccessToken: (accessToken) => set({ accessToken }),
-      clearSession: () =>
-        set({ accessToken: "", refreshToken: "", admin: null }),
+      setAccessToken: (accessToken) => {
+        if (accessToken) setSessionCookie(SESSION_COOKIES.admin);
+        set({ accessToken });
+      },
+      clearSession: () => {
+        clearSessionCookie(SESSION_COOKIES.admin);
+        set({ accessToken: "", refreshToken: "", admin: null });
+      },
       hasPermission: (code) => {
         const admin = get().admin;
         if (!admin) return false;

@@ -6,10 +6,7 @@ const CHARS = "VokCGStudio".split("");
 
 export function LoadingScreen() {
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: "var(--bg-canvas)" }}
-    >
+    <div className="loading-screen" role="status" aria-live="polite" aria-label="Loading">
       {/* Ambient glow blobs */}
       <div
         aria-hidden
@@ -36,7 +33,7 @@ export function LoadingScreen() {
         }}
       />
 
-      <div className="relative flex flex-col items-center gap-8">
+      <div className="loading-screen__content">
         {/* Icon mark */}
         <motion.div
           initial={{ opacity: 0, scale: 0.6, y: 12 }}

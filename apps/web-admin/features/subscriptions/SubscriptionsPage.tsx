@@ -340,7 +340,6 @@ export function SubscriptionsPage() {
         confirmLoading={
           createSubscription.isPending || updateSubscription.isPending
         }
-        destroyOnClose
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Form.Item

@@ -76,9 +76,8 @@ export function FormTableUI<
       const toolbarH =
         panel.querySelector(".form-table-toolbar")?.getBoundingClientRect()
           .height ?? 0;
-      setBodyHeight(
-        Math.max(panel.clientHeight - paginationH - toolbarH - 2, 160),
-      );
+      const next = Math.max(panel.clientHeight - paginationH - toolbarH - 2, 160);
+      setBodyHeight((prev) => (prev === next ? prev : next));
     };
 
     update();

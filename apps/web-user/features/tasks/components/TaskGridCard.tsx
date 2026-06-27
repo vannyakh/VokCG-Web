@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Checkbox } from "antd";
 import { ListVideo } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   fadeUpItem,
   TaskDeleteButton,
@@ -16,12 +17,13 @@ import {
   TaskVideoPoster,
   DotGridLoader,
 } from "@vokcg/ui";
+import { taskDetailRoute } from "@vokcg/constants";
 import type { Task } from "@vokcg/types";
 import { STATUS_DOT_COLOR } from "./utils";
 
 const GRID_THUMB_ASPECT = "16 / 9" as const;
 
-function TaskGridThumb({ task, selected }: { task: Task; selected: boolean }) {
+function TaskGridThumb({ task }: { task: Task }) {
   const finalVideo = getTaskFinalVideo(task);
   const active = isTaskActive(task.state);
   const failed = isTaskFailed(task.state);
@@ -66,22 +68,23 @@ function TaskGridThumb({ task, selected }: { task: Task; selected: boolean }) {
 
 export function TaskGridCard({
   task,
-  selected,
   checked,
-  onSelect,
   onToggleCheck,
   onDelete,
 }: {
   task: Task;
-  selected: boolean;
   checked: boolean;
-  onSelect: () => void;
   onToggleCheck: () => void;
   onDelete: (id: string) => void;
 }) {
+  const router = useRouter();
   const summary = getTaskContentSummary(task);
   const meta = getTaskStateMeta(task.state);
   const active = isTaskActive(task.state);
+
+  const handleClick = () => {
+    router.push(taskDetailRoute(task.id));
+  };
 
   return (
     <motion.div
@@ -94,42 +97,29 @@ export function TaskGridCard({
         tabIndex={0}
         title={summary.topic}
         className={[
-          "w-full overflow-hidden rounded-xl border bg-surface cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md outline-none",
-          selected
-            ? "border-default bg-[var(--bg-active)] shadow-md"
-            : checked
-              ? "border-primary/60 bg-surface/80"
-              : "border-default hover:border-primary/40",
+          "w-full overflow-hidden rounded-xl border border-default bg-surface cursor-pointer",
+          "transition-all duration-200 shadow-sm hover:shadow-md hover:border-primary/40 outline-none",
+          checked ? "border-primary/60 bg-surface/80" : "",
         ].join(" ")}
-        onClick={onSelect}
+        onClick={handleClick}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            onSelect();
+            handleClick();
           }
         }}
       >
         {/* Thumbnail */}
         <div className="relative">
-          <TaskGridThumb task={task} selected={selected} />
+          <TaskGridThumb task={task} />
 
           <div
             className="absolute left-0 top-0 p-3 z-10 cursor-default"
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-            }}
-            onMouseUp={(e) => {
-              e.stopPropagation();
-            }}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-            }}
-            onKeyUp={(e) => {
-              e.stopPropagation();
-            }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onMouseUp={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            onKeyUp={(e) => e.stopPropagation()}
           >
             <Checkbox
               checked={checked}
@@ -138,7 +128,10 @@ export function TaskGridCard({
             />
           </div>
 
-          <div className="absolute right-2 top-2">
+          <div
+            className="absolute right-2 top-2"
+            onClick={(e) => e.stopPropagation()}
+          >
             <TaskDeleteButton
               task={task}
               onDelete={onDelete}
@@ -146,7 +139,6 @@ export function TaskGridCard({
             />
           </div>
 
-          {/* Active progress badge */}
           {active && (
             <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 backdrop-blur-sm">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-400" />

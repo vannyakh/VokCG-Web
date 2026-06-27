@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 import { AuthLayout, LoadingScreen } from "@vokcg/ui";
 
-import { AdminGuestGuard } from "../../components/admin-guest-guard";
+import { AdminGuestGuard } from "@/guards";
 
 export default function GuestLayout({
   children,

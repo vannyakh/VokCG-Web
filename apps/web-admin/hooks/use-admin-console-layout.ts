@@ -1,15 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Suspense,
   useCallback,
   useEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -18,22 +14,7 @@ import type { AdminTab } from "@vokcg/constants";
 import { useAdminMe } from "@/api";
 import { selectOpenTabs, useAdminUiStore } from "@/store";
 
-import { PageTransitionProgress } from "./PageTransitionProgress";
-import { adminPageVariants } from "@vokcg/ui";
-import { AdminHeader } from "./AdminHeader";
-import { AdminSettingsDrawer } from "./AdminSettingsDrawer";
-import { AdminSidebar } from "./AdminSidebar";
-import { AdminTabbar } from "./AdminTabbar";
-
-function AdminPageLoader() {
-  return (
-    <div className="flex flex-1 items-center justify-center py-16">
-      <Loader2 size={28} className="animate-spin text-accent" strokeWidth={2} />
-    </div>
-  );
-}
-
-export function AdminShell({ children }: { children: ReactNode }) {
+export function useAdminConsoleLayout() {
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -44,9 +25,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const {
     contentCompact,
     tabBarVisible,
-    transitionProgressBar,
-    transitionLoading,
-    transitionAnimation,
     tabHistory,
     removedTabs,
     openTab,
@@ -160,78 +138,23 @@ export function AdminShell({ children }: { children: ReactNode }) {
     contentCompact ? "mx-auto max-w-screen-2xl" : "max-w-none",
   ].join(" ");
 
-  const suspenseFallback = transitionLoading ? <AdminPageLoader /> : null;
-
-  const pageContent = (
-    <Suspense fallback={suspenseFallback}>{children}</Suspense>
-  );
-
-  return (
-    <div className="flex h-screen overflow-hidden bg-canvas">
-      <AdminSidebar
-        activeTab={activeTab}
-        collapsed={collapsed}
-        onToggle={() => setCollapsed((c) => !c)}
-        onTabOpen={handleTabClick}
-      />
-
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <AdminHeader
-          activeTab={activeTab}
-          collapsed={collapsed}
-          refreshing={refreshing}
-          onSidebarToggle={() => setCollapsed((c) => !c)}
-          onRefresh={handleRefresh}
-          onSettingsOpen={() => setSettingsOpen(true)}
-        />
-
-        {tabBarVisible && (
-          <AdminTabbar
-            tabs={openTabs}
-            activeTab={activeTab}
-            onTabClick={handleTabClick}
-            onTabClose={handleTabClose}
-            onSortTabs={handleSortTabs}
-            onCloseOthers={handleCloseOthers}
-            onCloseAll={handleCloseAll}
-          />
-        )}
-
-        <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-canvas">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 z-0 h-40 bg-[radial-gradient(circle_at_top,color-mix(in_srgb,var(--color-primary)_10%,transparent),transparent_70%)]"
-          />
-          <PageTransitionProgress
-            activeKey={activeTab}
-            enabled={transitionProgressBar}
-          />
-
-          {transitionAnimation ? (
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={activeTab}
-                variants={adminPageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className={contentClass}
-              >
-                {pageContent}
-              </motion.div>
-            </AnimatePresence>
-          ) : (
-            <div key={activeTab} className={contentClass}>
-              {pageContent}
-            </div>
-          )}
-        </main>
-      </div>
-
-      <AdminSettingsDrawer
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-      />
-    </div>
-  );
+  return {
+    activeTab,
+    collapsed,
+    setCollapsed,
+    settingsOpen,
+    setSettingsOpen,
+    refreshing,
+    openTabs,
+    tabBarVisible,
+    contentClass,
+    handleRefresh,
+    handleTabClick,
+    handleTabClose,
+    handleCloseOthers,
+    handleCloseAll,
+    handleSortTabs,
+  };
 }
+
+export type AdminConsoleLayoutState = ReturnType<typeof useAdminConsoleLayout>;

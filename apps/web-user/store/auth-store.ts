@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { STORAGE_KEYS } from "@vokcg/config";
+import { STORAGE_KEYS, SESSION_COOKIES, setSessionCookie, clearSessionCookie } from "@vokcg/config";
 
 import type { User } from "@/types/auth";
 
@@ -21,12 +21,19 @@ export const useAuthStore = create<UserAuthState>()(
       accessToken: "",
       refreshToken: "",
       user: null,
-      setSession: (accessToken, refreshToken, user) =>
-        set({ accessToken, refreshToken, user }),
+      setSession: (accessToken, refreshToken, user) => {
+        setSessionCookie(SESSION_COOKIES.user);
+        set({ accessToken, refreshToken, user });
+      },
       setUser: (user) => set({ user }),
-      setAccessToken: (accessToken) => set({ accessToken }),
-      clearSession: () =>
-        set({ accessToken: "", refreshToken: "", user: null }),
+      setAccessToken: (accessToken) => {
+        if (accessToken) setSessionCookie(SESSION_COOKIES.user);
+        set({ accessToken });
+      },
+      clearSession: () => {
+        clearSessionCookie(SESSION_COOKIES.user);
+        set({ accessToken: "", refreshToken: "", user: null });
+      },
     }),
     { name: STORAGE_KEYS.userAuth },
   ),

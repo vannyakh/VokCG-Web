@@ -196,7 +196,6 @@ export function JobsPage() {
         open={open}
         onCancel={() => setOpen(false)}
         onOk={handleSubmit}
-        destroyOnClose
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Form.Item name="name" label="Name" rules={[{ required: true }]}>

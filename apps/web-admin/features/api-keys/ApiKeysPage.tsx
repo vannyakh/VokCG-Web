@@ -165,7 +165,6 @@ export function ApiKeysPage() {
         onOk={handleCreate}
         confirmLoading={createApiKey.isPending}
         okText="Generate key"
-        destroyOnClose
       >
         <p className="mb-3 text-sm text-muted">
           Give this key a name so you can recognize it later.
@@ -192,7 +191,6 @@ export function ApiKeysPage() {
             I saved my key
           </Button>,
         ]}
-        destroyOnClose
       >
         <p className="mb-3 text-sm text-muted">
           This is the only time the full key will be shown. Copy it now.

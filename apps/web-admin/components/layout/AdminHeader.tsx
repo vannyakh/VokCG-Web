@@ -15,6 +15,7 @@ import {
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { ADMIN_TAB_META, ADMIN_ROUTES } from "@vokcg/constants";
 import type { AdminTab } from "@vokcg/constants";
 import { API_BASE_URL } from "@vokcg/config";
@@ -66,6 +67,7 @@ export function AdminHeader({
   const user = useAdminAuthStore((state) => state.admin);
   const logout = useAdminLogout();
   const router = useRouter();
+  const [avatarError, setAvatarError] = useState(false);
 
   const initials = user?.username
     ? user.username.slice(0, 2).toUpperCase()
@@ -112,7 +114,7 @@ export function AdminHeader({
         {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
       </HeaderIconBtn>
 
-      <div className="h-4 w-px shrink-0 bg-[var(--border-default)]" />
+      <div className="h-4 w-px shrink-0 bg-border" />
 
       {/* Breadcrumb */}
       <nav
@@ -163,23 +165,24 @@ export function AdminHeader({
       {/* User menu */}
       {user && (
         <>
-          <div className="mx-1 h-5 w-px shrink-0 bg-[var(--border-default)]" />
+          <div className="mx-1 h-5 w-px shrink-0 bg-border" />
 
           <Dropdown
             trigger={["click"]}
             placement="bottomRight"
-            overlayStyle={{ minWidth: 200 }}
+            styles={{ root: { minWidth: 200 } }}
             menu={{ items: userMenuItems }}
           >
             <button
               type="button"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1 ring-transparent transition-all hover:ring-[var(--border-default)] active:scale-95"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1 ring-transparent transition-all hover:ring-border active:scale-95"
             >
-              {user.avatar_url ? (
+              {user.avatar_url && !avatarError ? (
                 <img
                   src={`${API_BASE_URL}${user.avatar_url}`}
                   alt={user.username}
                   className="h-8 w-8 rounded-full object-cover"
+                  onError={() => setAvatarError(true)}
                 />
               ) : (
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white">

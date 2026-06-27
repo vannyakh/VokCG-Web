@@ -138,7 +138,10 @@ export function AdminSidebar({
             className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-2"
           >
             {isOpen && (
-              <p className="mb-1.5 overflow-hidden whitespace-nowrap px-3.5 text-[9px] font-bold uppercase tracking-[0.16em] text-muted/40">
+              <p
+                className="mb-1.5 overflow-hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.16em] text-muted/40"
+                style={{ paddingInline: 18 }}
+              >
                 Navigation
               </p>
             )}

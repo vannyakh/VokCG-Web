@@ -2,6 +2,7 @@ export * from "./providers/app-providers";
 export * from "./providers/antd-provider";
 export * from "./providers/query-provider";
 export * from "./components/color-mode";
+export * from "./components/color-mode-hooks";
 export * from "./components/shadcn/button";
 export * from "./components/shadcn/card";
 export * from "./components/loading-screen";

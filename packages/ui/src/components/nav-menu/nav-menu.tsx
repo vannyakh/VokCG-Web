@@ -103,7 +103,9 @@ export function NavMenu({
                   paddingInline: NAV_MENU.collapsedPaddingX,
                   gap: NAV_MENU.collapsedItemGap,
                 }
-              : { gap: 0 }
+              : {
+                  gap: NAV_MENU.itemGap,
+                }
           }
         >
           {groups.map((section, sIdx) => (

@@ -5,7 +5,6 @@ import {
   Button,
   Checkbox,
   ConfigProvider,
-  Drawer,
   Dropdown,
   Input,
   Popconfirm,
@@ -21,19 +20,16 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@vokcg/i18n";
-import { useTasks, useDeleteTask, useTask } from "@/api";
+import { useTasks, useDeleteTask } from "@/api";
 import { STORAGE_KEYS } from "@vokcg/config";
 import {
   Tooltip,
-  TaskPreviewPanel,
   StudioListShell,
-  panelSlide,
   staggerContainer,
   viewSwitch,
   filterTasks,
   downloadTaskVideo,
   useAppMessage,
-  useMediaQuery,
 } from "@vokcg/ui";
 import type { Task, TaskViewMode } from "@vokcg/types";
 import type { TaskStatusFilter } from "@vokcg/ui";
@@ -47,7 +43,6 @@ import {
 } from "./components";
 
 const VIEW_MODE_KEY = STORAGE_KEYS.tasksViewMode;
-const XL_MEDIA_QUERY = "(min-width: 80em)";
 
 const floatBarVariants = {
   initial: { y: 100, x: "-50%", opacity: 0 },
@@ -75,7 +70,7 @@ function useViewMode() {
 export function TasksPage() {
   const { t } = useLocale();
   const message = useAppMessage();
-  const searchInputRef = useRef<any>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useViewMode();
 
@@ -93,20 +88,17 @@ export function TasksPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<TaskStatusFilter>("all");
-  const isXlUp = useMediaQuery(XL_MEDIA_QUERY);
   const pageSize = 12;
   const filtersActive = searchQuery.trim().length > 0 || statusFilter !== "all";
   const fetchPage = filtersActive ? 1 : page;
   const fetchPageSize = filtersActive ? 100 : pageSize;
 
-  const { data, isLoading, isFetching, refetch } = useTasks(
-    fetchPage,
-    fetchPageSize,
-  );
+  const { data, isLoading } = useTasks(fetchPage, fetchPageSize);
+
   const hasActiveSelected = useMemo(() => {
     const selectedTasks = (data?.tasks ?? []).filter((task) =>
       selectedTaskIds.includes(task.id),
@@ -117,9 +109,6 @@ export function TasksPage() {
   }, [data?.tasks, selectedTaskIds]);
 
   const deleteMutation = useDeleteTask();
-  const { data: selectedTask, isLoading: isSelectedTaskLoading } = useTask(
-    selectedTaskId ?? "",
-  );
   const totalPages = data
     ? Math.ceil(data.total / (filtersActive ? fetchPageSize : pageSize))
     : 1;
@@ -133,10 +122,9 @@ export function TasksPage() {
   const handleDelete = useCallback(
     (id: string) => {
       deleteMutation.mutate(id);
-      if (selectedTaskId === id) setSelectedTaskId(null);
       setSelectedTaskIds((prev) => prev.filter((taskId) => taskId !== id));
     },
-    [deleteMutation, selectedTaskId],
+    [deleteMutation],
   );
 
   const toggleTaskChecked = (taskId: string) => {
@@ -171,7 +159,6 @@ export function TasksPage() {
   const handleBulkDelete = async () => {
     const ids = [...selectedTaskIds];
     await Promise.all(ids.map((id) => deleteMutation.mutateAsync(id)));
-    if (selectedTaskId && ids.includes(selectedTaskId)) setSelectedTaskId(null);
     setSelectedTaskIds([]);
     message.success(t("tasks.bulkDeleted", { count: ids.length }));
   };
@@ -198,18 +185,8 @@ export function TasksPage() {
     );
   }, [visibleTasks]);
 
-  const gridCols = selectedTaskId
-    ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3"
-    : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4";
-
-  const rowSelection = useMemo(
-    () => ({
-      selectedRowKeys: selectedTaskIds,
-      onChange: (keys: React.Key[]) => setSelectedTaskIds(keys.map(String)),
-      preserveSelectedRowKeys: true,
-    }),
-    [selectedTaskIds],
-  );
+  const gridCols =
+    "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4";
 
   const statusOptions = useMemo(
     () => [
@@ -257,7 +234,6 @@ export function TasksPage() {
                 className="flex-1 sm:flex-initial sm:w-[180px] md:w-[240px] rounded-xl !bg-[var(--bg-subtle)] border border-default hover:border-accent/40 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/10 transition-all duration-200 shadow-sm"
               />
 
-              {/* Mobile Dropdown status filter (icon trigger) */}
               <div className="sm:hidden shrink-0">
                 <Dropdown
                   menu={{
@@ -283,7 +259,6 @@ export function TasksPage() {
                 </Dropdown>
               </div>
 
-              {/* Desktop Select status filter */}
               <div className="hidden sm:block shrink-0">
                 <Select
                   value={statusFilter}
@@ -389,192 +364,139 @@ export function TasksPage() {
             </motion.div>
           )}
         </AnimatePresence>
-        <div className="flex w-full flex-col gap-5 xl:flex-row xl:items-start">
-          <div className="min-w-0 flex-1">
-            {!isLoading && !hasServerTasks ? (
-              <TasksEmptyState t={t} variant="none" />
-            ) : !isLoading && visibleTasks.length === 0 ? (
-              <TasksEmptyState
-                t={t}
-                variant="filtered"
-                onClearFilters={clearFilters}
-              />
-            ) : isLoading ? (
-              viewMode === "grid" ? (
-                <GridSkeleton cols={gridCols} />
-              ) : (
-                <ListSkeleton />
-              )
+
+        <div className="flex w-full flex-col gap-5">
+          {!isLoading && !hasServerTasks ? (
+            <TasksEmptyState t={t} variant="none" />
+          ) : !isLoading && visibleTasks.length === 0 ? (
+            <TasksEmptyState
+              t={t}
+              variant="filtered"
+              onClearFilters={clearFilters}
+            />
+          ) : isLoading ? (
+            viewMode === "grid" ? (
+              <GridSkeleton cols={gridCols} />
             ) : (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={viewMode}
-                  variants={viewSwitch}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                >
-                  {viewMode === "grid" ? (
-                    <motion.div
-                      variants={staggerContainer}
-                      initial="initial"
-                      animate="animate"
-                      className={`grid ${gridCols} gap-4`}
-                    >
-                      {visibleTasks.map((task) => (
-                        <TaskGridCard
-                          key={task.id}
-                          task={task}
-                          selected={selectedTaskId === task.id}
-                          checked={selectedTaskIds.includes(task.id)}
-                          onSelect={() => setSelectedTaskId(task.id)}
-                          onToggleCheck={() => toggleTaskChecked(task.id)}
-                          onDelete={handleDelete}
-                        />
-                      ))}
-                    </motion.div>
-                  ) : (
-                    <div className="flex flex-col bg-transparent border-none md:rounded-2xl md:shadow-sm overflow-visible md:overflow-hidden md:divide-y md:divide-default">
-                      {/* Header Row */}
-                      <div className="hidden md:flex items-center border-b border-default bg-surface/40 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted select-none">
-                        <div className="w-12 shrink-0 flex items-center justify-center">
-                          <Checkbox
-                            checked={
-                              visibleTasks.length > 0 &&
-                              visibleTasks.every((task) =>
-                                selectedTaskIds.includes(task.id),
-                              )
-                            }
-                            indeterminate={
-                              selectedTaskIds.length > 0 &&
-                              !visibleTasks.every((task) =>
-                                selectedTaskIds.includes(task.id),
-                              )
-                            }
-                            onChange={handleToggleAll}
-                          />
-                        </div>
-                        <div className="w-40 shrink-0 pl-1">
-                          {t("tasks.preview")}
-                        </div>
-                        <div className="flex-1 min-w-0 pr-4">
-                          {t("tasks.topic")}
-                        </div>
-                        <div className="w-[180px] shrink-0 hidden xl:block pr-4">
-                          {t("tasks.keywords")}
-                        </div>
-                        <div className="w-24 shrink-0 hidden md:block pr-4">
-                          {t("tasks.source")}
-                        </div>
-                        <div className="w-20 shrink-0 hidden lg:block pr-4">
-                          {t("tasks.aspect")}
-                        </div>
-                        <div className="w-24 shrink-0 hidden lg:block pr-4 text-center">
-                          <Tooltip content={t("tasks.materialsHint")}>
-                            <span className="cursor-help border-b border-dotted border-muted">
-                              {t("tasks.materials")}
-                            </span>
-                          </Tooltip>
-                        </div>
-                        <div className="w-32 shrink-0 pr-4">
-                          {t("tasks.status")}
-                        </div>
-                        <div className="w-12 shrink-0 text-center"></div>
-                      </div>
-
-                      {/* List Rows */}
-                      <div className="flex flex-col divide-y divide-default md:divide-y">
-                        {visibleTasks.map((task) => (
-                          <TaskRow
-                            key={task.id}
-                            task={task}
-                            selected={selectedTaskId === task.id}
-                            checked={selectedTaskIds.includes(task.id)}
-                            onSelect={() => setSelectedTaskId(task.id)}
-                            onToggleCheck={() => toggleTaskChecked(task.id)}
-                            onDelete={handleDelete}
-                            t={t}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            )}
-
-            {totalPages > 1 && !filtersActive && (
-              <div className="mt-5 flex items-center justify-end gap-2">
-                <span className="text-sm font-semibold text-secondary">
-                  {t("tasks.page", { current: page, total: totalPages })}
-                </span>
-                <Button
-                  size="small"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="rounded-lg"
-                >
-                  ‹
-                </Button>
-                <Button
-                  size="small"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="rounded-lg"
-                >
-                  ›
-                </Button>
-              </div>
-            )}
-          </div>
-
-          <AnimatePresence>
-            {selectedTaskId && isXlUp && (
+              <ListSkeleton />
+            )
+          ) : (
+            <AnimatePresence mode="wait">
               <motion.div
-                key="preview-panel"
-                className="tasks-preview-panel hidden shrink-0 xl:block"
-                variants={panelSlide}
+                key={viewMode}
+                variants={viewSwitch}
                 initial="initial"
                 animate="animate"
                 exit="exit"
               >
-                <TaskPreviewPanel
-                  task={selectedTask}
-                  isLoading={isSelectedTaskLoading}
-                  onClose={() => setSelectedTaskId(null)}
-                  onDelete={handleDelete}
-                />
+                {viewMode === "grid" ? (
+                  <motion.div
+                    variants={staggerContainer}
+                    initial="initial"
+                    animate="animate"
+                    className={`grid ${gridCols} gap-4`}
+                  >
+                    {visibleTasks.map((task) => (
+                      <TaskGridCard
+                        key={task.id}
+                        task={task}
+                        checked={selectedTaskIds.includes(task.id)}
+                        onToggleCheck={() => toggleTaskChecked(task.id)}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </motion.div>
+                ) : (
+                  <div className="flex flex-col bg-transparent border-none md:rounded-2xl md:shadow-sm overflow-visible md:overflow-hidden md:divide-y md:divide-default">
+                    <div className="hidden md:flex items-center border-b border-default bg-surface/40 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted select-none">
+                      <div className="w-12 shrink-0 flex items-center justify-center">
+                        <Checkbox
+                          checked={
+                            visibleTasks.length > 0 &&
+                            visibleTasks.every((task) =>
+                              selectedTaskIds.includes(task.id),
+                            )
+                          }
+                          indeterminate={
+                            selectedTaskIds.length > 0 &&
+                            !visibleTasks.every((task) =>
+                              selectedTaskIds.includes(task.id),
+                            )
+                          }
+                          onChange={handleToggleAll}
+                        />
+                      </div>
+                      <div className="w-40 shrink-0 pl-1">
+                        {t("tasks.preview")}
+                      </div>
+                      <div className="flex-1 min-w-0 pr-4">
+                        {t("tasks.topic")}
+                      </div>
+                      <div className="w-[180px] shrink-0 hidden xl:block pr-4">
+                        {t("tasks.keywords")}
+                      </div>
+                      <div className="w-24 shrink-0 hidden md:block pr-4">
+                        {t("tasks.source")}
+                      </div>
+                      <div className="w-20 shrink-0 hidden lg:block pr-4">
+                        {t("tasks.aspect")}
+                      </div>
+                      <div className="w-24 shrink-0 hidden lg:block pr-4 text-center">
+                        <Tooltip content={t("tasks.materialsHint")}>
+                          <span className="cursor-help border-b border-dotted border-muted">
+                            {t("tasks.materials")}
+                          </span>
+                        </Tooltip>
+                      </div>
+                      <div className="w-32 shrink-0 pr-4">
+                        {t("tasks.status")}
+                      </div>
+                      <div className="w-12 shrink-0 text-center"></div>
+                    </div>
+
+                    <div className="flex flex-col divide-y divide-default md:divide-y">
+                      {visibleTasks.map((task) => (
+                        <TaskRow
+                          key={task.id}
+                          task={task}
+                          checked={selectedTaskIds.includes(task.id)}
+                          onToggleCheck={() => toggleTaskChecked(task.id)}
+                          onDelete={handleDelete}
+                          t={t}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </motion.div>
-            )}
-          </AnimatePresence>
+            </AnimatePresence>
+          )}
+
+          {totalPages > 1 && !filtersActive && (
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <span className="text-sm font-semibold text-secondary">
+                {t("tasks.page", { current: page, total: totalPages })}
+              </span>
+              <Button
+                size="small"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="rounded-lg"
+              >
+                ‹
+              </Button>
+              <Button
+                size="small"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="rounded-lg"
+              >
+                ›
+              </Button>
+            </div>
+          )}
         </div>
       </StudioListShell>
-
-      <Drawer
-        open={!!selectedTaskId && !isXlUp}
-        placement="bottom"
-        onClose={() => setSelectedTaskId(null)}
-        size="88vh"
-        styles={{
-          body: { padding: 0, height: "100%", overflow: "hidden" },
-          header: { display: "none" },
-          wrapper: {
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            overflow: "hidden",
-          },
-        }}
-        className="bg-canvas"
-      >
-        {selectedTaskId && (
-          <TaskPreviewPanel
-            task={selectedTask}
-            isLoading={isSelectedTaskLoading}
-            onClose={() => setSelectedTaskId(null)}
-            onDelete={handleDelete}
-          />
-        )}
-      </Drawer>
     </>
   );
 }

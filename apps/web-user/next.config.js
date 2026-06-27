@@ -1,3 +1,5 @@
+import { createDevProxyRewrites } from '../../packages/config/dev-proxy-rewrites.js'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
@@ -13,16 +15,7 @@ const nextConfig = {
   // Dev-only proxy rewrites — in production the browser calls the API directly
   async rewrites() {
     if (process.env.NODE_ENV === 'production') return []
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.API_PROXY_URL ?? 'http://127.0.0.1:8888'}/api/:path*`,
-      },
-      {
-        source: '/health',
-        destination: `${process.env.API_PROXY_URL ?? 'http://127.0.0.1:8888'}/health`,
-      },
-    ]
+    return createDevProxyRewrites()
   },
 }
 

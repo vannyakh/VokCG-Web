@@ -1,132 +1,114 @@
 "use client";
 
-import { Button, Form, Input, Modal, Popconfirm, Switch, Tag } from "antd";
+import { Button, Tag } from "antd";
 import { createColumnHelper } from "@tanstack/react-table";
-import { UserCheck, UserPlus, Users } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import {
+  UserCheck,
+  UserMinus,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { useCallback, useMemo } from "react";
 import { FormTablePage, UserCell } from "@/components/admin";
 import { FormTableUI, useFormTable } from "@vokcg/ui/table";
-import { useAppMessage } from "@vokcg/ui";
-import {
-  useAdminUsers,
-  useCreateAdminUser,
-  useUpdateAdminUser,
-  type AdminUserCreateInput,
-  type AdminUserUpdateInput,
-} from "@/api";
 import { formatAdminDate } from "@vokcg/ui";
 import type { User } from "@/types/auth";
-
-type UserFilters = {
-  query?: string;
-  is_active?: boolean;
-};
-
-type UserFormValues = AdminUserCreateInput & AdminUserUpdateInput;
+import { useUsersPage } from "./hooks/use-users-page";
+import type { UserFilters } from "./hooks/use-users-page";
+import { UserActionsMenu } from "./components/UserActionsMenu";
+import { UserDetailDrawer } from "./components/UserDetailDrawer";
+import { UserFormModal } from "./components/UserFormModal";
+import { UserPasswordResetModal } from "./components/UserPasswordResetModal";
 
 const columnHelper = createColumnHelper<User>();
 
-export function UsersPage() {
-  const message = useAppMessage();
-  const { data, isLoading, refetch } = useAdminUsers();
-  const createUser = useCreateAdminUser();
-  const updateUser = useUpdateAdminUser();
-  const [form] = Form.useForm<UserFormValues>();
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<User | null>(null);
-
-  const users = useMemo(() => data?.data ?? [], [data?.data]);
-
-  const stats = useMemo(() => {
-    const activeCount = users.filter((u) => u.is_active).length;
-    return { activeCount };
-  }, [users]);
-
-  const openCreate = useCallback(() => {
-    setEditing(null);
-    form.resetFields();
-    form.setFieldsValue({ is_active: true });
-    setOpen(true);
-  }, [form]);
-
-  const openEdit = useCallback(
-    (user: User) => {
-      setEditing(user);
-      form.setFieldsValue({
-        full_name: user.full_name ?? undefined,
-        is_active: user.is_active,
-      });
-      setOpen(true);
-    },
-    [form],
-  );
-
-  const toggleActive = useCallback(
-    async (user: User) => {
-      try {
-        await updateUser.mutateAsync({
-          id: user.id,
-          body: { is_active: !user.is_active },
-        });
-        message.success(user.is_active ? "User deactivated" : "User activated");
-      } catch {
-        message.error("Failed to update user status");
-      }
-    },
-    [message, updateUser],
-  );
-
-  const formTable = useFormTable<User, UserFilters>({
-    data: users,
-    getRowId: (row) => row.id,
-    loading: isLoading,
-    enableRowSelection: true,
-    emptyText: "No app users found.",
-    onRefresh: () => refetch(),
-    formSchema: [
-      {
-        name: "query",
-        label: "Search",
-        placeholder: "Name, email, or username",
-      },
-      {
-        name: "is_active",
-        label: "Status",
-        type: "select",
-        placeholder: "All statuses",
-        options: [
-          { value: true, label: "Active" },
-          { value: false, label: "Inactive" },
-        ],
-      },
+const USER_FORM_SCHEMA = [
+  {
+    name: "query",
+    label: "Search",
+    placeholder: "Name, email, or username",
+  },
+  {
+    name: "is_active",
+    label: "Status",
+    type: "select" as const,
+    placeholder: "All statuses",
+    options: [
+      { value: true, label: "Active" },
+      { value: false, label: "Inactive" },
     ],
-    filterFn: (filter, row) => {
-      if (filter.query) {
-        const q = filter.query.toLowerCase().trim();
-        const haystack = [row.username, row.email, row.full_name ?? ""]
-          .join(" ")
-          .toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
-      if (filter.is_active !== undefined && row.is_active !== filter.is_active)
-        return false;
-      return true;
-    },
-    columns: [
+  },
+];
+
+function filterUsers(filter: UserFilters, row: User) {
+  if (filter.query) {
+    const q = filter.query.toLowerCase().trim();
+    const hay = [row.username, row.email, row.full_name ?? ""]
+      .join(" ")
+      .toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  if (filter.is_active !== undefined && row.is_active !== filter.is_active)
+    return false;
+  return true;
+}
+
+export function UsersPage() {
+  const {
+    users,
+    isLoading,
+    stats,
+    refetch,
+    form,
+    modalOpen,
+    editingUser,
+    openCreate,
+    openEdit,
+    closeModal,
+    drawerOpen,
+    detailUser,
+    closeDrawer,
+    pwdModalOpen,
+    pwdUser,
+    openDetail,
+    openPasswordReset,
+    closePasswordReset,
+    toggleActive,
+    setUserActive,
+    handleDelete,
+    handlePasswordReset,
+    handleSubmit,
+    isSubmitting,
+    isDeleting,
+    isResettingPassword,
+    isTogglingActive,
+  } = useUsersPage();
+
+  const columns = useMemo(
+    () => [
       columnHelper.display({
         id: "user",
         header: "User",
         cell: ({ row }) => (
-          <div className="min-w-0">
+          <button
+            type="button"
+            onClick={() => openDetail(row.original)}
+            className="min-w-0 text-left transition-opacity hover:opacity-80"
+          >
             <UserCell
               username={row.original.username}
               fullName={row.original.full_name}
               avatarUrl={row.original.avatar_url}
             />
-            <p className="mt-1 truncate pl-[46px] text-xs text-muted">
-              {row.original.email}
-            </p>
-          </div>
+          </button>
+        ),
+      }),
+      columnHelper.accessor("email", {
+        header: "Email",
+        cell: (info) => (
+          <span className="font-mono text-[12px] text-muted">
+            {info.getValue()}
+          </span>
         ),
       }),
       columnHelper.accessor("is_active", {
@@ -134,18 +116,18 @@ export function UsersPage() {
         size: 96,
         cell: (info) => (
           <Tag
-            color={info.getValue() ? "green" : "red"}
+            color={info.getValue() ? "green" : "default"}
             className="m-0 capitalize"
           >
-            {info.getValue() ? "active" : "inactive"}
+            {info.getValue() ? "Active" : "Inactive"}
           </Tag>
         ),
       }),
       columnHelper.accessor("created_at", {
         header: "Joined",
-        size: 112,
+        size: 116,
         cell: (info) => (
-          <span className="text-sm text-muted">
+          <span className="text-[12px] text-muted">
             {formatAdminDate(info.getValue())}
           </span>
         ),
@@ -153,193 +135,149 @@ export function UsersPage() {
       columnHelper.display({
         id: "actions",
         header: "",
-        size: 148,
+        size: 52,
         cell: ({ row }) => (
-          <div className="flex flex-wrap gap-1">
-            <Button
-              type="link"
-              size="small"
-              className="px-1"
-              onClick={() => openEdit(row.original)}
-            >
-              Edit
-            </Button>
-            <Popconfirm
-              title={
-                row.original.is_active
-                  ? "Deactivate this user?"
-                  : "Activate this user?"
-              }
-              onConfirm={() => void toggleActive(row.original)}
-            >
-              <Button type="link" size="small" className="px-1">
-                {row.original.is_active ? "Deactivate" : "Activate"}
-              </Button>
-            </Popconfirm>
-          </div>
+          <UserActionsMenu
+            user={row.original}
+            onDetail={openDetail}
+            onEdit={openEdit}
+            onToggleActive={toggleActive}
+            onDelete={handleDelete}
+            onResetPassword={openPasswordReset}
+          />
         ),
       }),
     ],
+    [
+      openDetail,
+      openEdit,
+      toggleActive,
+      handleDelete,
+      openPasswordReset,
+    ],
+  );
+
+  const handleRefresh = useCallback(() => refetch(), [refetch]);
+
+  const formTable = useFormTable<User, UserFilters>({
+    data: users,
+    getRowId: (row) => row.id,
+    loading: isLoading,
+    enableRowSelection: true,
+    emptyText: "No app users found.",
+    onRefresh: handleRefresh,
+    formSchema: USER_FORM_SCHEMA,
+    filterFn: filterUsers,
+    columns,
   });
 
+  /* ── Bulk actions ─────────────────────────────────────────────── */
   const selectedUsers = formTable.table
     .getFilteredSelectedRowModel()
-    .rows.map((row) => row.original);
+    .rows.map((r) => r.original);
   const selectedCount = selectedUsers.length;
 
-  const bulkSetActive = async (active: boolean) => {
-    if (selectedCount === 0) return;
-    try {
-      await Promise.all(
-        selectedUsers.map((user) =>
-          updateUser.mutateAsync({ id: user.id, body: { is_active: active } }),
-        ),
-      );
-      message.success(
-        active ? "Selected users activated" : "Selected users deactivated",
+  const bulkSetActive = useCallback(
+    async (active: boolean) => {
+      if (selectedCount === 0) return;
+      await Promise.allSettled(
+        selectedUsers.map((u) => setUserActive(u, active)),
       );
       formTable.setRowSelection({});
-    } catch {
-      message.error("Failed to update some users");
-    }
-  };
-
-  const handleSubmit = async () => {
-    const values = await form.validateFields();
-    try {
-      if (editing) {
-        await updateUser.mutateAsync({
-          id: editing.id,
-          body: {
-            full_name: values.full_name,
-            is_active: values.is_active,
-          },
-        });
-        message.success("User updated");
-      } else {
-        await createUser.mutateAsync({
-          email: values.email!,
-          username: values.username!,
-          password: values.password!,
-          full_name: values.full_name,
-          is_active: values.is_active,
-        });
-        message.success("User created");
-      }
-      setOpen(false);
-    } catch {
-      message.error(
-        editing ? "Failed to update user" : "Failed to create user",
-      );
-    }
-  };
+    },
+    [formTable, selectedCount, selectedUsers, setUserActive],
+  );
 
   return (
-    <FormTablePage
-      title="Users"
-      description="Manage app user accounts."
-      extra={
-        <Button
-          type="primary"
-          icon={<UserPlus size={14} />}
-          onClick={openCreate}
-        >
-          Add user
-        </Button>
-      }
-      stats={[
-        { label: "Total users", value: users.length, icon: Users },
-        {
-          label: "Active",
-          value: stats.activeCount,
-          icon: UserCheck,
-          accent: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-        },
-      ]}
-      statsColumns={2}
-      statsLoading={isLoading}
-      statsExtra={
-        selectedCount > 0 ? (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-accent/25 bg-accent-muted/20 px-3 py-2">
-            <span className="text-sm font-medium text-primary">
-              {selectedCount} selected
-            </span>
-            <Button size="small" onClick={() => void bulkSetActive(true)}>
-              Activate
-            </Button>
-            <Button size="small" onClick={() => void bulkSetActive(false)}>
-              Deactivate
-            </Button>
-            <Button
-              size="small"
-              type="link"
-              onClick={() => formTable.setRowSelection({})}
-            >
-              Clear
-            </Button>
-          </div>
-        ) : null
-      }
-    >
-      <FormTableUI {...formTable} />
-
-      <Modal
-        title={editing ? "Edit user" : "Add user"}
-        open={open}
-        onCancel={() => setOpen(false)}
-        onOk={() => void handleSubmit()}
-        confirmLoading={createUser.isPending || updateUser.isPending}
-        destroyOnHidden
-        width={480}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          className="mt-4"
-          requiredMark={false}
-        >
-          {editing ? (
-            <div className="mb-4 rounded-lg border border-subtle bg-subtle/40 px-3 py-2.5">
-              <p className="text-sm font-semibold text-primary">
-                {editing.username}
-              </p>
-              <p className="text-xs text-muted">{editing.email}</p>
+    <>
+      <FormTablePage
+        title="Users"
+        description="Manage app user accounts and access."
+        extra={
+          <Button
+            type="primary"
+            icon={<UserPlus size={14} />}
+            onClick={openCreate}
+          >
+            Add user
+          </Button>
+        }
+        stats={[
+          {
+            label: "Total users",
+            value: stats.total,
+            icon: Users,
+          },
+          {
+            label: "Active",
+            value: stats.activeCount,
+            icon: UserCheck,
+            accent: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+          },
+          {
+            label: "Inactive",
+            value: stats.inactiveCount,
+            icon: UserMinus,
+            accent: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+          },
+        ]}
+        statsColumns={3}
+        statsLoading={isLoading}
+        statsExtra={
+          selectedCount > 0 ? (
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-accent/25 bg-accent-muted/20 px-3 py-2">
+              <span className="text-sm font-medium text-primary">
+                {selectedCount} selected
+              </span>
+              <Button size="small" onClick={() => void bulkSetActive(true)}>
+                Activate
+              </Button>
+              <Button size="small" onClick={() => void bulkSetActive(false)}>
+                Deactivate
+              </Button>
+              <Button
+                size="small"
+                type="link"
+                onClick={() => formTable.setRowSelection({})}
+              >
+                Clear
+              </Button>
             </div>
-          ) : (
-            <>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[{ required: true, type: "email" }]}
-              >
-                <Input placeholder="user@example.com" />
-              </Form.Item>
-              <Form.Item
-                name="username"
-                label="Username"
-                rules={[{ required: true, min: 3, max: 64 }]}
-              >
-                <Input placeholder="jane" />
-              </Form.Item>
-              <Form.Item
-                name="password"
-                label="Password"
-                rules={[{ required: true, min: 6 }]}
-              >
-                <Input.Password placeholder="Minimum 6 characters" />
-              </Form.Item>
-            </>
-          )}
+          ) : null
+        }
+      >
+        <FormTableUI {...formTable} />
+      </FormTablePage>
 
-          <Form.Item name="full_name" label="Display name">
-            <Input placeholder="Jane Doe" />
-          </Form.Item>
+      {/* Create / Edit modal */}
+      <UserFormModal
+        open={modalOpen}
+        editing={editingUser}
+        form={form}
+        confirmLoading={isSubmitting}
+        onOk={() => void handleSubmit()}
+        onCancel={closeModal}
+      />
 
-          <Form.Item name="is_active" label="Active" valuePropName="checked">
-            <Switch size="small" />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </FormTablePage>
+      <UserDetailDrawer
+        open={drawerOpen}
+        user={detailUser}
+        onClose={closeDrawer}
+        onEdit={openEdit}
+        onToggleActive={toggleActive}
+        onDelete={handleDelete}
+        onResetPassword={openPasswordReset}
+        isTogglingActive={isTogglingActive}
+        isDeleting={isDeleting}
+      />
+
+      <UserPasswordResetModal
+        open={pwdModalOpen}
+        user={pwdUser}
+        confirmLoading={isResettingPassword}
+        onOk={(pwd) => void handlePasswordReset(pwd)}
+        onCancel={closePasswordReset}
+      />
+    </>
   );
 }

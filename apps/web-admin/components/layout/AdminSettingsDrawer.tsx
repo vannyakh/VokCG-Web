@@ -123,12 +123,6 @@ export function AdminSettingsDrawer({ open, onClose }: Props) {
     setTabBarShowIcons,
     resetTabSession,
     resetPreferences,
-    transitionProgressBar,
-    setTransitionProgressBar,
-    transitionLoading,
-    setTransitionLoading,
-    transitionAnimation,
-    setTransitionAnimation,
   } = useAdminUiStore();
 
   const handleReset = useCallback(() => {
@@ -150,9 +144,6 @@ export function AdminSettingsDrawer({ open, onClose }: Props) {
         tabBarDraggable: prefs.tabBarDraggable,
         tabBarWheelScroll: prefs.tabBarWheelScroll,
         tabBarShowIcons: prefs.tabBarShowIcons,
-        transitionProgressBar: prefs.transitionProgressBar,
-        transitionLoading: prefs.transitionLoading,
-        transitionAnimation: prefs.transitionAnimation,
       },
       theme,
     );
@@ -434,41 +425,6 @@ export function AdminSettingsDrawer({ open, onClose }: Props) {
               </SettingRow>
             </SettingBlock>
           </div>
-        )}
-
-        {activeTab === "general" && (
-          <SettingBlock title="Animation">
-            <SettingRow
-              label="Page transition progress bar"
-              hint="Top bar while switching pages"
-            >
-              <Switch
-                size="small"
-                checked={transitionProgressBar}
-                onChange={setTransitionProgressBar}
-              />
-            </SettingRow>
-            <SettingRow
-              label="Page transition loading"
-              hint="Spinner while routes load"
-            >
-              <Switch
-                size="small"
-                checked={transitionLoading}
-                onChange={setTransitionLoading}
-              />
-            </SettingRow>
-            <SettingRow
-              label="Page transition animation"
-              hint="Fade and slide between pages"
-            >
-              <Switch
-                size="small"
-                checked={transitionAnimation}
-                onChange={setTransitionAnimation}
-              />
-            </SettingRow>
-          </SettingBlock>
         )}
 
         {activeTab === "shortcuts" && (

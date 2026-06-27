@@ -152,7 +152,13 @@ export function Page({
       const footerH = footerRef.current?.offsetHeight ?? 0;
       const rootH = root.clientHeight;
       const next = Math.max(rootH - headerH - footerH - heightOffset, 160);
-      setMeasuredStyle({ height: next, minHeight: 0, overflow: "hidden" });
+      setMeasuredStyle((prev) => {
+        const height = next;
+        if (prev.height === height && prev.minHeight === 0 && prev.overflow === "hidden") {
+          return prev;
+        }
+        return { height, minHeight: 0, overflow: "hidden" };
+      });
     };
 
     update();

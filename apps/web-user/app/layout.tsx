@@ -1,12 +1,8 @@
-import type { Metadata } from "next";
-import { AppProviders } from "@vokcg/ui";
-import { APP_SUBTITLE, APP_TITLE } from "@vokcg/config";
+import { AppProviders, ColorModeProvider } from "@vokcg/ui";
+import { siteMetadata } from "./metadata";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: APP_TITLE,
-  description: APP_SUBTITLE,
-};
+export const metadata = siteMetadata;
 
 export default function RootLayout({
   children,
@@ -16,7 +12,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <AppProviders>{children}</AppProviders>
+        <ColorModeProvider>
+          <AppProviders>{children}</AppProviders>
+        </ColorModeProvider>
       </body>
     </html>
   );

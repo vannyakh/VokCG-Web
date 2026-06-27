@@ -270,7 +270,6 @@ export function PlansPage() {
         onCancel={() => setOpen(false)}
         onOk={handleSubmit}
         confirmLoading={createPlan.isPending || updatePlan.isPending}
-        destroyOnClose
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Form.Item

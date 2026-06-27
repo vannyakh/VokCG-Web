@@ -16,6 +16,14 @@ export const USER_ROUTES = {
   register: "/register",
 } as const;
 
+/** Deep-link to a single task detail page */
+export const taskDetailRoute = (id: string) => `/tasks/${id}`;
+
+export type ExploreCategory = "templates" | "avatar" | "music" | "publish";
+/** Deep-link to an explore category page */
+export const exploreCategoryRoute = (category: ExploreCategory) =>
+  `/explore/${category}`;
+
 export const LEGACY_WORKSPACE_ROUTES = {
   root: "/workspace",
   plans: "/workspace/plans",

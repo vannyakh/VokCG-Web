@@ -1,11 +1,15 @@
-"use client";
-
-import { ThemeProvider, useTheme } from "next-themes";
+import { ThemeProvider } from "next-themes";
 import type { ThemeProviderProps } from "next-themes";
 import { DEFAULT_COLOR_MODE } from "@vokcg/config";
 
 export type ColorModeProviderProps = ThemeProviderProps;
 
+/**
+ * Server-safe wrapper around next-themes ThemeProvider.
+ * Must be rendered in a Server Component (e.g. root layout) so the inline
+ * flash-prevention <script> next-themes injects is processed server-side.
+ * Client hooks live in color-mode-hooks.tsx.
+ */
 export function ColorModeProvider({
   children,
   ...props
@@ -20,27 +24,4 @@ export function ColorModeProvider({
       {children}
     </ThemeProvider>
   );
-}
-
-export type ColorMode = "light" | "dark";
-
-export interface UseColorModeReturn {
-  colorMode: ColorMode;
-  setColorMode: (mode: ColorMode) => void;
-  toggleColorMode: () => void;
-}
-
-export function useColorMode(): UseColorModeReturn {
-  const { resolvedTheme, setTheme } = useTheme();
-  const colorMode = (resolvedTheme ?? "dark") as ColorMode;
-  return {
-    colorMode,
-    setColorMode: (mode) => setTheme(mode),
-    toggleColorMode: () => setTheme(colorMode === "dark" ? "light" : "dark"),
-  };
-}
-
-export function useColorModeValue<T>(light: T, dark: T): T {
-  const { colorMode } = useColorMode();
-  return colorMode === "dark" ? dark : light;
 }

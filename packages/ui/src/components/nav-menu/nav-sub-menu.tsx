@@ -14,6 +14,7 @@ import { NavCollapsedTile, navCollapsedRowStyle } from "./nav-collapsed-tile";
 import {
   NAV_FLYOUT,
   NAV_MENU,
+  NAV_ROW,
   navIconColor,
   navRowRadius,
   navSurface,
@@ -160,7 +161,7 @@ export function NavSubMenu({ item, inPopup = false }: Props) {
   const rowHeight = inPopup ? NAV_FLYOUT.itemHeight : itemHeight;
 
   return (
-    <div>
+    <div style={!inPopup ? { marginInline: NAV_MENU.marginX } : undefined}>
       <div
         className="relative"
         onMouseEnter={() => setHoveredId(item.id)}
@@ -192,7 +193,7 @@ export function NavSubMenu({ item, inPopup = false }: Props) {
             }
           }}
           className={[
-            "group relative flex w-full select-none items-center gap-2 text-left outline-none",
+            "group relative flex w-full select-none items-center gap-2.5 text-left outline-none",
             "transition-colors duration-150",
             inPopup ? "rounded-lg" : "",
             isHighlighted
@@ -202,35 +203,44 @@ export function NavSubMenu({ item, inPopup = false }: Props) {
           style={{
             height: rowHeight,
             borderRadius: inPopup ? NAV_FLYOUT.radius - 2 : rowRadius,
-            paddingLeft: inPopup ? undefined : paddingLeft,
-            paddingRight: inPopup ? undefined : 8,
+            paddingLeft: inPopup ? 10 : paddingLeft,
+            paddingRight: inPopup ? 10 : 10,
             zIndex: 1,
             position: "relative",
           }}
           aria-expanded={isOpen}
         >
-          <item.icon
-            size={15}
-            strokeWidth={isHighlighted ? 2.2 : 1.75}
-            className="shrink-0"
-            style={navIconColor(isHighlighted)}
-          />
+          <span
+            className="flex shrink-0 items-center justify-center"
+            style={{ width: NAV_ROW.iconColumnWidth }}
+          >
+            <item.icon
+              size={NAV_ROW.iconSize}
+              strokeWidth={isHighlighted ? 2.2 : 1.75}
+              className="shrink-0"
+              style={navIconColor(isHighlighted)}
+            />
+          </span>
           <span
             className={[
-              "min-w-0 flex-1 truncate text-[13px] leading-none",
+              NAV_ROW.labelClass,
+              "text-[13px]",
               isHighlighted ? "font-semibold" : "font-medium",
             ].join(" ")}
           >
             {item.label}
           </span>
-          <div className="ml-auto flex shrink-0 items-center gap-1.5">
-            {item.badge && (
-              <NavBadge
-                label={item.badge}
-                variant={item.badgeVariant}
-                compact
-              />
-            )}
+          {item.badge && (
+            <NavBadge
+              label={item.badge}
+              variant={item.badgeVariant}
+              compact
+            />
+          )}
+          <span
+            className="flex shrink-0 items-center justify-center"
+            style={{ width: NAV_ROW.chevronColumnWidth }}
+          >
             <motion.span
               animate={{ rotate: isOpen ? 90 : 0 }}
               transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
@@ -242,7 +252,7 @@ export function NavSubMenu({ item, inPopup = false }: Props) {
             >
               <ChevronRight size={13} strokeWidth={2} className="shrink-0" />
             </motion.span>
-          </div>
+          </span>
         </button>
       </div>
 

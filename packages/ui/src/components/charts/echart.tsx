@@ -11,7 +11,7 @@ import {
 import { CanvasRenderer } from "echarts/renderers";
 import type { EChartsCoreOption } from "echarts/core";
 import { useEffect, useRef } from "react";
-import { useColorMode } from "../color-mode";
+import { useColorMode } from "../color-mode-hooks";
 
 echarts.use([
   BarChart,
@@ -62,8 +62,8 @@ export function EChart({
 
   useEffect(() => {
     const chart = chartRef.current;
-    if (!chart) return;
-    chart.setOption(option, { notMerge: true });
+    if (!chart || !option) return;
+    chart.setOption(option, { notMerge: true, lazyUpdate: true });
   }, [option]);
 
   useEffect(() => {

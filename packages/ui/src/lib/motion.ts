@@ -49,14 +49,18 @@ export const adminPageExit: Transition = {
 };
 
 export const adminPageVariants: Variants = {
-  initial: { opacity: 0, y: 10, filter: "blur(2px)" },
+  initial: { opacity: 0, y: 8 },
   animate: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: adminPageTransition,
   },
-  exit: { opacity: 0, y: -6, filter: "blur(1px)", transition: adminPageExit },
+  exit: {
+    opacity: 0,
+    y: -4,
+    pointerEvents: "none",
+    transition: adminPageExit,
+  },
 };
 
 export const contentFade: Variants = {

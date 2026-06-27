@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Checkbox } from "antd";
+import { useRouter } from "next/navigation";
 import {
   Tooltip,
   TaskDeleteButton,
@@ -10,6 +11,7 @@ import {
   isTaskActive,
   getRenderStatus,
 } from "@vokcg/ui";
+import { taskDetailRoute } from "@vokcg/constants";
 import type { Task } from "@vokcg/types";
 import {
   STATUS_DOT_COLOR,
@@ -21,23 +23,20 @@ import { TaskTopicCell, TaskKeywordsCell, TaskStatusCell } from "./TaskCells";
 
 interface TaskRowProps {
   task: Task;
-  selected: boolean;
   checked: boolean;
-  onSelect: () => void;
   onToggleCheck: () => void;
   onDelete: (id: string) => void;
-  t: (key: string, options?: any) => string;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }
 
 export function TaskRow({
   task,
-  selected,
   checked,
-  onSelect,
   onToggleCheck,
   onDelete,
   t,
 }: TaskRowProps) {
+  const router = useRouter();
   const summary = getTaskContentSummary(task);
   const meta = getTaskStateMeta(task.state);
   const active = isTaskActive(task.state);
@@ -45,28 +44,28 @@ export function TaskRow({
   const renderStatus = getRenderStatus(task);
   const count = summary.materialCount;
 
+  const handleClick = () => {
+    router.push(taskDetailRoute(task.id));
+  };
+
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={onSelect}
+      onClick={handleClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onSelect();
+          handleClick();
         }
       }}
       className={[
         "flex flex-col md:flex-row md:items-center px-4 py-3 cursor-pointer transition-all duration-150 outline-none select-none relative",
-        // Mobile floating card style
         "mb-3 mx-1 rounded-2xl border shadow-sm",
-        // Desktop row resets
         "md:mb-0 md:mx-0 md:rounded-none md:border-0 md:border-b md:border-default/60 md:shadow-none md:last:border-b-0",
-        selected
-          ? "border-default bg-[var(--bg-active)] md:bg-primary/5"
-          : checked
-            ? "border-primary/40 bg-surface/80 md:bg-primary/5"
-            : "border-default bg-surface hover:bg-[var(--bg-subtle)]",
+        checked
+          ? "border-primary/40 bg-surface/80 md:bg-primary/5"
+          : "border-default bg-surface hover:bg-[var(--bg-subtle)]",
       ].join(" ")}
     >
       {/* Left & Thumbnail Container */}
@@ -74,21 +73,11 @@ export function TaskRow({
         {/* Checkbox */}
         <div
           className="w-12 shrink-0 flex items-center justify-center cursor-default"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-          }}
-          onMouseUp={(e) => {
-            e.stopPropagation();
-          }}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-          }}
-          onKeyUp={(e) => {
-            e.stopPropagation();
-          }}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          onKeyUp={(e) => e.stopPropagation()}
         >
           <Checkbox
             checked={checked}
@@ -99,7 +88,7 @@ export function TaskRow({
 
         {/* Thumbnail */}
         <div className="w-24 md:w-40 shrink-0 pl-1">
-          <TaskPreviewCell task={task} selected={selected} />
+          <TaskPreviewCell task={task} selected={false} />
         </div>
 
         {/* Mobile Row Content (hidden on desktop) */}
@@ -117,7 +106,6 @@ export function TaskRow({
             </div>
           </div>
 
-          {/* Subtext info */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-secondary mt-0.5">
             <span>{formatSourceLabel(summary.source)}</span>
             <span className="text-muted/60">•</span>
@@ -145,7 +133,6 @@ export function TaskRow({
             )}
           </div>
 
-          {/* Mobile Status */}
           <div className="flex items-center gap-2 mt-1">
             <span
               className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT_COLOR[meta.palette] ?? STATUS_DOT_COLOR["gray"]}`}
